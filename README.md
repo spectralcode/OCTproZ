@@ -41,14 +41,14 @@ The following plug-ins are currently available:
 </br></br>
 __Acquisition Systems:__
 |Name | Description |
-|-----|-----|-----|
+|-----|-----|
 |[Virtual OCT System](octproz_virtual_oct_system)| Can be used to load already acquired OCT raw data from the disk|
 
 </br>
 
 __Extensions:__
 |Name | Description |
-|-----|-----|-----|
+|-----|-----|
 |[Demo Extension](octproz_demo_extension)| This demo extension is aimed at developers. It has no useful functionality, but the code can be used as a template for developing custom extensions.|
 |[Image Statistics](https://github.com/spectralcode/ImageStatisticsExtension)| Displays useful image statistics, such as a histogram, in real time of currently acquired B-scans |
 
@@ -95,6 +95,6 @@ _iqo_._uni_-_hannover_._de_
 
 License
 ----------
-OCTproZ is licensed under [GPLv3](LICENSE).
+OCTproZ is licensed under [GPLv3](LICENSE).</br>
 The DevKit is licensed under [MIT license](octproz_devkit/LICENSE).
 
