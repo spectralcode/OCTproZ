@@ -79,7 +79,7 @@ Known issues
 Contributing
 ----------
 We strongly encourage contributions to the project. To contribute to this repository you can create [pull requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests). </br>
-If you have developed a plug-in for OCTproZ and want it to be included in the precompiled package, please contact us and provide a link to your plug-in repository. 
+If you have developed a plug-in for OCTproZ and want it to be included in the precompiled package, please contact us.
 
 
 How to cite
