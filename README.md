@@ -44,7 +44,6 @@ __Acquisition Systems:__
 |-----|-----|
 |[Virtual OCT System](octproz_virtual_oct_system)| Can be used to load already acquired OCT raw data from the disk|
 
-</br>
 
 __Extensions:__
 |Name | Description |
@@ -53,13 +52,11 @@ __Extensions:__
 |[Image Statistics](https://github.com/spectralcode/ImageStatisticsExtension)| Displays useful image statistics, such as a histogram, in real time of currently acquired B-scans |
 
 
-
-</br>
 Download and Installation
 ----------
 To run OCTproZ a cuda-compatible graphics card with current drivers is required.
 A precompiled package for Windows (64bit) can be downloaded from:
-[GitHub release section](https://github.com/spectralcode/OCTproZ/releases).
+[GitHub release section](https://github.com/spectralcode/FDMLControl/releases).
 
 Extract the zip archive and execute OCTproZ, installation is not necessary.
 
