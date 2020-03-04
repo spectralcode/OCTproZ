@@ -61,8 +61,8 @@ SOURCES += \
         $$SOURCEDIR/extensioneventfilter.cpp
 
 	unix{
-            SOURCES += $$SOURCEDIR/cuda_code.cu
-            SOURCES -= $$SOURCEDIR/cuda_code.cu
+                SOURCES += $$SOURCEDIR/cuda_code.cu
+                SOURCES -= $$SOURCEDIR/cuda_code.cu
 	}
 
 HEADERS += \
@@ -142,12 +142,12 @@ CUDA_SOURCES += $$SOURCEDIR/cuda_code.cu \
 
 
 
-# C++ flags
+#C++ flags
 unix{
-   # QMAKE_CXXFLAGS_RELEASE =-O3
+        #QMAKE_CXXFLAGS_RELEASE =-O3
 }
 
-# Path to cuda toolkit install
+#Path to cuda toolkit install
 unix{
 	CUDA_DIR = /usr/local/cuda
 }
@@ -159,21 +159,18 @@ win32{
 #CUDA system/compiler settings
 SYSTEM_TYPE = 64
 #CUDA_ARCH = sm_61 		  #Type of CUDA architecture, use sm_61 for GeForce GTX 1060 ..1080 TI
-CUDA_ARCH = sm_50 		 #use sm_50 for Quadro K620, K620M, K1200, K2200, K2200M
+#CUDA_ARCH = sm_50 		 #use sm_50 for Quadro K620, K620M, K1200, K2200, K2200M
 
+########
 #cuda 8 arch flags for maximum compatibility (probably not maximum efficiency)
-#CUDA_ARCH += sm_30 \
-#-gencode=arch=compute_20,code=sm_20 \
-
-#-gencode=arch=compute_30,code=sm_30 \
-#-gencode=arch=compute_50,code=sm_50 \
-#-gencode=arch=compute_52,code=sm_52 \
-#-gencode=arch=compute_60,code=sm_60 \
-#-gencode=arch=compute_61,code=sm_61 \
-#-gencode=arch=compute_70,code=sm_70 \
-
-#-gencode=arch=compute_70,code=compute_70
-
+CUDA_ARCH += sm_30 \
+-gencode=arch=compute_30,code=sm_30 \
+-gencode=arch=compute_50,code=sm_50 \
+-gencode=arch=compute_52,code=sm_52 \
+-gencode=arch=compute_60,code=sm_60 \
+-gencode=arch=compute_61,code=sm_61 \
+-gencode=arch=compute_70,code=sm_70 \
+########
 
 unix{
 	NVCC_OPTIONS = --use_fast_math -std=c++11 --compiler-options -fPIC
@@ -230,7 +227,7 @@ unix{
 	# SPECIFY THE R PATH FOR NVCC
 	QMAKE_LFLAGS += -Wl,-rpath,$$CUDA_DIR/lib
 	NVCCFLAGS = -Xlinker -rpath,$$CUDA_DIR/lib
-   #NVCCFLAGS = --compiler-options -fno-strict-aliasing -use_fast_math --ptxas-options=-v
+        #NVCCFLAGS = --compiler-options -fno-strict-aliasing -use_fast_math --ptxas-options=-v
 }
 
 
@@ -277,13 +274,6 @@ win32{
 		QMAKE_EXTRA_COMPILERS += cuda
 	}
 }
-
-#Release:DESTDIR = release
-#Debug:DESTDIR = debug
-#OBJECTS_DIR = $$DESTDIR/.obj
-#MOC_DIR = $$DESTDIR/.moc
-#RCC_DIR = $$DESTDIR/.qrc
-#UI_DIR = $$DESTDIR/.ui
 
 
 message(NVCClibs are $$NVCC_LIBS)
