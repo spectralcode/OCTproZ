@@ -56,7 +56,7 @@ Download and Installation
 ----------
 To run OCTproZ a cuda-compatible graphics card with current drivers is required.
 A precompiled package for Windows (64bit) can be downloaded from:
-[GitHub release section](https://github.com/spectralcode/FDMLControl/releases).
+[GitHub release section](https://github.com/spectralcode/OCTproZ/releases).
 
 Extract the zip archive and execute OCTproZ, installation is not necessary.
 
