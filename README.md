@@ -72,8 +72,9 @@ OCTproZ is with the QtCreator. Clone/Download the OCTproZ source files and open 
 
 Known issues
 ----------
+- Images in the 2D views (B-scan and En Face View) are distorted when rotated. This should be easy to correct. The OpenGL part of OCTproZ should be revised anyway. Anyone who likes and has some OpenGL experience could check "glwindow2d.cpp" and give me some hints what to improve regarding OpenGL usage.
 - Linux: Floating dock widgets lose mouse focus when dragged. See: [Qt bug](https://bugreports.qt.io/browse/QTBUG-65640)
-- Linux: Processing needs to run in GUI thread otherwise OpenGL output lags. This may be an OpenGL context issue. 
+- Linux: Processing can be blocked by certain GUI usage. Reason: Processing needs to run in GUI thread otherwise OpenGL output lags. This may be an OpenGL context issue. 
 
 
 Contributing
