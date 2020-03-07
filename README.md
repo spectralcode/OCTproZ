@@ -16,8 +16,7 @@ Features
 The full OCT processing pipeline is implemented in [CUDA](https://developer.nvidia.com/cuda-zone) and visualization is performed with [OpenGL](https://developer.nvidia.com/cuda-zone). Depending on the GPU used, OCTproZ can be used for MHz-OCT. 
 
 * **Plug-in system** </br>
-There are two kinds of plug-ins for OCTproZ: _Acquisition Systems_ and _Extensions_. </br>
-An Acquisition System controls the OCT hardware and provides raw data to OCTproZ. Extensions have access to processed OCT data and can be used to extend the functionality of OCTproZ. 
+Plug-ins enable the integration of custom OCT systems and software modules. There are two kinds of plug-ins for OCTproZ: _Acquisition Systems_ and _Extensions_. An Acquisition System controls the OCT hardware and provides raw data to OCTproZ. Extensions have access to processed OCT data and can be used to extend the functionality of OCTproZ. 
 
 * **Cross platform** </br>
 OCTproZ runs on Windows and Linux. </br>
