@@ -23,6 +23,15 @@ OCTproZ runs on Windows and Linux. </br>
 It has been successfully tested on Windows 10 and Ubuntu 16.04
 
 
+New Highlights
+--------
+
+* **Live sinusoidal scan distortion correction for high speed OCT systems (since v1.1.0)**  </br>
+<p align="center">
+  <img src="images/sinusoidalCorrectionOnOff.png" width="260">
+</p>
+
+
 Performance
 ----------
 Performance highly depends on the used computer hardware and the size of the of the OCT data. A test data set with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume was used to measure the performance on two different systems:
