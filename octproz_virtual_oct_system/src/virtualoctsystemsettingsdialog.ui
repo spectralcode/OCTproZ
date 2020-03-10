@@ -4,16 +4,16 @@
  <widget class="QDialog" name="VirtualOCTSystemSettingsDialog">
   <property name="geometry">
    <rect>
-	<x>0</x>
-	<y>0</y>
-	<width>632</width>
-	<height>305</height>
+    <x>0</x>
+    <y>0</y>
+    <width>632</width>
+    <height>306</height>
    </rect>
   </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-	<horstretch>0</horstretch>
-	<verstretch>0</verstretch>
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="windowTitle">
@@ -21,409 +21,430 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_9">
    <item>
-	<layout class="QVBoxLayout" name="verticalLayout">
-	 <item>
-	  <layout class="QHBoxLayout" name="horizontalLayout_4">
-	   <item>
-		<widget class="QLabel" name="label">
-		 <property name="text">
-		  <string>File:</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<widget class="QLineEdit" name="lineEdit">
-		 <property name="text">
-		  <string/>
-		 </property>
-		 <property name="frame">
-		  <bool>false</bool>
-		 </property>
-		 <property name="readOnly">
-		  <bool>true</bool>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<widget class="QPushButton" name="pushButton_selectFile">
-		 <property name="text">
-		  <string>Select file</string>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	 <item>
-	  <layout class="QHBoxLayout" name="horizontalLayout_6">
-	   <item>
-		<widget class="QLabel" name="label_6">
-		 <property name="text">
-		  <string>Bit depth [bits]:</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<spacer name="spacer_5">
-		 <property name="orientation">
-		  <enum>Qt::Horizontal</enum>
-		 </property>
-		 <property name="sizeHint" stdset="0">
-		  <size>
-		   <width>38</width>
-		   <height>13</height>
-		  </size>
-		 </property>
-		</spacer>
-	   </item>
-	   <item>
-		<widget class="QSpinBox" name="spinBox_bitDepth">
-		 <property name="toolTip">
-		  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Samples per raw a-scan&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-		 </property>
-		 <property name="minimum">
-		  <number>8</number>
-		 </property>
-		 <property name="maximum">
-		  <number>10000000</number>
-		 </property>
-		 <property name="value">
-		  <number>12</number>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	 <item>
-	  <layout class="QHBoxLayout" name="horizontalLayout">
-	   <item>
-		<widget class="QLabel" name="label_2">
-		 <property name="text">
-		  <string>Samples per raw A-scan:</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<spacer name="spacer">
-		 <property name="orientation">
-		  <enum>Qt::Horizontal</enum>
-		 </property>
-		 <property name="sizeHint" stdset="0">
-		  <size>
-		   <width>38</width>
-		   <height>13</height>
-		  </size>
-		 </property>
-		</spacer>
-	   </item>
-	   <item>
-		<widget class="QSpinBox" name="spinBox_width">
-		 <property name="toolTip">
-		  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Samples per raw a-scan. This needs to be an even number.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-		 </property>
-		 <property name="minimum">
-		  <number>2</number>
-		 </property>
-		 <property name="maximum">
-		  <number>10000000</number>
-		 </property>
-		 <property name="singleStep">
-		  <number>2</number>
-		 </property>
-		 <property name="value">
-		  <number>1024</number>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	 <item>
-	  <layout class="QHBoxLayout" name="horizontalLayout_2">
-	   <item>
-		<widget class="QLabel" name="label_3">
-		 <property name="text">
-		  <string>A-scans per B-scan:</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<spacer name="spacer_2">
-		 <property name="orientation">
-		  <enum>Qt::Horizontal</enum>
-		 </property>
-		 <property name="sizeHint" stdset="0">
-		  <size>
-		   <width>38</width>
-		   <height>13</height>
-		  </size>
-		 </property>
-		</spacer>
-	   </item>
-	   <item>
-		<widget class="QSpinBox" name="spinBox_height">
-		 <property name="toolTip">
-		  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A-scans per b-scan&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-		 </property>
-		 <property name="minimum">
-		  <number>2</number>
-		 </property>
-		 <property name="maximum">
-		  <number>10000000</number>
-		 </property>
-		 <property name="value">
-		  <number>512</number>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	 <item>
-	  <layout class="QHBoxLayout" name="horizontalLayout_3">
-	   <item>
-		<widget class="QLabel" name="label_4">
-		 <property name="text">
-		  <string>B-scans per buffer:</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<spacer name="spacer_3">
-		 <property name="orientation">
-		  <enum>Qt::Horizontal</enum>
-		 </property>
-		 <property name="sizeHint" stdset="0">
-		  <size>
-		   <width>38</width>
-		   <height>13</height>
-		  </size>
-		 </property>
-		</spacer>
-	   </item>
-	   <item>
-		<widget class="QSpinBox" name="spinBox_depth">
-		 <property name="toolTip">
-		  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;B-scans per volume&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-		 </property>
-		 <property name="minimum">
-		  <number>1</number>
-		 </property>
-		 <property name="maximum">
-		  <number>10000000</number>
-		 </property>
-		 <property name="value">
-		  <number>64</number>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	 <item>
-	  <layout class="QHBoxLayout" name="horizontalLayout_7">
-	   <item>
-		<widget class="QLabel" name="label_7">
-		 <property name="text">
-		  <string>Buffers per volume:</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<spacer name="spacer_6">
-		 <property name="orientation">
-		  <enum>Qt::Horizontal</enum>
-		 </property>
-		 <property name="sizeHint" stdset="0">
-		  <size>
-		   <width>38</width>
-		   <height>13</height>
-		  </size>
-		 </property>
-		</spacer>
-	   </item>
-	   <item>
-		<widget class="QSpinBox" name="spinBox_buffersPerVolume">
-		 <property name="toolTip">
-		  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;B-scans per volume&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-		 </property>
-		 <property name="minimum">
-		  <number>1</number>
-		 </property>
-		 <property name="maximum">
-		  <number>10000000</number>
-		 </property>
-		 <property name="value">
-		  <number>1</number>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	 <item>
-	  <layout class="QHBoxLayout" name="horizontalLayout_8">
-	   <item>
-		<widget class="QLabel" name="label_8">
-		 <property name="text">
-		  <string>Buffers to read from file:</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<spacer name="spacer_7">
-		 <property name="orientation">
-		  <enum>Qt::Horizontal</enum>
-		 </property>
-		 <property name="sizeHint" stdset="0">
-		  <size>
-		   <width>38</width>
-		   <height>13</height>
-		  </size>
-		 </property>
-		</spacer>
-	   </item>
-	   <item>
-		<widget class="QSpinBox" name="spinBox_buffersFromFile">
-		 <property name="toolTip">
-		  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;B-scans per volume&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-		 </property>
-		 <property name="minimum">
-		  <number>1</number>
-		 </property>
-		 <property name="maximum">
-		  <number>10000000</number>
-		 </property>
-		 <property name="value">
-		  <number>1</number>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	 <item>
-	  <layout class="QHBoxLayout" name="horizontalLayout_5">
-	   <item>
-		<widget class="QLabel" name="label_5">
-		 <property name="text">
-		  <string>Wait after file read [us]:</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<spacer name="spacer_4">
-		 <property name="orientation">
-		  <enum>Qt::Horizontal</enum>
-		 </property>
-		 <property name="sizeHint" stdset="0">
-		  <size>
-		   <width>38</width>
-		   <height>13</height>
-		  </size>
-		 </property>
-		</spacer>
-	   </item>
-	   <item>
-		<widget class="QSpinBox" name="spinBox_waitTime">
-		 <property name="toolTip">
-		  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;B-scans per volume&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-		 </property>
-		 <property name="maximum">
-		  <number>10000000</number>
-		 </property>
-		 <property name="value">
-		  <number>10</number>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	 <item>
-	  <spacer name="verticalSpacer">
-	   <property name="orientation">
-		<enum>Qt::Vertical</enum>
-	   </property>
-	   <property name="sizeHint" stdset="0">
-		<size>
-		 <width>20</width>
-		 <height>10</height>
-		</size>
-	   </property>
-	  </spacer>
-	 </item>
-	 <item>
-	  <layout class="QHBoxLayout">
-	   <property name="spacing">
-		<number>6</number>
-	   </property>
-	   <property name="leftMargin">
-		<number>0</number>
-	   </property>
-	   <property name="topMargin">
-		<number>0</number>
-	   </property>
-	   <property name="rightMargin">
-		<number>0</number>
-	   </property>
-	   <property name="bottomMargin">
-		<number>0</number>
-	   </property>
-	   <item>
-		<spacer>
-		 <property name="orientation">
-		  <enum>Qt::Horizontal</enum>
-		 </property>
-		 <property name="sizeHint" stdset="0">
-		  <size>
-		   <width>131</width>
-		   <height>31</height>
-		  </size>
-		 </property>
-		</spacer>
-	   </item>
-	   <item>
-		<widget class="QPushButton" name="cancelButton">
-		 <property name="text">
-		  <string>Cancel</string>
-		 </property>
-		</widget>
-	   </item>
-	   <item>
-		<widget class="QPushButton" name="okButton">
-		 <property name="text">
-		  <string>OK</string>
-		 </property>
-		</widget>
-	   </item>
-	  </layout>
-	 </item>
-	</layout>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>File:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="frame">
+          <bool>false</bool>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_selectFile">
+         <property name="text">
+          <string>Select file</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Bit depth [bits]:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>38</width>
+           <height>13</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_bitDepth">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bit depth of each sample.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>Bit depth of each sample. The exact value depends on the dimensions of the chosen raw data. Common values are 8 bit, 12 bit and 16 bit.</string>
+         </property>
+         <property name="minimum">
+          <number>8</number>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+         <property name="value">
+          <number>12</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Samples per raw A-scan:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>38</width>
+           <height>13</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_width">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Samples per raw a-scan. This needs to be an even number. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>Samples per raw a-scan. This needs to be an even number. The exact value depends on the dimensions of the chosen raw data. Typical values are multiple of 128 such as 1024.</string>
+         </property>
+         <property name="minimum">
+          <number>2</number>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+         <property name="singleStep">
+          <number>2</number>
+         </property>
+         <property name="value">
+          <number>1024</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>A-scans per B-scan:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>38</width>
+           <height>13</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_height">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A-scans per b-scan&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>A-scans per b-scan. The exact value depends on the dimensions of the chosen raw data. Typical values are 256, 320, 512 and 1024.</string>
+         </property>
+         <property name="minimum">
+          <number>2</number>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+         <property name="value">
+          <number>512</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>B-scans per buffer:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>38</width>
+           <height>13</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_depth">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;B-scans per buffer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string> For processing buffer by buffer is copied to GPU memory and all a-scans of each buffer are processed in parallel. The size of the buffer affects the processing speed. The optimal value depends on the GPU used.</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+         <property name="value">
+          <number>64</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Buffers per volume:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer_6">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>38</width>
+           <height>13</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_buffersPerVolume">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Buffers per volume&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>Buffers per volume. A volume can consist of one or more buffers. For processing buffer by buffer is copied to GPU memory and all a-scans of each buffer are processed in parallel.</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Buffers to read from file:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>38</width>
+           <height>13</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_buffersFromFile">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of buffers that should be read from file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>Number of buffers that should be read from file. Typically this value is the same as &quot;buffers per volume&quot; or an integer multiple of it.</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Wait after file read [us]:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>38</width>
+           <height>13</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_waitTime">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wait time after reading a single buffer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>Artificially generated waiting time after reading a single buffer to simulate slow acquisition systems.</string>
+         </property>
+         <property name="maximum">
+          <number>10000000</number>
+         </property>
+         <property name="value">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QHBoxLayout">
+       <property name="spacing">
+        <number>6</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>131</width>
+           <height>31</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="cancelButton">
+         <property name="text">
+          <string>Cancel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="okButton">
+         <property name="text">
+          <string>OK</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
    <item>
-	<spacer name="horizontalSpacer">
-	 <property name="orientation">
-	  <enum>Qt::Horizontal</enum>
-	 </property>
-	 <property name="sizeType">
-	  <enum>QSizePolicy::Fixed</enum>
-	 </property>
-	 <property name="sizeHint" stdset="0">
-	  <size>
-	   <width>20</width>
-	   <height>20</height>
-	  </size>
-	 </property>
-	</spacer>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item>
-	<widget class="QLabel" name="label_9">
-	 <property name="text">
-	  <string/>
-	 </property>
-	 <property name="pixmap">
-	  <pixmap resource="resources.qrc">:/images/volumeparams.png</pixmap>
-	 </property>
-	</widget>
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="../resources.qrc">:/images/volumeparams.png</pixmap>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -432,14 +453,14 @@
    <receiver>VirtualOCTSystemSettingsDialog</receiver>
    <slot>accept()</slot>
    <hints>
-	<hint type="sourcelabel">
-	 <x>278</x>
-	 <y>253</y>
-	</hint>
-	<hint type="destinationlabel">
-	 <x>96</x>
-	 <y>254</y>
-	</hint>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>253</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>96</x>
+     <y>254</y>
+    </hint>
    </hints>
   </connection>
   <connection>
@@ -448,14 +469,14 @@
    <receiver>VirtualOCTSystemSettingsDialog</receiver>
    <slot>reject()</slot>
    <hints>
-	<hint type="sourcelabel">
-	 <x>369</x>
-	 <y>253</y>
-	</hint>
-	<hint type="destinationlabel">
-	 <x>179</x>
-	 <y>282</y>
-	</hint>
+    <hint type="sourcelabel">
+     <x>369</x>
+     <y>253</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>179</x>
+     <y>282</y>
+    </hint>
    </hints>
   </connection>
  </connections>
