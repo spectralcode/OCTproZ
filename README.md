@@ -91,13 +91,17 @@ We strongly encourage contributions to the project. To contribute to this reposi
 If you have developed a plug-in for OCTproZ and want it to be included in the precompiled package, please contact us.
 
 
-How to cite
+Publication
 ----------
 Coming soon. In the meantime, you can contact me at </br>
 _zabic_ _</br>_
 _at_</br>
-_iqo_._uni_-_hannover_._de_
+_iqo_._uni_-_hannover_._de_v</br>
 
+Authors:</br>
+Miroslav Zabic<sup>1, 2</sup>, Ben Matthias<sup>2</sup>, Alexander Heisterkamp<sup>1</sup>, Tammo Ripken<sup>2</sup></br>
+<sup>1</sup>Institute of Quantum Optics, Leibniz University Hannover, Welfengarten 1, 30167 Hannover, Germany</br>
+<sup>2</sup>Industrial and Biomedical Optics Department, Laser Zentrum Hannover e.V., Hollerithallee 8, 30419 Hannover, Germany</br>
 
 License
 ----------
