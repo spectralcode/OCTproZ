@@ -187,7 +187,7 @@ void Sidebar::loadSettings() {
 	this->ui.groupBox_fixedPatternNoiseRemoval->setChecked(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL).toBool());
 	this->ui.radioButton_continuously->setChecked(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_Continuously).toBool());
 	this->ui.spinBox_bscansFixedNoise->setValue(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_BSCANS).toUInt());
-
+	this->ui.checkBox_sinusoidalScanCorrection->setChecked(settings->processingSettings.value(PROC_SINUSOIDAL_SCAN_CORRECTION).toBool());
 
 	//GPU to RAM Streaming
 	this->ui.groupBox_streaming->setChecked(settings->streamingSettings.value(STREAM_STREAMING).toBool());
@@ -236,6 +236,7 @@ void Sidebar::saveSettings() {
 	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL, this->ui.groupBox_fixedPatternNoiseRemoval->isChecked());
 	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_Continuously, this->ui.radioButton_continuously->isChecked());
 	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, this->ui.spinBox_bscansFixedNoise->value());
+	settings->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, this->ui.checkBox_sinusoidalScanCorrection->isChecked());
 
 	//GPU to RAM Streaming
 	settings->streamingSettings.insert(STREAM_STREAMING, this->ui.groupBox_streaming->isChecked());
@@ -311,6 +312,7 @@ void Sidebar::updateProcessingParams() {
 	params->fixedPatternNoiseRemoval = this->ui.groupBox_fixedPatternNoiseRemoval->isChecked();
 	params->continuousFixedPatternNoiseDetermination = this->ui.radioButton_continuously->isChecked();
 	params->bscansForNoiseDetermination = this->ui.spinBox_bscansFixedNoise->value();
+	params->sinusoidalScanCorrection = this->ui.checkBox_sinusoidalScanCorrection->isChecked();
 }
 
 void Sidebar::updateStreamingParams() {

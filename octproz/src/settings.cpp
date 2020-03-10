@@ -68,6 +68,7 @@ Settings::Settings() {
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL, QVariant(false));
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_Continuously, QVariant(false));
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, QVariant(uint(1)));
+	this->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, QVariant(false));
 
 	this->streamingSettings.insert(STREAM_STREAMING, QVariant(false));
 	this->streamingSettings.insert(STREAM_STREAMING_SKIP, QVariant(uint(0)));

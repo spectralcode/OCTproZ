@@ -73,7 +73,8 @@ public:
 	bool bitshift;	/// Activating/Deactivating bit shift. This is needed if 12 bit values are transported as 2 bytes (= 16 bit) from the Alazar digitizer board ATS9373 for example
 	bool bscanFlip; ///	Activating/Deactivating flipping of every second B-scan. This is needed if B-scans are acquired in forward and backward scan direction
 	bool signalLogScaling; /// This variable is for activating/deactivating log scaling in OCT signal processing
-	float signalGrayscaleMin; /// User defined minimal signal value. Values greater than this will be cut off. 
+	bool sinusoidalScanCorrection; /// Activating/Deactivating sinusoidal scan correction (corrects image distortion due to sinus scan of fast axis scanner)
+	float signalGrayscaleMin; /// User defined minimal signal value. Values greater than this will be cut off.
 	float signalGrayscaleMax; /// User defined maximal signal value. Values smaller than this will be cut off.
 	float signalMultiplicator; /// User defined multiplicator. Each signal value will be multiplied with this value. 
 	float signalAddend;	/// User defined addend. This value will be added to each signal value. 

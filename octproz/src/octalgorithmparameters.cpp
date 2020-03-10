@@ -69,6 +69,7 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	this->continuousFixedPatternNoiseDetermination = false;
 	this->redetermineFixedPatternNoise = false;
 	this->bscansForNoiseDetermination = 1;
+	this->sinusoidalScanCorrection = false;
 
 	this->resamplingInterpolation = INTERPOLATION::LINEAR;
 	this->frameNr = 0;

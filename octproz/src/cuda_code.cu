@@ -63,6 +63,7 @@ cufftComplex* d_inputLinearized;
 float* d_windowCurve= NULL;
 float* d_resampleCurve = NULL;
 float* d_dispersionCurve = NULL;
+float* d_sinusoidalResampleCurve = NULL;
 cufftComplex* d_phaseCartesian = NULL;
 unsigned int bufferNumber = 0;
 unsigned int bufferNumberInVolume = 0;
@@ -85,6 +86,7 @@ size_t buffersPerVolume = 0;
 size_t bytesPerSample = 0;
 
 float* d_processedBuffer = NULL;
+float* d_sinusoidalScanTmpBuffer = NULL;
 OctAlgorithmParameters* params = NULL;
 
 bool firstRun = true;
@@ -204,7 +206,6 @@ __global__ void klinearizationCubic(cufftComplex* out, cufftComplex *in, const f
 	out[index].x = b0 + b1 * (x - x0) + b2*(x-x0)*(x-x1) + b3*(x-x0)*(x-x1)*(x-x2);
 	out[index].y = 0;
 }
-
 
 //5th order interpolation
 __global__ void klinearization5thOrder(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
@@ -336,6 +337,34 @@ __global__ void klinearizationCubicAndWindowingAndDispersionCompensation(cufftCo
 		float linearizedAndWindowedInX = (b0 + b1 * (x - x0) + b2*(x-x0)*(x-x1) + b3*(x-x0)*(x-x1)*(x-x2)) * window[j];
 		out[index].x = linearizedAndWindowedInX * phaseComplex[j].x;
 		out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
+	}
+}
+
+__global__ void sinusoidalScanCorrection(float* out, float *in, float* sinusoidalResampleCurve, const int width, const int height, const int depth, const int samples) { //width: samplesPerAscan; height: ascansPerBscan, depth: bscansPerBuffer
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if(index < samples-width){ //
+		int j = index%(width); //pos within ascan
+		int k = (index/width)%height;//pos within bscan
+		int l = index/(width*height);//pos within buffer
+
+		float n_sinusoidal = sinusoidalResampleCurve[k];//((float)height/M_PI)*acos((float)(1.0-((2.0*(float)k)/(float)height)));
+		//float n_sinusoidal = ((float)height/2)*(1-cos((M_PI*(float)k)/(float)height));// acos((float)(1.0-((2.0*(float)k)/(float)height)));
+		//float x = sinusoidalResampleCurve[k];
+		float x = n_sinusoidal;
+		int x0 = (int)x*width+j+l*width*height;
+		int x1 = x0 + width;
+
+		float f_x0 = in[x0];
+		float f_x1 = in[x1];
+
+		out[index] = f_x0 + (f_x1 - f_x0) * (x - (int)(x));
+	}
+}
+
+__global__ void fillSinusoidalScanCorrectionCurve(float* sinusoidalResampleCurve,  const int length) {
+	int index = blockIdx.x;
+	if (index < length) {
+		sinusoidalResampleCurve[index] = ((float)length/M_PI)*acos((float)(1.0-((2.0*(float)index)/(float)length)));
 	}
 }
 
@@ -698,6 +727,10 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	//dispersion curve
 	checkCudaErrors(cudaMalloc((void**)&d_dispersionCurve, sizeof(float)*signalLength));
 
+	//sinusoidal resample curve for sinusoidal scan correction
+	checkCudaErrors(cudaMalloc((void**)&d_sinusoidalResampleCurve, sizeof(float)*ascansPerBscan));
+	fillSinusoidalScanCorrectionCurve<<<ascansPerBscan, 1, 0, processStream>>> (d_sinusoidalResampleCurve, ascansPerBscan);
+
 	//window curve
 	checkCudaErrors(cudaMalloc((void**)&d_windowCurve, sizeof(float)*signalLength));
 
@@ -723,8 +756,13 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	checkCudaErrors(cudaMalloc((void**)&d_phaseCartesian, sizeof(cufftComplex)*signalLength));
 	cudaMemset(d_phaseCartesian, 0, sizeof(cufftComplex)*signalLength);
 
-	//allocate device memory for processed signal
-	checkCudaErrors(cudaMalloc((void**)&d_processedBuffer, sizeof(float)*samplesPerVolume / 2));
+	//Allocate device memory for processed signal
+	checkCudaErrors(cudaMalloc((void**)&d_processedBuffer, sizeof(float)*samplesPerVolume/2));
+	checkCudaErrors(cudaPeekAtLastError());
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	//Allocate device memory for temporary buffer for sinusoidal scan correction
+	checkCudaErrors(cudaMalloc((void**)&d_sinusoidalScanTmpBuffer, sizeof(float)*samplesPerBuffer/2));
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -775,10 +813,12 @@ extern "C" void cleanupCuda() {
 		freeCudaMem(d_fftBuffer);
 		freeCudaMem(d_meanALine);
 		freeCudaMem(d_processedBuffer);
+		freeCudaMem(d_sinusoidalScanTmpBuffer);
 		freeCudaMem(d_inputLinearized);
 		freeCudaMem(d_phaseCartesian);
 		freeCudaMem(d_resampleCurve);
 		freeCudaMem(d_dispersionCurve);
+		freeCudaMem(d_sinusoidalResampleCurve);
 
 		cufftDestroy(d_plan);
 
@@ -904,7 +944,7 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 	unsigned int height = ascansPerBscan;
 	unsigned int depth = signalLength/2;
 	if (d_volumeViewDisplayBuffer != NULL) {
-		//Bind voxel array to a writable cuda surface
+		//bind voxel array to a writable cuda surface
 		cudaError_t error_id = cudaBindSurfaceToArray(surfaceWrite, d_volumeViewDisplayBuffer);
 		if (error_id != cudaSuccess) {
 			printf("Cuda: Failed to bind surface to cuda array:  %d\n-> %s\n", (int)error_id, cudaGetErrorString(error_id));
@@ -976,7 +1016,7 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		inputToCufftComplex<<<gridSize, blockSize, 0, processStream>>> (d_fftBuffer, procBuffer, signalLength, signalLength, params->bitDepth, samplesPerBuffer);
 	}
 
-   //update k-linearization-, dispersion- and windowing-curves if necessary
+	//update k-linearization-, dispersion- and windowing-curves if necessary
 	cufftComplex* d_fftBuffer2 = d_fftBuffer;
 	if (params->resampling && params->resamplingUpdated) {
 		cuda_updateResampleCurve(params->resampleCurve, signalLength);
@@ -1078,6 +1118,12 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		cuda_bscanFlip<<<gridSize/2, blockSize, 0, processStream>>> (d_currBuffer, d_currBuffer, signalLength / 2, ascansPerBscan, (signalLength*ascansPerBscan)/2, samplesPerBuffer/4);
 	}
 
+	//sinusoidal scan correction
+	if(params->sinusoidalScanCorrection && d_sinusoidalScanTmpBuffer != NULL){
+		checkCudaErrors(cudaMemcpy(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/2, cudaMemcpyDeviceToDevice));
+		sinusoidalScanCorrection<<<gridSize, blockSize, 0, processStream>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/2, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/2);
+	}
+
 	//capture the contents of processStream in processEvent. processEvent is used to synchronize processing and copying of processed data to ram (copying of processed data to ram takes place in the stream copyStreamD2H)
 	cudaEventRecord(processEvent, processStream);
 
@@ -1107,7 +1153,6 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 
 	//wait for copy task (host to device) to complete to avoid race condition
 	cudaStreamSynchronize(copyStream);
-	//cudaDeviceSynchronize();
 }
 
 extern "C" void cuda_registerGlBufferBscan(GLuint buf){

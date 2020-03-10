@@ -75,6 +75,7 @@
 #define PROC_FIXED_PATTERN_REMOVAL "fixed_pattern_removal"
 #define PROC_FIXED_PATTERN_REMOVAL_Continuously "fixed_pattern_removal_Continuously"
 #define PROC_FIXED_PATTERN_REMOVAL_BSCANS "fixed_pattern_removal_bscans"
+#define PROC_SINUSOIDAL_SCAN_CORRECTION "sinusoidal_scan_correction"
 #define STREAM_STREAMING "streaming_enabled"
 #define STREAM_STREAMING_SKIP "streaming_skip"
 
