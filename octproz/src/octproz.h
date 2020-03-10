@@ -55,8 +55,8 @@
 
 #include "ui_octproz.h"
 
-#define APP_VERSION "1.0.0"
-#define APP_VERSION_DATE "20 February 2020"
+#define APP_VERSION "1.1.0"
+#define APP_VERSION_DATE "08 March 2020"
 #define APP_NAME "OCTproZ"
 
 

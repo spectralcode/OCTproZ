@@ -45,8 +45,6 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	this->setMinimumWidth(768);
 	this->setMinimumHeight(256);
 
-	//this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-
 	//setup left area of about dialog with logo
 	QVBoxLayout *vLayoutLeft = new QVBoxLayout();
 	vLayoutLeft->setSpacing(0);
@@ -63,7 +61,6 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	labelWithAuthorInfo->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 	vLayoutLeft->addWidget(labelWithAuthorInfo);
 
-
 	//setup right area of about dialog with tabwidget
 	QHBoxLayout* hLayoutTop = new QHBoxLayout();
 	hLayoutTop->addLayout(vLayoutLeft);
@@ -71,17 +68,15 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	QTabWidget *tabWidget = new QTabWidget(this);
 	hLayoutTop->addWidget(tabWidget);
 
-
 	//about
 	QString aboutText = tr("<b>OCTproZ</b> is an open source software for online processig of optical coherence tomography (OCT) raw data. "
 			  "It can be extended by plugins, which are divided into two kinds: systems and extensions. Systems are software "
 			  "representations of actual OCT systems and provide raw data. Extensions are software modules that extend the "
-			  "functionality of a OCT system and/or OCTproZ.");
+			  "functionality of an OCT system and/or OCTproZ.");
 	QTextEdit* aboutTextEdit = new QTextEdit(this);
 	aboutTextEdit->setReadOnly(true);
 	aboutTextEdit->setText(aboutText);
 	tabWidget->addTab(aboutTextEdit, tr("About"));
-
 
 	//license
 	QString licenseText = ("OCTproZ is free software: you can redistribute it and/or modify "
@@ -92,7 +87,6 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 						  "but WITHOUT ANY WARRANTY; without even the implied warranty of "
 						  "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
 						  "GNU General Public License for more details.<br><br><hr><pre>");
-
 
 	QFile licenseFile(":/aboutdata/LICENSE");
 	Q_ASSERT(licenseFile.exists());
@@ -105,9 +99,8 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	licenceTextEdit->setText(licenseText);
 	tabWidget->addTab(licenceTextEdit, tr("License"));
 
-
 	//credits
-	QString creditsText = tr("<html><body><h2>Special thanks to:</h2><ul>");
+	QString creditsText = "";
 	QTextEdit* creditsTextEdit = new QTextEdit(this);
 	creditsTextEdit->setReadOnly(true);
 
@@ -116,11 +109,8 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	creditsFile.open(QIODevice::ReadOnly);
 	QByteArray creditsByteArray = creditsFile.readAll();
 	creditsText.append(QString::fromUtf8(creditsByteArray));
-	creditsText.append("</ul></body></html>");
 	creditsTextEdit->setText(creditsText);
 	tabWidget->addTab(creditsTextEdit, tr("Credits"));
-
-
 
 	//third-party software components
 	QString thirdpartyText = tr("<html><body><h2>Third party components used by OCTproZ:</h2><ul>");
@@ -136,7 +126,6 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	thirdpartyText.append("</ul></body></html>");
 	thirdpartyTextEdit->setText(thirdpartyText);
 	tabWidget->addTab(thirdpartyTextEdit, tr("Third-party components"));
-
 
 	//close buttom
 	QPushButton *closeButton = new QPushButton(tr("Close"));

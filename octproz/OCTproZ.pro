@@ -57,12 +57,12 @@ SOURCES += \
 	$$SOURCEDIR/eventguard.cpp \
 	$$SOURCEDIR/recorder.cpp \
 	$$SOURCEDIR/stringspinbox.cpp \
-        $$SOURCEDIR/controlpanel.cpp \
-        $$SOURCEDIR/extensioneventfilter.cpp
+	$$SOURCEDIR/controlpanel.cpp \
+	$$SOURCEDIR/extensioneventfilter.cpp
 
 	unix{
-                SOURCES += $$SOURCEDIR/cuda_code.cu
-                SOURCES -= $$SOURCEDIR/cuda_code.cu
+		SOURCES += $$SOURCEDIR/cuda_code.cu
+		SOURCES -= $$SOURCEDIR/cuda_code.cu
 	}
 
 HEADERS += \
@@ -94,8 +94,8 @@ HEADERS += \
 	$$SOURCEDIR/eventguard.h \
 	$$SOURCEDIR/recorder.h \
 	$$SOURCEDIR/stringspinbox.h \
-        $$SOURCEDIR/controlpanel.h \
-        $$SOURCEDIR/extensioneventfilter.h
+	$$SOURCEDIR/controlpanel.h \
+	$$SOURCEDIR/extensioneventfilter.h
 
 FORMS += \
 	$$SOURCEDIR/octproz.ui \
@@ -144,7 +144,7 @@ CUDA_SOURCES += $$SOURCEDIR/cuda_code.cu \
 
 #C++ flags
 unix{
-        #QMAKE_CXXFLAGS_RELEASE =-O3
+	#QMAKE_CXXFLAGS_RELEASE =-O3
 }
 
 #Path to cuda toolkit install
@@ -227,7 +227,7 @@ unix{
 	# SPECIFY THE R PATH FOR NVCC
 	QMAKE_LFLAGS += -Wl,-rpath,$$CUDA_DIR/lib
 	NVCCFLAGS = -Xlinker -rpath,$$CUDA_DIR/lib
-        #NVCCFLAGS = --compiler-options -fno-strict-aliasing -use_fast_math --ptxas-options=-v
+	#NVCCFLAGS = --compiler-options -fno-strict-aliasing -use_fast_math --ptxas-options=-v
 }
 
 
