@@ -1,0 +1,10 @@
+*.pro.user
+/octproz_share_dev
+/build
+*.o
+*.dylib
+*.app
+qrc_*
+moc_*
+ui_*
+Makefile
