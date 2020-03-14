@@ -13,7 +13,7 @@ Features
 --------
 
 * **Real-time OCT processing and visualization with single GPU**  </br>
-The full OCT processing pipeline is implemented in [CUDA](https://developer.nvidia.com/cuda-zone) and visualization is performed with [OpenGL](https://developer.nvidia.com/cuda-zone). Depending on the GPU used, OCTproZ can be used for MHz-OCT. 
+The full OCT processing pipeline is implemented in [CUDA](https://developer.nvidia.com/cuda-zone) and visualization is performed with [OpenGL](https://www.opengl.org). Depending on the GPU used, OCTproZ can be used for MHz-OCT. 
 
 * **Plug-in system** </br>
 Plug-ins enable the integration of custom OCT systems and software modules. There are two kinds of plug-ins for OCTproZ: _Acquisition Systems_ and _Extensions_. An Acquisition System controls the OCT hardware and provides raw data to OCTproZ. Extensions have access to processed OCT data and can be used to extend the functionality of OCTproZ. 
@@ -87,17 +87,21 @@ Known issues
 
 Contributing
 ----------
-We strongly encourage contributions to the project. To contribute to this repository you can create [pull requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests). </br>
+We strongly encourage contributions to the project. To contribute to this repository you can either report issues and bugs or [fork](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks) this repository and create [pull requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests). Pull requests are great if you have improved or extended the software and you believe it could be beneficial for everyone using OCTproZ. </br>
 If you have developed a plug-in for OCTproZ and want it to be included in the precompiled package, please contact us.
 
 
-How to cite
+Publication
 ----------
 Coming soon. In the meantime, you can contact me at </br>
 _zabic_ _</br>_
 _at_</br>
-_iqo_._uni_-_hannover_._de_
+_iqo_._uni_-_hannover_._de_</br>
 
+Authors:</br>
+Miroslav Zabic<sup>1, 2</sup>, Ben Matthias<sup>2</sup>, Alexander Heisterkamp<sup>1</sup>, Tammo Ripken<sup>2</sup></br>
+<sup>1</sup>Institute of Quantum Optics, Leibniz University Hannover, Welfengarten 1, 30167 Hannover, Germany</br>
+<sup>2</sup>Industrial and Biomedical Optics Department, Laser Zentrum Hannover e.V., Hollerithallee 8, 30419 Hannover, Germany</br>
 
 License
 ----------
