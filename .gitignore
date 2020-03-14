@@ -1,10 +1,14 @@
 *.pro.user
+/octproz/misc
 /octproz_share_dev
 /build
 *.o
+*.obj
+*.pdb
 *.dylib
 *.app
 qrc_*
 moc_*
 ui_*
+build-*
 Makefile
