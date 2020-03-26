@@ -2,7 +2,7 @@
 
 This is a brief overview of the OCTproZ processing pipeline. </br></br>
 OCT raw data from the OCT system is transferred to RAM
-until a user-defined amount of B-scans is acquired (B-scans per buffer). Via direct memory access (DMA) this raw data batch is then copied asynchronously to GPU memory where OCT signal processing is executed.</br>
+until a user-defined amount of B-scans is acquired (B-scans per buffer). Via direct memory access (DMA) this raw data batch is then copied asynchronously to GPU memory where OCT signal processing is performed.</br>
 
 <p align="center">
   <img src="images/octproz_processingpipeline_linear.png">
