@@ -8,7 +8,7 @@ until a user-defined amount of B-scans is acquired (B-scans per buffer). Via dir
   <img src="images/octproz_processingpipeline_linear.png">
 </p>
 
-Each box in the image above represents a CUDA kernel. To enhance processing performance some processing steps are combinend into a single kernel (e.g. k-linearization, dispersion compensation and windowing) to enhance processing performance. 
+Each box in the image above represents a CUDA kernel. Some processing steps are combinend into a single kernel (e.g. k-linearization, dispersion compensation and windowing) to enhance processing performance. 
 
 
 Processing Steps
