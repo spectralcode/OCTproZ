@@ -5,7 +5,7 @@ OCT raw data from the OCT system is transferred to RAM
 until a user-defined amount of B-scans is acquired (B-scans per buffer). Via direct memory access (DMA) this raw data batch is then copied asynchronously to GPU memory where OCT signal processing is executed.</br>
 
 <p align="center">
-  <img src="images/octproz_processingpipeline_linear.png" width="640">
+  <img src="images/octproz_processingpipeline_linear.png">
 </p>
 
 Each box in the image above represents a CUDA kernel. To enhance processing performance some processing steps are combinend into a single kernel (e.g. k-linearization, dispersion compensation and windowing) to enhance processing performance. 
