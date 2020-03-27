@@ -131,7 +131,15 @@ private:
 	//OctAlgorithmParameters::DISPLAY_FUNCTION displayFuntion;
 	unsigned int markerPosition;
 	bool markerVisible;
-
+    //rotation
+    float screenWidthScaled01;
+    float screenWidthScaled11;
+    float screenWidthScaled10;
+    float screenWidthScaled00;
+    float screenHeightScaled01;
+    float screenHeightScaled11;
+    float screenHeightScaled10;
+    float screenHeightScaled00;
 
 	QMenu* contextMenu;
 	QAction* keepAspectRatioAction;
