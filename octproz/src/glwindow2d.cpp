@@ -253,14 +253,14 @@ void GLWindow2D::initializeGL(){
 }
 
 void GLWindow2D::paintGL(){
-	glLoadIdentity();
+    glLoadIdentity();
     glTranslatef(this->xTranslation, this->yTranslation, 0); //verschieben
 //    glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
     glScalef(this->scaleFactor, this->scaleFactor, 0.f); //zoom
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, this->buf);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, this->buf);
     glBindTexture(GL_TEXTURE_2D, this->texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this->width, this->height, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
     glEnable(GL_TEXTURE_2D);
     glColor3f(1.0, 1.0, 1.0); //Backgroundcolor
     glBegin(GL_QUADS);
@@ -325,7 +325,6 @@ void GLWindow2D::resizeGL(int w, int h){
         this->screenWidthScaled00 = this->screenWidthScaled*cos(rotationAngle_rad)+this->screenHeightScaled*sin(rotationAngle_rad);
         this->screenHeightScaled00 = this->screenWidthScaled*sin(rotationAngle_rad)-this->screenHeightScaled*cos(rotationAngle_rad);
         this->screenWidthScaled00 = screenWidthScaled00*screenHeight/screenWidth;
-
     }
 
 
