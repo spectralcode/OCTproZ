@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2020 Miroslav Zabic
+**  Copyright (C) 2019-2020 OCTproZ developer
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -141,8 +141,8 @@ void GLWindow2D::setKeepAspectRatio(bool keepAspectRatio) {
 }
 
 void GLWindow2D::setRotationAngle(double rotationAngle) {
-	this->rotationAngle = rotationAngle;
-	this->resizeGL((float)this->size().width(),(float)this->size().height());
+    this->rotationAngle = rotationAngle;
+    this->resizeGL((float)this->size().width(),(float)this->size().height());
 }
 
 void GLWindow2D::slot_screenshot() {
@@ -254,23 +254,24 @@ void GLWindow2D::initializeGL(){
 
 void GLWindow2D::paintGL(){
 	glLoadIdentity();
-	glTranslatef(this->xTranslation, this->yTranslation, 0);
-	glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
-	glScalef(this->scaleFactor, this->scaleFactor, 0.f);
+    glTranslatef(this->xTranslation, this->yTranslation, 0); //verschieben
+//    glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
+    glScalef(this->scaleFactor, this->scaleFactor, 0.f); //zoom
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, this->buf);
-	glBindTexture(GL_TEXTURE_2D, this->texture);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this->width, this->height, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glBindTexture(GL_TEXTURE_2D, this->texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this->width, this->height, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-	glEnable(GL_TEXTURE_2D);
-	glColor3f(1.0, 1.0, 1.0);
-	glBegin(GL_QUADS);
-		glTexCoord2f(0, 1), glVertex2f(-this->screenWidthScaled, -this->screenHeightScaled); //place upper left texture coordinate to bottom left screen position
-		glTexCoord2f(1, 1), glVertex2f(-this->screenWidthScaled, this->screenHeightScaled); //upper right texture coordinate to upper left screen position
-		glTexCoord2f(1, 0), glVertex2f(this->screenWidthScaled, this->screenHeightScaled); //bottom right texture coordinate to upper right screen position
-		glTexCoord2f(0, 0), glVertex2f(this->screenWidthScaled, -this->screenHeightScaled); //bottom left texture coordinate to bottom right screen position
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
+    glEnable(GL_TEXTURE_2D);
+    glColor3f(1.0, 1.0, 1.0); //Backgroundcolor
+    glBegin(GL_QUADS);
+        glTexCoord2f(0, 1), glVertex2f(this->screenWidthScaled01,this->screenHeightScaled01); //place upper left texture coordinate to bottom left screen position
+        glTexCoord2f(1, 1), glVertex2f(this->screenWidthScaled11, this->screenHeightScaled11); //upper right texture coordinate to upper left screen position
+        glTexCoord2f(1, 0), glVertex2f(this->screenWidthScaled10,this->screenHeightScaled10); //bottom right texture coordinate to upper right screen position
+        glTexCoord2f(0, 0), glVertex2f(this->screenWidthScaled00, this->screenHeightScaled00); //bottom left texture coordinate to bottom right screen position
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
 
 	//dispaly marker
 	if(this->markerVisible){
@@ -288,24 +289,49 @@ void GLWindow2D::paintGL(){
 
 //todo: add rotational angle calculation for screenheightScaled und screenWidthScaled!
 void GLWindow2D::resizeGL(int w, int h){
-	this->screenWidthScaled = 1;
-	this->screenHeightScaled = 1;
-	if(this->keepAspectRatio){
-		float textureWidth = static_cast<float>(this->height);
-		float textureHeight = static_cast<float>(this->width);
-		float screenWidth = static_cast<float>(w);//(float)this->size().width();
-		float screenHeight = static_cast<float>(h);//(float)this->size().height();
-		float ratioTexture = textureWidth/textureHeight;
-		float ratioScreen = screenWidth/screenHeight;
-		if(ratioTexture > ratioScreen){
-			this->screenHeightScaled = (screenWidth/ratioTexture)/screenHeight;
-		}
-		else{
-			this->screenWidthScaled = (screenHeight*ratioTexture)/screenWidth;
-		}
-	}
-	//recalculate marker coordinates
-	this->slot_setMarkerPosition(this->markerPosition);
+    double deg_to_rad = 3.1415926535898/180.0;
+    double rotationAngle_rad = rotationAngle*deg_to_rad;
+
+    if(this->keepAspectRatio){
+        float textureWidth = static_cast<float>(this->height);
+        float textureHeight = static_cast<float>(this->width);
+        float screenWidth = static_cast<float>(w);//(float)this->size().width();
+        float screenHeight = static_cast<float>(h);//(float)this->size().height();
+        float ratioTexture = textureWidth/textureHeight;
+        float ratioScreen = screenWidth/screenHeight;
+        this->screenWidthScaled = 1;
+        this->screenHeightScaled = 1;
+
+        if(ratioTexture > ratioScreen){
+            this->screenHeightScaled = ratioScreen/ratioTexture;
+        }
+        else{
+            this->screenWidthScaled =  ratioTexture/ratioScreen;           
+        }
+        this->screenWidthScaled = this->screenWidthScaled*screenWidth/screenHeight; //transformation to uniformly x-axis
+        //vertex01 bottom left
+        this->screenWidthScaled01 = -this->screenWidthScaled*cos(rotationAngle_rad)+this->screenHeightScaled*sin(rotationAngle_rad); //rotaion x-coordinate
+        this->screenHeightScaled01 = -this->screenWidthScaled*sin(rotationAngle_rad)-this->screenHeightScaled*cos(rotationAngle_rad); //rotation y-coordinate
+        this->screenWidthScaled01 = screenWidthScaled01*screenHeight/screenWidth; //back-transformation to streched x-axis
+        //vertex11 top left
+        this->screenWidthScaled11 = -this->screenWidthScaled*cos(rotationAngle_rad)-this->screenHeightScaled*sin(rotationAngle_rad);
+        this->screenHeightScaled11 = -this->screenWidthScaled*sin(rotationAngle_rad)+this->screenHeightScaled*cos(rotationAngle_rad);
+        this->screenWidthScaled11 = screenWidthScaled11*screenHeight/screenWidth;
+        //vertex10 top right
+        this->screenWidthScaled10 = this->screenWidthScaled*cos(rotationAngle_rad)-this->screenHeightScaled*sin(rotationAngle_rad);
+        this->screenHeightScaled10 = this->screenWidthScaled*sin(rotationAngle_rad)+this->screenHeightScaled*cos(rotationAngle_rad);
+        this->screenWidthScaled10 = screenWidthScaled10*screenHeight/screenWidth;
+        //vertex00 botton right
+        this->screenWidthScaled00 = this->screenWidthScaled*cos(rotationAngle_rad)+this->screenHeightScaled*sin(rotationAngle_rad);
+        this->screenHeightScaled00 = this->screenWidthScaled*sin(rotationAngle_rad)-this->screenHeightScaled*cos(rotationAngle_rad);
+        this->screenWidthScaled00 = screenWidthScaled00*screenHeight/screenWidth;
+
+    }
+
+
+
+    //recalculate marker coordinates
+    this->slot_setMarkerPosition(this->markerPosition);
 }
 
 void GLWindow2D::mousePressEvent(QMouseEvent* event){
@@ -317,8 +343,8 @@ void GLWindow2D::mouseMoveEvent(QMouseEvent* event){
 		QPoint delta = (event->pos() - this->mousePos);
 		int windowWidth = this->size().width();
 		int windowHeight = this->size().height();
-		this->xTranslation += 2.0*(float)delta.x()/((float)windowWidth);
-		this->yTranslation += -2.0*(float)delta.y()/(float)windowHeight;
+        this->xTranslation += 2.0*(float)delta.x()/((float)windowWidth);
+        this->yTranslation += -2.0*(float)delta.y()/(float)windowHeight;
 	}
 	this->mousePos = event->pos();
 }
@@ -360,20 +386,6 @@ void GLWindow2D::leaveEvent(QEvent *event){
 void GLWindow2D::contextMenuEvent(QContextMenuEvent *event) {
 	this->contextMenu->exec(event->globalPos());
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ControlPanel2D::ControlPanel2D(QWidget *parent) : QWidget(parent){
 	this->panel = new QWidget(parent);
