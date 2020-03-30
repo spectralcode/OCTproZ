@@ -342,14 +342,12 @@ __global__ void klinearizationCubicAndWindowingAndDispersionCompensation(cufftCo
 
 __global__ void sinusoidalScanCorrection(float* out, float *in, float* sinusoidalResampleCurve, const int width, const int height, const int depth, const int samples) { //width: samplesPerAscan; height: ascansPerBscan, depth: bscansPerBuffer
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	if(index < samples-width){ //
+	if(index < samples-width){
 		int j = index%(width); //pos within ascan
-		int k = (index/width)%height;//pos within bscan
-		int l = index/(width*height);//pos within buffer
+		int k = (index/width)%height; //pos within bscan
+		int l = index/(width*height); //pos within buffer
 
-		float n_sinusoidal = sinusoidalResampleCurve[k];//((float)height/M_PI)*acos((float)(1.0-((2.0*(float)k)/(float)height)));
-		//float n_sinusoidal = ((float)height/2)*(1-cos((M_PI*(float)k)/(float)height));// acos((float)(1.0-((2.0*(float)k)/(float)height)));
-		//float x = sinusoidalResampleCurve[k];
+		float n_sinusoidal = sinusoidalResampleCurve[k];
 		float x = n_sinusoidal;
 		int x0 = (int)x*width+j+l*width*height;
 		int x1 = x0 + width;
@@ -800,7 +798,7 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	fixedPatternNoiseDetermined = false;
 
 	//todo: find a way to automatically determine optimal blockSize and optimal grindSize
-	blockSize = 128;// 128;// 64;//512;
+	blockSize = 128;
 	gridSize = samplesPerBuffer / blockSize;
 }
 
@@ -854,7 +852,7 @@ extern "C" void freeCudaMem(void* data) {
 	}
 }
 
-extern "C" void changeDisplayedBscanFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction){
+extern "C" void changeDisplayedBscanFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction) {
 	void* d_bscanDisplayBuffer = NULL;
 	if (cuBufHandleBscan != NULL) {
 		d_bscanDisplayBuffer = cuda_map(cuBufHandleBscan, userRequestStream);
@@ -869,12 +867,12 @@ extern "C" void changeDisplayedBscanFrame(unsigned int frameNr, unsigned int dis
 		updateDisplayedBscanFrame<<<gridSize/2, blockSize, 0, userRequestStream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / 2, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleBscan != NULL) {
-	   cuda_unmap(cuBufHandleBscan, userRequestStream);
+		cuda_unmap(cuBufHandleBscan, userRequestStream);
 	}
 }
 
 //todo: simplify/refactor changeDisplayedEnfaceFrame and changedisplaydBscanFrame. avoid duplicate code
-extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction){
+extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction) {
 	void* d_enFaceViewDisplayBuffer = NULL;
 	if (cuBufHandleEnFaceView != NULL) {
 		d_enFaceViewDisplayBuffer = cuda_map(cuBufHandleEnFaceView, userRequestStream);
@@ -882,19 +880,17 @@ extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int di
 	//update 2D en face view display
 	unsigned int width = bscansPerBuffer*buffersPerVolume;
 	unsigned int height = ascansPerBscan;
-	//unsigned int height = bscansPerBuffer;
-	//unsigned int width = ascansPerBscan;
 	unsigned int samplesPerFrame = width * height;
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
 		updateDisplayedEnFaceViewFrame<<<gridSize, blockSize, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
-	   cuda_unmap(cuBufHandleEnFaceView, userRequestStream);
+		cuda_unmap(cuBufHandleEnFaceView, userRequestStream);
 	}
 }
 
-extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction){
+extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction) {
 	void* d_bscanDisplayBuffer = NULL;
 	if (cuBufHandleBscan != NULL) {
 		d_bscanDisplayBuffer = cuda_map(cuBufHandleBscan, displayStream);
@@ -909,11 +905,11 @@ extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned i
 		updateDisplayedBscanFrame<<<gridSize/2, blockSize, 0, displayStream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / 2, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleBscan != NULL) {
-	   cuda_unmap(cuBufHandleBscan, displayStream);
+		cuda_unmap(cuBufHandleBscan, displayStream);
 	}
 }
 
-extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction){
+extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction) {
 	void* d_enFaceViewDisplayBuffer = NULL;
 	if (cuBufHandleEnFaceView != NULL) {
 		d_enFaceViewDisplayBuffer = cuda_map(cuBufHandleEnFaceView, displayStream);
@@ -921,19 +917,17 @@ extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned 
 	//update 2D en face view display
 	unsigned int width = bscansPerBuffer * buffersPerVolume;
 	unsigned int height = ascansPerBscan;
-	//unsigned int height = bscansPerBuffer * buffersPerVolume;
-	//unsigned int width = ascansPerBscan;
 	unsigned int samplesPerFrame = width * height;
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
 		updateDisplayedEnFaceViewFrame<<<gridSize/2, blockSize, 0, displayStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
-	   cuda_unmap(cuBufHandleEnFaceView, displayStream);
+		cuda_unmap(cuBufHandleEnFaceView, displayStream);
 	}
 }
 
-extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, const unsigned int currentBufferNr, const unsigned int bscansPerBuffer){
+extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, const unsigned int currentBufferNr, const unsigned int bscansPerBuffer) {
 	//map graphics resource for access by cuda
 	cudaArray* d_volumeViewDisplayBuffer = NULL;
 	if (cuBufHandleVolumeView != NULL) {
@@ -958,11 +952,11 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 
 	//unmap the graphics resource
 	if (cuBufHandleVolumeView != NULL) {
-	   cuda_unmap(cuBufHandleVolumeView, displayStream);
+		cuda_unmap(cuBufHandleVolumeView, displayStream);
 	}
 }
 
-inline void streamProcessedData(float* d_currProcessedBuffer){
+inline void streamProcessedData(float* d_currProcessedBuffer) {
 	if (streamedBuffers % (params->streamingBuffersToSkip + 1) == 0) {
 		streamedBuffers = 0; //set to zero to avoid overflow
 		streamingBufferNumber = (streamingBufferNumber + 1) % 2;
@@ -997,7 +991,7 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	}
 
 	//copy raw oct signal from host
-	if(copyBuffer != NULL && h_inputSignal != NULL){
+	if (copyBuffer != NULL && h_inputSignal != NULL) {
 		checkCudaErrors(cudaMemcpyAsync(copyBuffer, h_inputSignal, samplesPerBuffer * bytesPerSample, cudaMemcpyHostToDevice, copyStream));
 	}
 
@@ -1155,24 +1149,24 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	cudaStreamSynchronize(copyStream);
 }
 
-extern "C" void cuda_registerGlBufferBscan(GLuint buf){
+extern "C" void cuda_registerGlBufferBscan(GLuint buf) {
 	if (cudaGraphicsGLRegisterBuffer(&cuBufHandleBscan, buf, cudaGraphicsRegisterFlagsWriteDiscard) != cudaSuccess) {
 		printf("Cuda: Failed to register buffer %u\n", buf);
 	}
 }
-extern "C" void cuda_registerGlBufferEnFaceView(GLuint buf){
+extern "C" void cuda_registerGlBufferEnFaceView(GLuint buf) {
 	if (cudaGraphicsGLRegisterBuffer(&cuBufHandleEnFaceView, buf, cudaGraphicsRegisterFlagsWriteDiscard) != cudaSuccess) {
 		printf("Cuda: Failed to register buffer %u\n", buf);
 	}
 }
-extern "C" void cuda_registerGlBufferVolumeView(GLuint buf){
+extern "C" void cuda_registerGlBufferVolumeView(GLuint buf) {
 	cudaError_t err = cudaGraphicsGLRegisterImage(&cuBufHandleVolumeView, buf, GL_TEXTURE_3D, cudaGraphicsRegisterFlagsSurfaceLoadStore);
 	if (err != cudaSuccess) {
 		printf("Cuda: Failed to register buffer %u\n", buf);
 	}
 }
 
-void* cuda_map(cudaGraphicsResource* res, cudaStream_t stream){
+void* cuda_map(cudaGraphicsResource* res, cudaStream_t stream) {
 	void *devPtr = 0;
 	size_t size = 0;
 	cudaError_t error_id = cudaGraphicsMapResources(1, &res, stream);
@@ -1188,7 +1182,7 @@ void* cuda_map(cudaGraphicsResource* res, cudaStream_t stream){
 	return devPtr;
 }
 
-cudaArray* cuda_map3dTexture(cudaGraphicsResource* res, cudaStream_t stream){
+cudaArray* cuda_map3dTexture(cudaGraphicsResource* res, cudaStream_t stream) {
 	cudaArray* d_ArrayPtr = 0;
 	cudaError_t error_id = cudaGraphicsMapResources(1, &res, stream);
 	if (error_id != cudaSuccess) {
@@ -1203,11 +1197,10 @@ cudaArray* cuda_map3dTexture(cudaGraphicsResource* res, cudaStream_t stream){
 	return d_ArrayPtr;
 }
 
-void cuda_unmap(cudaGraphicsResource* res, cudaStream_t stream){
+void cuda_unmap(cudaGraphicsResource* res, cudaStream_t stream) {
 	if (cudaGraphicsUnmapResources(1, &res, stream) != cudaSuccess) {
 		printf("Cuda: Failed to unmap resource");
 	}
 }
-
 
 #endif
