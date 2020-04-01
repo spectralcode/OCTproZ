@@ -28,21 +28,13 @@
 #ifndef GLWINDOW2D_H
 #define GLWINDOW2D_H
 
-#ifdef _WIN32
-	#define WINDOWS_LEAN_AND_MEAN
-	//#define NOMINMAX
-	#include <windows.h>
-	#include "GL/glew.h"
-#endif
-
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMouseEvent>
 #include <QCoreApplication>
 #include <QOffscreenSurface>
-//#include <kernels.h>
 
-// CUDA Runtime, Interop, and includes
+// CUDA Runtime, Interop  includes
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 #include <cuda_profiler_api.h>
@@ -50,17 +42,12 @@
 #include <vector_functions.h>
 #include <driver_functions.h>
 
-// CUDA utilities
-#include <helper_cuda.h>
-//#include <helper_cuda_gl.h>
-
-
-// Helper functions
+// CUDA helper functions
 #include <helper_cuda.h>
 #include <helper_functions.h>
 #include <helper_timer.h>
 
-
+// Qt gui includes
 #include <QSpinBox>
 #include <QLabel>
 #include <QLayout>
@@ -114,8 +101,8 @@ public:
 	void setMarkerOrigin(FRAME_EDGE markerOrigin);
 	QAction* getMarkerAction(){return this->markerAction;}
 
+
 private:
-	//void* cudaBufHandle;
 	unsigned int width;
 	unsigned int height;
 	unsigned int depth;
@@ -132,7 +119,6 @@ private:
 	unsigned int markerPosition;
 	bool markerVisible;
 
-
 	QMenu* contextMenu;
 	QAction* keepAspectRatioAction;
 	QAction* markerAction;
@@ -144,7 +130,6 @@ private:
 	GLuint buf;
 	GLuint texture;
 
-
 	QPoint mousePos;
 
 	size_t frameNr;
@@ -153,8 +138,6 @@ private:
 	QVBoxLayout* layout;
 
 	void initContextMenu();
-
-
 
 
 protected:
@@ -168,13 +151,11 @@ protected:
 	void enterEvent(QEvent* event) override;
 	void leaveEvent(QEvent* event) override;
 	void contextMenuEvent(QContextMenuEvent* event) override;
-	//void paintEvent(QPaintEvent* event) override;
 
 
 public slots:
 	void slot_saveScreenshot(QString savePath, QString fileName);
 	void slot_changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth);
-	//void slot_initProcessingThreadOpenGL(QOpenGLContext** processingContext, QOffscreenSurface** processingSurface, QThread* processingThread);
 	void slot_initProcessingThreadOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void slot_registerGLbufferWithCuda();
 	void setKeepAspectRatio(bool keepAspectRatio);
@@ -219,6 +200,7 @@ public:
 	void setMaxFrame(unsigned int maxFrame);
 	void setMaxAverage(unsigned int maxAverage);
 
+
 private:
 	QWidget* panel;
 	QSpinBox* spinBoxAverage;
@@ -238,20 +220,15 @@ private:
 protected:
 
 
-
 public slots:
 	void updateDisplayFrameSettings();
 
 
-
 signals:
-   void displayFrameSettingsChanged(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
+	void displayFrameSettingsChanged(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
+
 
 friend class GLWindow2D;
 };
-
-
-
-
 
 #endif  // GLWINDOW2D_H

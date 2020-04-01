@@ -1,4 +1,4 @@
-QT 	  += core gui opengl widgets printsupport
+QT 	  += core gui widgets printsupport
 
 TARGET = OCTproZ
 TEMPLATE = app
