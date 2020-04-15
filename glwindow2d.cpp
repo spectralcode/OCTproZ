@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2020 OCTproZ developer
+**  Copyright (C) 2019-2020 OCTproZ developers
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -136,8 +136,8 @@ void GLWindow2D::slot_registerGLbufferWithCuda() {
 }
 
 void GLWindow2D::setKeepAspectRatio(bool keepAspectRatio) {
-	this->keepAspectRatio = keepAspectRatio;
-	this->resizeGL((float)this->size().width(),(float)this->size().height());
+    this->keepAspectRatio = keepAspectRatio;
+    this->resizeGL((float)this->size().width(),(float)this->size().height());
 }
 
 void GLWindow2D::setRotationAngle(double rotationAngle) {
@@ -254,9 +254,19 @@ void GLWindow2D::initializeGL(){
 
 void GLWindow2D::paintGL(){
     glLoadIdentity();
-    glTranslatef(this->xTranslation, this->yTranslation, 0); //verschieben
-//    glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
-    glScalef(this->scaleFactor, this->scaleFactor, 0.f); //zoom
+    glTranslatef(this->xTranslation, this->yTranslation, 0);
+    if(!keepAspectRatio){
+        screenWidthScaled00 = 1;
+        screenWidthScaled01 = -1;
+        screenWidthScaled11 = -1;
+        screenWidthScaled10 = 1;
+        screenHeightScaled00 = -1;
+        screenHeightScaled01 = -1;
+        screenHeightScaled11 = 1;
+        screenHeightScaled10 = 1;
+    glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
+    }
+    glScalef(this->scaleFactor, this->scaleFactor, 0.f);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, this->buf);
     glBindTexture(GL_TEXTURE_2D, this->texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this->width, this->height, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
@@ -287,18 +297,23 @@ void GLWindow2D::paintGL(){
 	update();
 }
 
-//todo: add rotational angle calculation for screenheightScaled und screenWidthScaled!
 void GLWindow2D::resizeGL(int w, int h){
-    double deg_to_rad = 3.1415926535898/180.0;
-    double rotationAngle_rad = rotationAngle*deg_to_rad;
 
     if(this->keepAspectRatio){
+        float rotationAngle_rad = qDegreesToRadians(rotationAngle);
+        float cos_rotationAngle = cos(rotationAngle_rad);
+        float sin_rotationAngle = sin(rotationAngle_rad);
+        float prod_Width_sin = this->screenWidthScaled*sin_rotationAngle;
+        float prod_Width_cos = this->screenWidthScaled*cos_rotationAngle;
+        float prod_Height_sin = this->screenHeightScaled*sin_rotationAngle;
+        float prod_Height_cos = this->screenHeightScaled*cos_rotationAngle;
         float textureWidth = static_cast<float>(this->height);
         float textureHeight = static_cast<float>(this->width);
         float screenWidth = static_cast<float>(w);//(float)this->size().width();
         float screenHeight = static_cast<float>(h);//(float)this->size().height();
         float ratioTexture = textureWidth/textureHeight;
         float ratioScreen = screenWidth/screenHeight;
+        float inv_ratioScreen = 1/ratioScreen;
         this->screenWidthScaled = 1;
         this->screenHeightScaled = 1;
 
@@ -306,28 +321,27 @@ void GLWindow2D::resizeGL(int w, int h){
             this->screenHeightScaled = ratioScreen/ratioTexture;
         }
         else{
-            this->screenWidthScaled =  ratioTexture/ratioScreen;           
+            this->screenWidthScaled =  ratioTexture/ratioScreen;
         }
-        this->screenWidthScaled = this->screenWidthScaled*screenWidth/screenHeight; //transformation to uniformly x-axis
+
+        this->screenWidthScaled = this->screenWidthScaled*screenWidth/screenHeight;
         //vertex01 bottom left
-        this->screenWidthScaled01 = -this->screenWidthScaled*cos(rotationAngle_rad)+this->screenHeightScaled*sin(rotationAngle_rad); //rotaion x-coordinate
-        this->screenHeightScaled01 = -this->screenWidthScaled*sin(rotationAngle_rad)-this->screenHeightScaled*cos(rotationAngle_rad); //rotation y-coordinate
-        this->screenWidthScaled01 = screenWidthScaled01*screenHeight/screenWidth; //back-transformation to streched x-axis
+        this->screenWidthScaled01 = -prod_Width_cos+prod_Height_sin;
+        this->screenHeightScaled01 = -prod_Width_sin-prod_Height_cos;
+        this->screenWidthScaled01 = screenWidthScaled01*inv_ratioScreen;
         //vertex11 top left
-        this->screenWidthScaled11 = -this->screenWidthScaled*cos(rotationAngle_rad)-this->screenHeightScaled*sin(rotationAngle_rad);
-        this->screenHeightScaled11 = -this->screenWidthScaled*sin(rotationAngle_rad)+this->screenHeightScaled*cos(rotationAngle_rad);
-        this->screenWidthScaled11 = screenWidthScaled11*screenHeight/screenWidth;
+        this->screenWidthScaled11 = -prod_Width_cos-prod_Height_sin;
+        this->screenHeightScaled11 = -prod_Width_sin+prod_Height_cos;
+        this->screenWidthScaled11 = screenWidthScaled11*inv_ratioScreen;
         //vertex10 top right
-        this->screenWidthScaled10 = this->screenWidthScaled*cos(rotationAngle_rad)-this->screenHeightScaled*sin(rotationAngle_rad);
-        this->screenHeightScaled10 = this->screenWidthScaled*sin(rotationAngle_rad)+this->screenHeightScaled*cos(rotationAngle_rad);
-        this->screenWidthScaled10 = screenWidthScaled10*screenHeight/screenWidth;
+        this->screenWidthScaled10 =prod_Width_cos-prod_Height_sin;
+        this->screenHeightScaled10 = prod_Width_sin+prod_Height_cos;
+        this->screenWidthScaled10 = screenWidthScaled10*inv_ratioScreen;
         //vertex00 botton right
-        this->screenWidthScaled00 = this->screenWidthScaled*cos(rotationAngle_rad)+this->screenHeightScaled*sin(rotationAngle_rad);
-        this->screenHeightScaled00 = this->screenWidthScaled*sin(rotationAngle_rad)-this->screenHeightScaled*cos(rotationAngle_rad);
-        this->screenWidthScaled00 = screenWidthScaled00*screenHeight/screenWidth;
+        this->screenWidthScaled00 = prod_Width_cos+prod_Height_sin;
+        this->screenHeightScaled00 = prod_Width_sin-prod_Height_cos;
+        this->screenWidthScaled00 = screenWidthScaled00*inv_ratioScreen;
     }
-
-
 
     //recalculate marker coordinates
     this->slot_setMarkerPosition(this->markerPosition);
