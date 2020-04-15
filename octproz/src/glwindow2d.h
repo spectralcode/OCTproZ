@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2020 Miroslav Zabic
+**  Copyright (C) 2019-2020 OCTproZ developers
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 #include <QMouseEvent>
 #include <QCoreApplication>
 #include <QOffscreenSurface>
+#include <qmath.h>
 //#include <kernels.h>
 
 // CUDA Runtime, Interop, and includes
