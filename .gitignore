@@ -1,4 +1,5 @@
 *.pro.user
+/octproz_extensions
 /octproz/misc
 /octproz_share_dev
 /build
