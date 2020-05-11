@@ -63,10 +63,9 @@ __Extensions:__
 Download and Installation
 ----------
 To run OCTproZ a cuda-compatible graphics card with current drivers is required.
-A precompiled package for Windows (64bit) can be downloaded from:
-[GitHub release section](https://github.com/spectralcode/OCTproZ/releases).
 
-Extract the zip archive and execute OCTproZ, installation is not necessary.
+A precompiled package for Windows (64bit) can be downloaded from:
+[GitHub release section](https://github.com/spectralcode/OCTproZ/releases). Extract the zip archive and execute OCTproZ, installation is not necessary.
 
 If you need OCTproZ for a different operating system, the easiest way is to compile it yourself. See the compiling section.
 
