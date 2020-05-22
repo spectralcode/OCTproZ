@@ -25,7 +25,7 @@ bibliography: paper.bib
 
 # Summary
 
-Optical coherence tomography (OCT) is a non-invasive imaging technique used primarily in the medical field, especially in ophthalmology. Current research in OCT includes aswell hardware as software aspects. Both areas (with few exceptions) require a software solution for processing of the acquired raw data. 
+Optical coherence tomography (OCT) is a non-invasive imaging technique used primarily in the medical field, especially in ophthalmology. Current research in OCT includes both hardware and software aspects. Both areas (with a few exceptions) require a software solution for processing of the acquired raw data. 
 
 Here we present an open source software for OCT processing with an easy to use graphical user interface. The implemented OCT processing pipeline enables A-scan processing rates in the MHz range. Custom OCT systems, or any other source of Fourier Domain OCT raw data, can be integrated via a developed plug-in system, which also allows the development of custom post processing modules.
 
