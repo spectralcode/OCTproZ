@@ -112,13 +112,13 @@ GPU|NVIDIA Quadro K620|NVIDIA GeForce GTX 1080 Ti
 Operating system|Windows 10|Ubuntu 16.04
 B-scans per buffer|32|256
 With 3D live view:| | 
-  A-scans per second|**~ 250⋅10<sup>3</sup>**|**~ 4.0⋅10<sup>6</sup>**
-  Volumes per second|**~ 1.9**|**~ 30**
+  A-scans per second|**$~ 250 \dot 10^{3}$**|**$~ 4.0 \dot 10^{6}$**
+  Volumes per second|**$~ 1.9$**|**$~ 30$**
 Without 3D live view:| | 
-   A-scans per second|**~ 300⋅10<sup>3</sup>**|**~ 4.8⋅10<sup>36</sup>**
-   Volumes per Second|**~ 2.2**|**~ 36**
+   A-scans per second|**$~ 300 \dot 10^{3}$**|**$~ 4.8 \dot 10^{6}$**
+   Volumes per Second|**$~ 2.2$**|**$~ 36$**
 
-Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}. , in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
+Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}, in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
 
   ![Screenshot of NVIDIA Visual Profiler showing timing sequence of the GPU processing pipeline for the same raw data set as used in table 1. Individual processing kernels are marked alphabetically: a) data conversion, b) kernel that combines k-linearization, windowing and dispersion compensation, c) IFFT, d) subtraction step of fixed pattern noise removal, e) truncate and logarithm, f) backward scan correction, g) copy B-scan frame to display buffer, h) copy en face view to display buffer \label{fig:visualprofiler}](figures/visualprofiler_screenshot.png)
 
