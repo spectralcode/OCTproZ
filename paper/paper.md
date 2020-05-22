@@ -35,7 +35,7 @@ Optical coherence tomography (OCT) is a non-invasive imaging technique used prim
 
 # 2. Basic overview of OCTproZ
 
-OCTproZ performs live signal processing and visualization of OCT data. It is written in C++, uses the cross-platform application framework Qt for the GUI and utilizes Nvidia’s computer unified device architecture (CUDA) for GPU parallel computing. A screenshot of the application can be seen in Fig. \ref{fig:screenshot}
+OCTproZ performs live signal processing and visualization of OCT data. It is written in C++, uses the cross-platform application framework Qt for the GUI and utilizes Nvidia’s computer unified device architecture (CUDA) for GPU parallel computing. A screenshot of the application can be seen in Fig. \ref{fig:screenshot}.
 
  ![Screenshot of OCTproZ v1.0. Processing settings visible in the left panel can be changed before processing is started or while processing is in progress. Processed data is live visualized in 2D as cross sectional images (B-scan and en face view) and in 3D as interactive volume rendering. The live view shows a piece of wood with a couple layers of tape and a laser burned hole. \label{fig:screenshot}](figures/20191122_screenshot3d.png)
 
@@ -66,16 +66,14 @@ S_k[j] = S_{raw}[\lfloor j' \rfloor] + (j' - \lfloor j' \rfloor )(S_{raw} [ \lfl
 If sample and reference arm of an OCT system contain different length of dispersive media, a wavenumber dependent phase shift is introduced to the signal and axial resolution decreases. Such dispersion mismatch usually occurs when the length or the number of optical fiber components and lenses is not identical in both optical arms. In this case, a hardware based dispersion compensation, such as variable-thickness fused-silica and BK7 prisms within in the sample arm [@drexler1999vivo], can be applied. A more convenient way to compensate for the additional phase shift, especially if the dispersion mismatch is introduced mainly by the sample itself, is numerical dispersion compensation. Hereby the signal is multiplied with a phase term $e^{(-i \Theta (k))}$ that exactly cancels the phase shift introduced due dispersion mismatch. [@cense2004ultrahigh] A user defined phase $\Theta (k)$ can be specified in the GUI by providing the coefficients of a third order polynomial. 
 
 
-**Windowing:**
-Windowing is a basic step in digital signal processing that is applied right before the Fourier transform to reduce side lobes in the resulting signal. It is in essence a multiplication of the k linear interference signal with a window function, which sets the signal to zero outside of a predefined interval. The GUI allows to choose between different window functions (Gaussian, Hanning, Sine, Lanczos and Rectangular window) and to set their width and center position.
+**Windowing** is a basic step in digital signal processing that is applied right before the Fourier transform to reduce side lobes in the resulting signal. It is in essence a multiplication of the k linear interference signal with a window function, which sets the signal to zero outside of a predefined interval. The GUI allows to choose between different window functions (Gaussian, Hanning, Sine, Lanczos and Rectangular window) and to set their width and center position.
 
 
 **IFFT:**
 The inverse Fourier transformation is the essential processing step to calculate the depth profile from the acquired and pre-processed (k-lineariziation, dispersion compensation, windowing) fringe pattern. OCTproZ utilizes the NVIDIA CUDA Fast Fourier Transformation library (cuFFT) to execute the inverse Fast Fourier Transform (IFFT).
 
 
-**Fixed-pattern noise removal:**
-Fixed pattern noise refers to structural artifacts in OCT images that appear as fixed horizontal lines. These artifacts are caused, for example, by variations in pixel response in the CCD camera in spectrometer based OCT systems or spurious etalons within the optical OCT setup. [@de2008spectral] A common approach to reduce fixed pattern noise is to acquire a reference signal in absence of a sample and subtract it from all subsequent recordings. In OCTproZ we have implemented the minimum-variance mean-line subtraction method that was described by Moon et al. [@moon2010reference] This approach does not require an additional reference recording and can be applied continuously such that fixed pattern noise due spectral intensity variation of the source is reduced as well. 
+**Fixed-pattern noise removal** refers to the removal of structural artifacts in OCT images that appear as fixed horizontal lines. These artifacts are caused, for example, by variations in pixel response in the CCD camera in spectrometer based OCT systems or spurious etalons within the optical OCT setup. [@de2008spectral] A common approach to reduce fixed pattern noise is to acquire a reference signal in absence of a sample and subtract it from all subsequent recordings. In OCTproZ we have implemented the minimum-variance mean-line subtraction method that was described by Moon et al. [@moon2010reference] This approach does not require an additional reference recording and can be applied continuously such that fixed pattern noise due spectral intensity variation of the source is reduced as well. 
 
 
 **Truncate and logarithm:**
@@ -101,9 +99,8 @@ Every processing step, except data conversion and IFFT, can be enabled and disab
 # 4. Processing Performance 
 Processing rate highly depends on the size of the raw data, the used computer hardware and resource usage by background or system processes. With common modern computer systems and typical data dimensions for OCT, OCTproZ achieves A-scan rates in the MHz range. Exemplary, table 1 shows two computer systems and their respective processing rates for the full processing pipeline. However, since the 3D live view is computationally intensive the processing rate changes noticeably depending on whether the volume viewer is activated or not. The used raw data set consists of 12 bit per sample, 1024 samples per line (corresponds to 512 samples per A-scan), 512 lines per frame and 256 frames per volume. As the volume is processed in batches, the batch size was set for each system to a reasonable number of B scans per buffer to avoid GPU memory overflow. 
 
-Table 1: Comparison of two computer systems and their respective processing rates for raw data sets with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume.
+<center><small><b>Table 1</b>: Comparison of two computer systems and their respective processing rates for raw data sets with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume.</small></center>
 
- 
 . |**Office Computer**|**Lab Computer**
 :-----|:-----|:-----
 CPU|Intel® Core i5-7500|AMD Ryzen Threadripper 1900X
@@ -117,6 +114,7 @@ With 3D live view:| |
 Without 3D live view:| | 
    A-scans per second|**$~ 300 \cdot 10^{3}$**|**$~ 4.8 \cdot 10^{6}$**
    Volumes per second|**$~ 2.2$**|**$~ 36$**
+[Table caption, works as a reference][section-mmd-tables-table1]
 
 Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}, in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
 
