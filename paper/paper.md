@@ -82,3 +82,9 @@ Fixed pattern noise refers to structural artifacts in OCT images that appear as 
 Since the inverse Fourier transformation is applied to a real-valued signal, the result must be Hermitian symmetric. As consequence, mirror images, with the zero path reference as the mirror axis, can be seen in the resulting B-scans. If numerical dispersion correction is applied prior IFFT these mirror images are not identical with their counterparts but appear blurred. To avoid displaying duplicate or blurred images and reduce data size the data is truncated. The computation of magnitude and dynamic range compression (logarithm of magnitude) to prepare the data for visualization is done in the truncate processing step as well. 
 
 
+**Backward scan correction:**
+To increase frame rate, a bidirectional scanning scheme can be used. [@wieser2014high,@kolb2019live] However, this means that every other frame is flipped horizontally. The backward scan correction step unflippes these frames. Fig. \ref{fig:bscanflip} shows the effects of this processing step on the en face view of a volume that was acquired using a bidirectional scanning scheme.
+
+ ![Effect of the backward scan correction on the en face view of an OCT volume that was acquired using a bidirectional scanning scheme. A piece of wood with a laser burned hole was used as sample. Left: Spot path on sample when a bidirectional scanning scheme is applied. Middle: En face view with enabled backward scan correction. Right: En face view when backward scan correction is disabled. \label{fig:bscanflip}](figures/bscanflip_overview_text_small.png) 
+ 
+
