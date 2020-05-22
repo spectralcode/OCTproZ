@@ -88,6 +88,8 @@ To increase frame rate, a bidirectional scanning scheme can be used. [@wieser201
  ![Effect of the backward scan correction on the en face view of an OCT volume that was acquired using a bidirectional scanning scheme. A piece of wood with a laser burned hole was used as sample. Left: Spot path on sample when a bidirectional scanning scheme is applied. Middle: En face view with enabled backward scan correction. Right: En face view when backward scan correction is disabled. \label{fig:bscanflip}](figures/bscanflip_overview_text_small.png) 
  
 
+**Visualization:**
+For live visualization of the processed data in 2D and 3D, the user has access to three different output windows: B-scan, en face view and volume. B-scan and en face view are orthogonal cross-sectional slices of the volume, which can be maximum intensity projections or averaged layers of a user-defined amount of layers of the volume. For easier orientation red marker lines can be overlaid to indicate the current B-scan slice position within the en face view and vice versa.  
 
 
 Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}. , in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
