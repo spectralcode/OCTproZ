@@ -139,7 +139,8 @@ We especially hope for more open source publications within the OCT community to
 
 # Funding
 This work was partially funded by the European Regional Development Fund (ERDF) and the state Lower Saxony as part of the project OPhonLas. 
- ![efre](figures/efre.png) |
+
+![efre](figures/efre.png) 
 
 
 # References
