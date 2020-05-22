@@ -99,7 +99,7 @@ Every processing step, except data conversion and IFFT, can be enabled and disab
 # 4. Processing Performance 
 Processing rate highly depends on the size of the raw data, the used computer hardware and resource usage by background or system processes. With common modern computer systems and typical data dimensions for OCT, OCTproZ achieves A-scan rates in the MHz range. Exemplary, table 1 shows two computer systems and their respective processing rates for the full processing pipeline. However, since the 3D live view is computationally intensive the processing rate changes noticeably depending on whether the volume viewer is activated or not. The used raw data set consists of 12 bit per sample, 1024 samples per line (corresponds to 512 samples per A-scan), 512 lines per frame and 256 frames per volume. As the volume is processed in batches, the batch size was set for each system to a reasonable number of B scans per buffer to avoid GPU memory overflow. 
 
-<center><small><b>Table 1</b>: Comparison of two computer systems and their respective processing rates for raw data sets with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume.</small></center>
+<p style="text-align: center;"><small><b>Table 1</b>: Comparison of two computer systems and their respective processing rates for raw data sets with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume.</small></p>
 
 . |**Office Computer**|**Lab Computer**
 :-----|:-----|:-----
@@ -114,7 +114,7 @@ With 3D live view:| |
 Without 3D live view:| | 
    A-scans per second|**$~ 300 \cdot 10^{3}$**|**$~ 4.8 \cdot 10^{6}$**
    Volumes per second|**$~ 2.2$**|**$~ 36$**
-[Table caption, works as a reference][section-mmd-tables-table1]
+
 
 Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}, in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
 
