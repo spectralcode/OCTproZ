@@ -90,6 +90,8 @@ To increase frame rate, a bidirectional scanning scheme can be used. [@wieser201
 
 
 
+Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}. , in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
+
   ![Screenshot of NVIDIA Visual Profiler showing timing sequence of the GPU processing pipeline for the same raw data set as used in table 1. Individual processing kernels are marked alphabetically: a) data conversion, b) kernel that combines k-linearization, windowing and dispersion compensation, c) IFFT, d) subtraction step of fixed pattern noise removal, e) truncate and logarithm, f) backward scan correction, g) copy B-scan frame to display buffer, h) copy en face view to display buffer \label{fig:visualprofiler}](figures/visualprofiler_screenshot.png)
 
 
