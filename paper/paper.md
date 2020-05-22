@@ -98,26 +98,29 @@ Every processing step, except data conversion and IFFT, can be enabled and disab
 
  ![Effect of disabling single processing steps on resulting B-scan. The B-scans show a test pattern of an OCT phantom (APL-OP01, Arden Photonics, UK). Below each B-scan is an enlarged view of the corresponding area framed in red within the B-scan. a) The full processing pipeline, as described in section 3, is enabled. b) k linearization is disabled (all other steps are enabled). c) Dispersion compensation is disabled (all other steps are enabled). d) Windowing is disabled (all other steps are enabled). e) Fixed-pattern noise removal is disabled (all other steps are enabled). The red arrows point to horizontal structural artifacts that are visible if fixed-pattern noise removal is disabled. \label{fig:effectofprocessing}](figures/overview.png) 
 
+# 4. Processing Performance 
+Processing rate highly depends on the size of the raw data, the used computer hardware and resource usage by background or system processes. With common modern computer systems and typical data dimensions for OCT, OCTproZ achieves A-scan rates in the MHz range. Exemplary, table 1 shows two computer systems and their respective processing rates for the full processing pipeline. However, since the 3D live view is computationally intensive the processing rate changes noticeably depending on whether the volume viewer is activated or not. The used raw data set consists of 12 bit per sample, 1024 samples per line (corresponds to 512 samples per A-scan), 512 lines per frame and 256 frames per volume. As the volume is processed in batches, the batch size was set for each system to a reasonable number of B scans per buffer to avoid GPU memory overflow. 
+
+Table 1: Comparison of two computer systems and their respective processing rates for raw data sets with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume.
+
+ 
+. |**Office Computer**|**Lab Computer**
+:-----|:-----|:-----
+CPU|Intel® Core i5-7500|AMD Ryzen Threadripper 1900X
+RAM|16 GB|32 GB
+GPU|NVIDIA Quadro K620|NVIDIA GeForce GTX 1080 Ti
+Operating system|Windows 10|Ubuntu 16.04
+B-scans per buffer|32|256
+With 3D live view:| | 
+  A-scans per second|**~ 250⋅10<sup>3</sup>**|**~ 4.0⋅10<sup>6</sup>**
+  Volumes per second|**~ 1.9**|**~ 30**
+Without 3D live view:| | 
+   A-scans per second|**~ 300⋅10<sup>3</sup>**|**~ 4.8⋅10<sup>36</sup>**
+   Volumes per Second|**~ 2.2**|**~ 36**
+
+Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}. , in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
+
+  ![Screenshot of NVIDIA Visual Profiler showing timing sequence of the GPU processing pipeline for the same raw data set as used in table 1. Individual processing kernels are marked alphabetically: a) data conversion, b) kernel that combines k-linearization, windowing and dispersion compensation, c) IFFT, d) subtraction step of fixed pattern noise removal, e) truncate and logarithm, f) backward scan correction, g) copy B-scan frame to display buffer, h) copy en face view to display buffer \label{fig:visualprofiler}](figures/visualprofiler_screenshot.png)
 
 
-
-# 5. Plug-in System
-
-To develop custom plug-ins for OCTproZ and thus extends its functionality, a development kit is provided. It consists of a static library and a collection of C++ header files that specify which classes and methods have to be implemented to create custom plug-ins. Currently two kinds of plug-ins exist: Acquisition Systems and Extensions. For both we made examples including source code publicly available which may be used together with the open source and cross-platform integrated development environment Qt Creator as starting point for custom plug-in development.
-
-For Acquisition System development the two key methods that need to be implemented are “startAcquisition()” and “stopAcquisition()”. In startAcquisition() an acquisition buffer needs to be filled and the corresponding boolean flag needs to be set. The processing thread in the main application continuously checks the acquisition buffer flag to transfer the acquired raw data to GPU as soon as the acquisition buffer is filled. When the acquisition is stopped, stopAcquisition() is called, where termination commands to stop hardware such as scanners may be implemented. 
-
-Extensions have a wide area of use cases. As they are able to receive raw data and processed data via the Qt signals and slots mechanism, they are suitable for custom post-processing routines. The exact implementation of an Extension is mainly up to the developer and can also include hardware control. Therefore, Extensions are ideal for hardware control algorithms that rely on feedback from live OCT images. The best example of this is wavefront sensorless adaptive optics with a wavefront modulator such as a deformable mirror.  Particular care must be taken if high speed OCT systems are used, as the acquisition speed of OCT data may exceed the processing speed of the custom Extension. In this case, a routine within the Extension should be implemented that discards incoming OCT data if previous data is still processed. 
-
-# 6. Conclusion
-In this paper, we introduced OCTproZ, an open source software for live OCT signal processing. With the presented plug-in system, it is possible to develop software modules to use OCTproZ with custom OCT systems, thus reducing the OCT system development time significantly. OCTproZ is meant to be a collaborative project, where everyone involved in the field of OCT is invited to improve the software and share the changes within the community. 
-We especially hope for more open source publications within the OCT community to reduce the time necessary for the replication of OCT processing algorithms and thereby accelerate scientific progress.
-
-# Funding
-This work was partially funded by the European Regional Development Fund (ERDF) and the state Lower Saxony as part of the project OPhonLas. 
-
-![](figures/efre.png) 
-
-
-# References
 
