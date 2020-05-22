@@ -89,6 +89,13 @@ To increase frame rate, a bidirectional scanning scheme can be used. [@wieser201
  
 
 
+# 5. Plug-in System
+
+To develop custom plug-ins for OCTproZ and thus extends its functionality, a development kit is provided. It consists of a static library and a collection of C++ header files that specify which classes and methods have to be implemented to create custom plug-ins. Currently two kinds of plug-ins exist: Acquisition Systems and Extensions. For both we made examples including source code publicly available which may be used together with the open source and cross-platform integrated development environment Qt Creator as starting point for custom plug-in development.
+
+For Acquisition System development the two key methods that need to be implemented are “startAcquisition()” and “stopAcquisition()”. In startAcquisition() an acquisition buffer needs to be filled and the corresponding boolean flag needs to be set. The processing thread in the main application continuously checks the acquisition buffer flag to transfer the acquired raw data to GPU as soon as the acquisition buffer is filled. When the acquisition is stopped, stopAcquisition() is called, where termination commands to stop hardware such as scanners may be implemented. 
+
+Extensions have a wide area of use cases. As they are able to receive raw data and processed data via the Qt signals and slots mechanism, they are suitable for custom post-processing routines. The exact implementation of an Extension is mainly up to the developer and can also include hardware control. Therefore, Extensions are ideal for hardware control algorithms that rely on feedback from live OCT images. The best example of this is wavefront sensorless adaptive optics with a wavefront modulator such as a deformable mirror.  Particular care must be taken if high speed OCT systems are used, as the acquisition speed of OCT data may exceed the processing speed of the custom Extension. In this case, a routine within the Extension should be implemented that discards incoming OCT data if previous data is still processed. 
 
 # 6. Conclusion
 In this paper, we introduced OCTproZ, an open source software for live OCT signal processing. With the presented plug-in system, it is possible to develop software modules to use OCTproZ with custom OCT systems, thus reducing the OCT system development time significantly. OCTproZ is meant to be a collaborative project, where everyone involved in the field of OCT is invited to improve the software and share the changes within the community. 
