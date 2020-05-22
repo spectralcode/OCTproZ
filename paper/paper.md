@@ -15,10 +15,9 @@ authors:
   - name: TAmmo Ripken
     affiliation: 2        
 affiliations:
-  - name: Institute of Quantum Optics, Leibniz University Hannover, Welfengarten 1, 30167 Hannover, Germany
+ - name: Institute of Quantum Optics, Leibniz University Hannover, Welfengarten 1, 30167 Hannover, Germany
    index: 1
-  - name: Industrial and Biomedical Optics Department, Laser Zentrum Hannover e.V., Hollerithallee 8, 30419
-Hannover, Germany
+ - name: Industrial and Biomedical Optics Department, Laser Zentrum Hannover e.V., Hollerithallee 8, 30419 Hannover, Germany
    index: 2
 date: 22 May 2020
 bibliography: paper.bib
