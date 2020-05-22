@@ -41,6 +41,8 @@ GPU           | A-scan rate
 NVIDIA Quadro K620  | ~ 300 kHz ( ~2,2 volumes/s)
 NVIDIA GeForce GTX 1080 Ti  | ~ 4,8 MHz (~ 36 volumes/s)
 
+The performance was measured with the full processing pipeline of OCTproZ v1.0.0 but without the 3D live view. The same perfromance is expected with OCTproZ v1.1.0 if live sinusoidal scan distortion correction is disabled. 
+
 
 Plug-ins
 ----------
@@ -66,6 +68,7 @@ To run OCTproZ a cuda-compatible graphics card with current drivers is required.
 
 A precompiled package for Windows (64bit) can be downloaded from:
 [GitHub release section](https://github.com/spectralcode/OCTproZ/releases). Extract the zip archive and execute OCTproZ, installation is not necessary.
+A test dataset that can be used with the Virtual OCT System can be downloaded from [here](https://figshare.com/articles/SSOCT_test_dataset_for_OCTproZ/12356705). 
 
 If you need OCTproZ for a different operating system, the easiest way is to compile it yourself. See the compiling section.
 
