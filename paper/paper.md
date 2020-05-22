@@ -116,7 +116,7 @@ With 3D live view:| |
   Volumes per second|**$~ 1.9$**|**$~ 30$**
 Without 3D live view:| | 
    A-scans per second|**$~ 300 \cdot 10^{3}$**|**$~ 4.8 \cdot 10^{6}$**
-   Volumes per Second|**$~ 2.2$**|**$~ 36$**
+   Volumes per second|**$~ 2.2$**|**$~ 36$**
 
 Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}, in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
 
