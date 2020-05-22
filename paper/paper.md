@@ -88,15 +88,7 @@ To increase frame rate, a bidirectional scanning scheme can be used. [@wieser201
  ![Effect of the backward scan correction on the en face view of an OCT volume that was acquired using a bidirectional scanning scheme. A piece of wood with a laser burned hole was used as sample. Left: Spot path on sample when a bidirectional scanning scheme is applied. Middle: En face view with enabled backward scan correction. Right: En face view when backward scan correction is disabled. \label{fig:bscanflip}](figures/bscanflip_overview_text_small.png) 
  
 
-**Visualization:**
-For live visualization of the processed data in 2D and 3D, the user has access to three different output windows: B-scan, en face view and volume. B-scan and en face view are orthogonal cross-sectional slices of the volume, which can be maximum intensity projections or averaged layers of a user-defined amount of layers of the volume. For easier orientation red marker lines can be overlaid to indicate the current B-scan slice position within the en face view and vice versa.  
-The interactive volume viewer displays acquired OCT volumes without cropping or downsampling in real time. As soon as one batch of data is processed, the corresponding part of the volume is updated and rendered with maximum intensity projection, alpha blending or isosurfaces. The volume viewer is based on source code from an open source raycaster. [@raycaster]
-In order to avoid unnecessary data transfer to host memory, CUDA-OpenGL interoperability is used which allows the processed data to remain in GPU memory for visualization. 
-However, it is possible to transfer the data to the host memory to save it on the hard disk, display individual axial depth profiles, so-called A-scans, in a 1D plot or use it within custom Extensions.
 
-
-
-Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}. , in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
 
   ![Screenshot of NVIDIA Visual Profiler showing timing sequence of the GPU processing pipeline for the same raw data set as used in table 1. Individual processing kernels are marked alphabetically: a) data conversion, b) kernel that combines k-linearization, windowing and dispersion compensation, c) IFFT, d) subtraction step of fixed pattern noise removal, e) truncate and logarithm, f) backward scan correction, g) copy B-scan frame to display buffer, h) copy en face view to display buffer \label{fig:visualprofiler}](figures/visualprofiler_screenshot.png)
 
