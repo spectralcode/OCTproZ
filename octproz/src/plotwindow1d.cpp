@@ -203,7 +203,7 @@ void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned in
 				if (this->sampleValues[i] > max) { max = this->sampleValues[i]; }
 			}
 			//update plot
-			this->graph(0)->setName(this->rawLineName + QString::number(this->line)+" - Min: " + QString::number(min) + "   Max: " + QString::number(max));
+			this->graph(0)->setName(this->rawLineName + QString::number(this->line)+" - Min: " + QString::number(min) + "   Max: " + QString::number(max) + "\nBuffer Id: " + QString::number(currentBufferNr));
 			this->graph(0)->setData(this->sampleNumbers, this->sampleValues, true);
 			if(this->autoscaling){
 				this->graph(0)->rescaleAxes();
@@ -258,7 +258,7 @@ void PlotWindow1D::slot_plotProcessedData(void* buffer, unsigned bitDepth, unsig
 				if (this->sampleValuesProcessed[i] > max) { max = this->sampleValuesProcessed[i]; }
 			}
 			//update plot
-			this->graph(1)->setName(this->processedLineName + QString::number(this->line)+" - Min: " + QString::number(min) + "   Max: " + QString::number(max));
+			this->graph(1)->setName(this->processedLineName + QString::number(this->line)+" - Min: " + QString::number(min) + "   Max: " + QString::number(max) + "\nBuffer Id: " + QString::number(currentBufferNr));
 			this->graph(1)->setData(this->sampleNumbersProcessed, this->sampleValuesProcessed, true);
 			if(this->autoscaling){
 				this->graph(1)->rescaleAxes();
