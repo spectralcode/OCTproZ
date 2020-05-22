@@ -12,7 +12,7 @@ authors:
     affiliation: 2 
   - name: Alexander Heisterkamp
     affiliation: 1
-  - name: TAmmo Ripken
+  - name: Tammo Ripken
     affiliation: 2        
 affiliations:
  - name: Institute of Quantum Optics, Leibniz University Hannover, Welfengarten 1, 30167 Hannover, Germany
@@ -35,10 +35,7 @@ Optical coherence tomography (OCT) is a non-invasive imaging technique used prim
 
 # 2. Basic overview of OCTproZ
 
-OCTproZ performs live signal processing and visualization of OCT data. It is written in C++, uses the cross-platform application framework Qt for the GUI and utilizes Nvidia’s computer unified device architecture (CUDA) for GPU parallel computing. A screenshot of the application can be seen in Fig. \ref{fig:screenshot}
 
- 
- ![Screenshot of OCTproZ v1.0. Processing settings visible in the left panel can be changed before processing is started or while processing is in progress. Processed data is live visualized in 2D as cross sectional images (B-scan and en face view) and in 3D as interactive volume rendering. The live view shows a piece of wood with a couple layers of tape and a laser burned hole. \label{fig:screenshot}](figures/20191122_screenshot3d.png)
 
 
 The software can be separated into three parts: main application, development kit (DevKit) and plug-ins. The main application, OCTproZ itself, contains the logic for GUI, processing and visualization. The DevKit, which is implemented as static library, provides the necessary interface for plugin development. Plug-ins can be one of two kinds: “Acquisition Systems” or “Extensions”. The former represent software implementations of physical or virtual OCT system hardware, the later are software modules that extend the functionality of an OCT system (e.g. software control of a liquid lens) or provides additional custom defined post processing steps. Both, Acquisition Systems and Extensions, are dynamic libraries that can be loaded into OCTproZ during runtime.  
