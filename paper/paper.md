@@ -88,9 +88,17 @@ To increase frame rate, a bidirectional scanning scheme can be used. [@wieser201
  ![Effect of the backward scan correction on the en face view of an OCT volume that was acquired using a bidirectional scanning scheme. A piece of wood with a laser burned hole was used as sample. Left: Spot path on sample when a bidirectional scanning scheme is applied. Middle: En face view with enabled backward scan correction. Right: En face view when backward scan correction is disabled. \label{fig:bscanflip}](figures/bscanflip_overview_text_small.png) 
  
 
-**Visualization:**
-For live visualization of the processed data in 2D and 3D, the user has access to three different output windows: B-scan, en face view and volume. B-scan and en face view are orthogonal cross-sectional slices of the volume, which can be maximum intensity projections or averaged layers of a user-defined amount of layers of the volume. For easier orientation red marker lines can be overlaid to indicate the current B-scan slice position within the en face view and vice versa.  
-The interactive volume viewer displays acquired OCT volumes without cropping or downsampling in real time. As soon as one batch of data is processed, the corresponding part of the volume is updated and rendered with maximum intensity projection, alpha blending or isosurfaces. The volume viewer is based on source code from an open source raycaster. [@raycaster]
-In order to avoid unnecessary data transfer to host memory, CUDA-OpenGL interoperability is used which allows the processed data to remain in GPU memory for visualization. 
-However, it is possible to transfer the data to the host memory to save it on the hard disk, display individual axial depth profiles, so-called A-scans, in a 1D plot or use it within custom Extensions.
+
+
+# 6. Conclusion
+In this paper, we introduced OCTproZ, an open source software for live OCT signal processing. With the presented plug-in system, it is possible to develop software modules to use OCTproZ with custom OCT systems, thus reducing the OCT system development time significantly. OCTproZ is meant to be a collaborative project, where everyone involved in the field of OCT is invited to improve the software and share the changes within the community. 
+We especially hope for more open source publications within the OCT community to reduce the time necessary for the replication of OCT processing algorithms and thereby accelerate scientific progress.
+
+# Funding
+This work was partially funded by the European Regional Development Fund (ERDF) and the state Lower Saxony as part of the project OPhonLas. 
+
+![efre](figures/efre.png) 
+
+
+# References
 
