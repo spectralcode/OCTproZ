@@ -49,3 +49,20 @@ Raw data, i.e. acquired spectral fringe pattern, from the OCT system is transfer
  ![Processing pipeline of OCTproZ v1.0. Raw data from the OCT system is transferred to host RAM and via direct memory access (DMA) this raw data is then copied asynchronously to GPU memory where OCT signal processing is executed. If the processed data needs to be saved on the hard disk, it can be transferred back to host RAM using DMA. \label{fig:processing}](figures/processing_pipeline.png) 
 
 
+**Data conversion:**
+The first step of the OCT processing pipeline converts the incoming raw data, that may have a bit depth between 8 bit and 32 bit, to a single-precision, floating-point complex data type with a bit depth of 32 bit. This ensures that the processing pipeline can be executed for a variety of different input data types. Furthermore, a bit shift operation is applied during the conversion process if necessary. Some digitizers, that are commonly used for swept source OCT (SS-OCT), can be configured to use 16-bit integers to store 12-bit sample values in the most significant bits (e.g. ATS9373, Alazar Technologies Inc.). To extract the actual 12-bit value a right-shift by 4, which is equal to a division by 16, needs to be applied to every 16-bit integer. 
+
+
+**k linearization:**
+To convert the acquired raw OCT data into a depth profile, inverse Fourier transform is used, which relates wavenumber k and physical distance. Depending on the used hardware setup, the acquired spectral fringe pattern is usually not linear in k. In SS-OCT the temporal sampling points do not necessarily have to be spaced in k domain evenly, especially if k clocking is not used and in spectrometer based FD-OCT systems the interference signal is usually acquired linear in wavelength. The k-linearization resamples the raw data evenly in k space, which improves axial resolution. 
+A user defined resampling curve $r[j]$ can be specified by providing the coefficients of a third order polynomial. The resampling curve is a look up table that assigns every index $j$ of the raw data array $S_{raw}[j]$ an index $j'$, i.e. $j'=r[j]$ . To obtain a k-linearized raw data array $S_{k}[j]$, the value at the index $j'$ needs to be interpolated and remapped to the array position with index $j$. In the current version of OCTproZ the user can choose between linear and 3rd order polynomial interpolation for this task.  Equation \autoref{eq:linearinterpolation} describes the k-linearization with linear interpolation; $\lfloor x \rfloor$ denotes the floor function that takes as input $x$ a real number and gives as output the greatest integer less than or equal to $x$. 
+
+\begin{equation}\label{eq:linearinterpolation}
+S_k[j] = S_{raw}[\lfloor j' \rfloor] + (j' - \lfloor j' \rfloor )(S_{raw} [ \lfloor j' \rfloor +1]-S_{raw} [ \lfloor j' \rfloor ])
+\end{equation}
+
+
+**Dispersion compensation:**
+If sample and reference arm of an OCT system contain different length of dispersive media, a wavenumber dependent phase shift is introduced to the signal and axial resolution decreases. Such dispersion mismatch usually occurs when the length or the number of optical fiber components and lenses is not identical in both optical arms. In this case, a hardware based dispersion compensation, such as variable-thickness fused-silica and BK7 prisms within in the sample arm [@drexler1999vivo], can be applied. A more convenient way to compensate for the additional phase shift, especially if the dispersion mismatch is introduced mainly by the sample itself, is numerical dispersion compensation. Hereby the signal is multiplied with a phase term $e^{(-i \Theta (k))}$ that exactly cancels the phase shift introduced due dispersion mismatch. [@cense2004ultrahigh] A user defined phase $\Theta (k)$ can be specified in the GUI by providing the coefficients of a third order polynomial. 
+
+
