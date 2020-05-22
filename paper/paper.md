@@ -90,7 +90,33 @@ To increase frame rate, a bidirectional scanning scheme can be used. [@wieser201
 
 **Visualization:**
 For live visualization of the processed data in 2D and 3D, the user has access to three different output windows: B-scan, en face view and volume. B-scan and en face view are orthogonal cross-sectional slices of the volume, which can be maximum intensity projections or averaged layers of a user-defined amount of layers of the volume. For easier orientation red marker lines can be overlaid to indicate the current B-scan slice position within the en face view and vice versa.  
-The interactive volume viewer displays acquired OCT volumes without cropping or downsampling in real time. As soon as one batch of data is processed, the corresponding part of the volume is updated and rendered with maximum intensity projection, alpha blending or isosurfaces. The volume viewer is based on source code from an open source raycaster.
+The interactive volume viewer displays acquired OCT volumes without cropping or downsampling in real time. As soon as one batch of data is processed, the corresponding part of the volume is updated and rendered with maximum intensity projection, alpha blending or isosurfaces. The volume viewer is based on source code from an open source raycaster. [@raycaster]
+In order to avoid unnecessary data transfer to host memory, CUDA-OpenGL interoperability is used which allows the processed data to remain in GPU memory for visualization. 
+However, it is possible to transfer the data to the host memory to save it on the hard disk, display individual axial depth profiles, so-called A-scans, in a 1D plot or use it within custom Extensions.
+
+Every processing step, except data conversion and IFFT, can be enabled and disabled during processing. To illustrate the effect of singe processing steps, B-scans of an OCT phantom (APL-OP01, Arden Photonics, UK) were acquired with a custom made SS-OCT system without k-klocking and with a slight dispersion imbalance. The acquired raw data was processed multiple times, each time with a different processing step disabled, see Fig. \ref{fig:effectofprocessing}. 
+
+ ![Effect of disabling single processing steps on resulting B-scan. The B-scans show a test pattern of an OCT phantom (APL-OP01, Arden Photonics, UK). Below each B-scan is an enlarged view of the corresponding area framed in red within the B-scan. a) The full processing pipeline, as described in section 3, is enabled. b) k linearization is disabled (all other steps are enabled). c) Dispersion compensation is disabled (all other steps are enabled). d) Windowing is disabled (all other steps are enabled). e) Fixed-pattern noise removal is disabled (all other steps are enabled). The red arrows point to horizontal structural artifacts that are visible if fixed-pattern noise removal is disabled. \label{fig:effectofprocessing}](figures/overview.png) 
+
+# 4. Processing Performance 
+Processing rate highly depends on the size of the raw data, the used computer hardware and resource usage by background or system processes. With common modern computer systems and typical data dimensions for OCT, OCTproZ achieves A-scan rates in the MHz range. Exemplary, table 1 shows two computer systems and their respective processing rates for the full processing pipeline. However, since the 3D live view is computationally intensive the processing rate changes noticeably depending on whether the volume viewer is activated or not. The used raw data set consists of 12 bit per sample, 1024 samples per line (corresponds to 512 samples per A-scan), 512 lines per frame and 256 frames per volume. As the volume is processed in batches, the batch size was set for each system to a reasonable number of B scans per buffer to avoid GPU memory overflow. 
+
+Table 1: Comparison of two computer systems and their respective processing rates for raw data sets with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume.
+
+ 
+. |**Office Computer**|**Lab Computer**
+:-----|:-----|:-----
+CPU|Intel® Core i5-7500|AMD Ryzen Threadripper 1900X
+RAM|16 GB|32 GB
+GPU|NVIDIA Quadro K620|NVIDIA GeForce GTX 1080 Ti
+Operating system|Windows 10|Ubuntu 16.04
+B-scans per buffer|32|256
+With 3D live view:| | 
+  A-scans per second|**~ 250⋅10<sup>3</sup>**|**~ 4.0⋅10<sup>6</sup>**
+  Volumes per second|**~ 1.9**|**~ 30**
+Without 3D live view:| | 
+   A-scans per second|**~ 300⋅10<sup>3</sup>**|**~ 4.8⋅10<sup>36</sup>**
+   Volumes per Second|**~ 2.2**|**~ 36**
 
 Performance profiling for the GPU processing pipeline on the lab computer and with the same raw data set as used in table 1, was performed with NVIDIA Visual Profiler. A screenshot of it can be seen in figure \ref{fig:visualprofiler}. , in which the relative duration of each kernel (function that is executed multiple times in parallel on the GPU) can be seen. It should be noted that the execution time of each kernel depends on the input data length and changes when different OCT data set dimensions are used. However, the k-linearization kernel, which also contains windowing and dispersion compensation, and the IFFT kernel need the most computing time.
 
