@@ -23,14 +23,14 @@ OCTproZ runs on Windows and Linux. </br>
 It has been successfully tested on Windows 10 and Ubuntu 16.04
 
 
-New Highlights
+Processing Pipeline
 --------
+A detailed overview of the OCTproZ processing pipeline can be found [here.](processing.md)
 
-* **Live sinusoidal scan distortion correction for high speed OCT systems (since v1.1.0)**  </br>
 <p align="center">
-  <img src="images/sinusoidalCorrectionOnOff.png" width="260">
+  <img src="images/processing_pipeline_v1_1_0.png" width="420">
 </p>
-
+Raw data from the OCT system is transferred to host RAM and via direct memory access (DMA) this raw data is then copied asynchronously to GPU memory where OCT signal processing is executed. If the processed data needs to be saved on the hard disk, it can be transferred back to host RAM using DMA.
 
 Performance
 ----------
