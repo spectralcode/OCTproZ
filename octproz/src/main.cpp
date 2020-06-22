@@ -29,8 +29,12 @@
 #include <QApplication>
 
 void style() {
-	//reduce separator width
-	qApp->setStyleSheet("QMainWindow::separator {width: 1px}");
+	qApp->setStyleSheet(
+		//reduce separator width
+		"QMainWindow::separator {width: 1px} "
+		//adjust menu style
+		"QMenu::separator {height: 1px; margin-left: 6px; margin-right: 6px; background: rgba(155, 155, 155, 255);}"
+	);
 
 	//set style and color palette
 	qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -44,7 +48,7 @@ void style() {
 	dark.setColor(QPalette::ToolTipBase, QColor(200, 200, 200));
 	dark.setColor(QPalette::ToolTipText, QColor(50, 50, 50));
 	dark.setColor(QPalette::ButtonText, QColor(255, 255, 255));
-	dark.setColor(QPalette::BrightText, QColor(255, 0, 0));
+	dark.setColor(QPalette::BrightText, QColor(255, 50, 50));
 	dark.setColor(QPalette::Link, QColor(40, 130, 220));
 	dark.setColor(QPalette::Disabled, QPalette::Text, QColor(99, 99, 99));
 	dark.setColor(QPalette::Disabled, QPalette::WindowText, QColor(99, 99, 99));
