@@ -40,25 +40,17 @@
 #include <cufft.h>
 #include <cufftXt.h>
 
-// CUDA Runtime, Interop, and includes
-//#include <cuda_runtime.h>
+//CUDA Runtime, Interop, and includes
 #include <cuda_gl_interop.h>
 #include <cuda_profiler_api.h>
-//#include <vector_types.h>
-//#include <vector_functions.h>
 #include <driver_functions.h>
 
-// Helper functions, CUDA utilities
+//Helper functions, CUDA utilities
 #include <helper_cuda.h>
-//#include <helper_functions.h>
-//#include <helper_timer.h>
-//#include <helper_math.h>
-//#include <device_functions.h>
 #include <cuda_fp16.h>
 
-//Structs and classes with OCTproZ parameters
+//OCTproZ structs and classes
 #include "octalgorithmparameters.h"
-
 #include "gpu2hostnotifier.h"
 
 

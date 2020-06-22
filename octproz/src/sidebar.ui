@@ -337,7 +337,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-333</y>
+                <y>0</y>
                 <width>307</width>
                 <height>881</height>
                </rect>
@@ -2066,7 +2066,7 @@ recording (time lapse mode): </string>
   <customwidget>
    <class>MiniCurvePlot</class>
    <extends>QWidget</extends>
-   <header location="global">minicurveplot.h</header>
+   <header>minicurveplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -115,7 +115,7 @@ float Polynomial::getValueAt(float x) {
 	return result;
 }
 
-float * Polynomial::getData() {
+float* Polynomial::getData() {
 	if (this->polynomialChanged) {
 		this->updateData();
 		this->polynomialChanged = false;
@@ -126,8 +126,6 @@ float * Polynomial::getData() {
 void Polynomial::clamp(float* inputData, unsigned int inputLength, float min, float max) {
 	if (inputData != nullptr) {
 		for (unsigned int i = 0; i < inputLength; i++) {
-			float test = inputData[i];
-			test++;
 			if (inputData[i] < min){
 				inputData[i] = min;
 			}
