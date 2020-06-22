@@ -89,6 +89,7 @@ public slots:
 	void slot_stop();
 	void slot_record();
 	void slot_selectSystem();
+	void slot_menuUserManual();
 	void slot_menuAbout();
 	void slot_menuApplicationSettings();
 	void slot_menuSystemSettings();
@@ -106,9 +107,17 @@ public slots:
 	void slot_enableBscanViewProcessing(bool enable);
 	void slot_enableVolumeViewProcessing(bool enable);
 	void slot_easterEgg();
+	void slot_useCustomResamplingCurve(bool use);
+	void slot_loadCustomResamplingCurve();
 
 
 private:
+	void setSystem(QString systemName);
+	void activateSystem(AcquisitionSystem* system);
+	void deactivateSystem(AcquisitionSystem* system);
+	void reactivateSystem(AcquisitionSystem* system);
+	void forceUpdateProcessingParams();
+
 	Ui::OCTproZ *ui;
 	AboutDialog* aboutWindow;
 	Sidebar* sidebar;
@@ -128,11 +137,6 @@ private:
 	QList<QString> activatedSystems;
 	QList<QAction*> extensionActions;
 
-	void setSystem(QString systemName);
-	void activateSystem(AcquisitionSystem* system);
-	void deactivateSystem(AcquisitionSystem* system);
-	void reactivateSystem(AcquisitionSystem* system);
-
 	QMenu* extrasMenu;
 	QToolBar* viewToolBar;
 	QToolBar* view2DExtrasToolBar;
@@ -148,6 +152,9 @@ private:
 	QAction* actionEnFaceView;
 	QAction* action3D;
 	QAction* actionConsole;
+	QAction* actionUseSidebarKLinCurve;
+	QAction* actionUseCustomKLinCurve;
+	QAction* actionSetCustomKLinCurve;
 
 	MessageConsole* console;
 

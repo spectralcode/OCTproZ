@@ -26,7 +26,7 @@
 **/
 
 #include "octalgorithmparameters.h"
-
+#include <stdio.h>
 
 //////////////////////////////////////////////////////////////////////////
 //			constructor (singleton pattern!), destructor				//
@@ -40,6 +40,7 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	this->dispersionCompensation = false;
 	this->windowing = false;
 	this->resamplingUpdated = false;
+	this->useCustomResampleCurve = false;
 	this->dispersionUpdated = false;
 	this->windowUpdated = false;
 	this->stopAfterRecord = false;
@@ -52,6 +53,7 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	this->copiedBuffers = 0;
 
 	this->resampleCurve = nullptr;
+	this->customResampleCurve = nullptr;
 	this->resampleReferenceCurve = nullptr;
 	this->dispersionCurve = nullptr;
 	this->dispersionReferenceCurve = nullptr;
@@ -98,6 +100,10 @@ OctAlgorithmParameters::~OctAlgorithmParameters()
 	delete this->dispersionReferenceCurveCalculator;
 	delete this->windowCurveCalculator;
 	delete this->windowReferenceCurveCalculator;
+
+	if(this->customResampleCurve != nullptr){
+		free(this->customResampleCurve);
+	}
 }
 
 void OctAlgorithmParameters::updateResampleCurve() {
@@ -105,17 +111,22 @@ void OctAlgorithmParameters::updateResampleCurve() {
 	if (this->resampling || this->acquisitionParamsChanged) {
 		size = this->samplesPerLine;
 		if (size <= 0) { return; }
-		float c0 = this->c0;
-		float c1 = this->c1 / static_cast<float>(size - 1);
-		float c2 = this->c2 / powf(static_cast<float>((size - 1)), 2);
-		float c3 = this->c3 / powf(static_cast<float>((size - 1)), 3);
 
-		this->resamplingCurveCalculator->setSize(size);
-		this->resamplingCurveCalculator->setCoeff(c0, 0);
-		this->resamplingCurveCalculator->setCoeff(c1, 1);
-		this->resamplingCurveCalculator->setCoeff(c2, 2);
-		this->resamplingCurveCalculator->setCoeff(c3, 3);
-		this->resampleCurve = this->resamplingCurveCalculator->getData();
+		//update polynomial fit for resample curve if custom curve is not used
+		if(!this->useCustomResampleCurve || this->customResampleCurve == nullptr){
+			float c0 = this->c0;
+			float c1 = this->c1 / static_cast<float>(size - 1);
+			float c2 = this->c2 / powf(static_cast<float>((size - 1)), 2);
+			float c3 = this->c3 / powf(static_cast<float>((size - 1)), 3);
+			this->resamplingCurveCalculator->setSize(size);
+			this->resamplingCurveCalculator->setCoeff(c0, 0);
+			this->resamplingCurveCalculator->setCoeff(c1, 1);
+			this->resamplingCurveCalculator->setCoeff(c2, 2);
+			this->resamplingCurveCalculator->setCoeff(c3, 3);
+			this->resampleCurve = this->resamplingCurveCalculator->getData();
+		}else{
+			this->resampleCurve =  this->customResampleCurve;
+		}
 		Polynomial::clamp(this->resampleCurve, this->samplesPerLine, 0, this->samplesPerLine-4); //resampling curve values shall remain between 0 and number of samples per line - 3 (a line is a raw A-scan). If a value is outside these boundaries the resampling (k-linearization) during processing will fail with a memory access violation //todo: rethink this approach, maybe there is a better way to avoid memeory access violation during interpolation in klinerization kernels
 		this->resamplingUpdated = true;
 
@@ -127,6 +138,16 @@ void OctAlgorithmParameters::updateResampleCurve() {
 			this->resampleReferenceCurve = this->resamplingReferenceCurveCalculator->getData();
 			Polynomial::clamp(this->resampleReferenceCurve, this->samplesPerLine, 0, this->samplesPerLine-4);
 		}
+	}
+}
+
+void OctAlgorithmParameters::loadCustomResampleCurve(float* externalCurve, int size) {
+	if(this->customResampleCurve != nullptr){
+		free(this->customResampleCurve);
+	}
+	this->customResampleCurve = (float*)malloc(size*sizeof(float));
+	for(int i = 0; i < size; i++){
+		this->customResampleCurve[i] = externalCurve[i];
 	}
 }
 

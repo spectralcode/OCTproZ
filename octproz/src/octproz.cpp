@@ -284,11 +284,12 @@ void OCTproZ::initActionsAndDocks() {
 	this->actionRecord->setEnabled(false);
 }
 
-void OCTproZ::initGui(){
+void OCTproZ::initGui() {
 	ui->setupUi(this);
 	this->initActionsAndDocks(); //initActionsAndDocks() must be called before initMenu()
 	this->sidebar->init(this->actionStart, this->actionStop, this->actionRecord, this->actionSelectSystem, this->actionSystemSettings);
 	this->initMenu();
+	this->forceUpdateProcessingParams();
 
 	//Message Console connects
 	connect(this, &OCTproZ::info, this->console, &MessageConsole::slot_displayInfo);
@@ -308,7 +309,7 @@ void OCTproZ::initGui(){
 	qDebug() << "Main Thread ID: " << QThread::currentThreadId();
 }
 
-void OCTproZ::prepareDockWidget(QDockWidget*& dock, QWidget* widgetForDock, QAction*& action, const QIcon& icon, QString iconText){
+void OCTproZ::prepareDockWidget(QDockWidget*& dock, QWidget* widgetForDock, QAction*& action, const QIcon& icon, QString iconText) {
 	dock->setWidget(widgetForDock);
 	this->addDockWidget(Qt::RightDockWidgetArea, dock, Qt::Horizontal);
 	dock->setVisible(false);
@@ -321,8 +322,10 @@ void OCTproZ::prepareDockWidget(QDockWidget*& dock, QWidget* widgetForDock, QAct
 	this->viewToolBar->addAction(action);
 }
 
-void OCTproZ::initMenu(){
+void OCTproZ::initMenu() {
 	//file menu
+	this->actionSelectSystem->setShortcut(QKeySequence::Open);
+	this->actionSystemSettings->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(this->actionSelectSystem);
 	fileMenu->addAction(this->actionSystemSettings);
@@ -346,23 +349,45 @@ void OCTproZ::initMenu(){
 	//add toolbar view actions to view menu
 	viewMenu->addActions({ viewToolBarAction, view2DExtrasToolBarAction, controlToolBarAction, this->action1D, this->action2D, this->actionEnFaceView, this->action3D, this->actionConsole });
 
-	//settings menu
+	//extras menu
 	this->extrasMenu = this->menuBar()->addMenu(tr("&Extras"));
-//  QAction *settingsAct = this->extrasMenu->addAction(tr("&Processing settings"), this, &OCTproZ::slot_menuApplicationSettings);
-//  settingsAct->setStatusTip(tr("OCT processing settings"));
-//  settingsAct->setIcon(QIcon(":/icons/octproz_processingsettings_icon.png"));
+	QMenu* klinMenu = this->extrasMenu->addMenu(tr("&Resampling curve for k-linearization"));
+	klinMenu->setToolTipsVisible(true);
+	klinMenu->setStatusTip(tr("Settings for k-linearization resampling curve"));
+	klinMenu->setIcon(QIcon(":/icons/octproz_klincurve_icon.png"));
+	QActionGroup* customKlinCurveGroup = new QActionGroup(this);
+	this->actionSetCustomKLinCurve = new QAction(tr("&Load custom curve from file..."), this);
+	connect(this->actionSetCustomKLinCurve, &QAction::triggered, this, &OCTproZ::slot_loadCustomResamplingCurve);
+	this->actionUseSidebarKLinCurve = new QAction(tr("Use &polynomial curve from sidebar"), this);
+	this->actionUseCustomKLinCurve = new QAction(tr("Use &custom curve from file"), this);
+	this->actionUseSidebarKLinCurve ->setCheckable(true);
+	this->actionUseCustomKLinCurve->setCheckable(true);
+	this->actionUseSidebarKLinCurve->setActionGroup(customKlinCurveGroup);
+	this->actionUseCustomKLinCurve->setActionGroup(customKlinCurveGroup);
+	this->actionUseSidebarKLinCurve->setChecked(true);
+	connect(this->actionUseCustomKLinCurve, &QAction::toggled, this, &OCTproZ::slot_useCustomResamplingCurve);
+	klinMenu->addAction(this->actionUseSidebarKLinCurve);
+	klinMenu->addAction(this->actionUseCustomKLinCurve);
+	klinMenu->addSeparator();
+	klinMenu->addAction(this->actionSetCustomKLinCurve);
 
 	//help menu
 	QMenu *helpMenu = this->menuBar()->addMenu(tr("&Help"));
+	//user manual
+	QAction *manualAct = helpMenu->addAction(tr("&User Manual"), this, &OCTproZ::slot_menuUserManual);
+	manualAct->setStatusTip(tr("OCTproZ user manual"));
+	manualAct->setIcon(QIcon(":/icons/octproz_manual_icon.png"));
+	manualAct->setShortcut(QKeySequence::HelpContents);
+	//about dialog
 	QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &OCTproZ::slot_menuAbout);
 	aboutAct->setStatusTip(tr("About OCTproZ"));
 	aboutAct->setIcon(QIcon(":/icons/octproz_info_icon.png"));
 }
 
-void OCTproZ::loadSystemsAndExtensions(){
+void OCTproZ::loadSystemsAndExtensions() {
 	QDir pluginsDir = QDir(qApp->applicationDirPath());
 
-   //check if plugins dir exists. if it does not exist change to the share_dev directory. this makes software development easier as plugins can be copied to the share_dev during the build process
+	//check if plugins dir exists. if it does not exist change to the share_dev directory. this makes software development easier as plugins can be copied to the share_dev during the build process
 	bool pluginsDirExists = pluginsDir.cd("plugins");
 	if(!pluginsDirExists){
 		#if defined(Q_OS_WIN)
@@ -428,7 +453,7 @@ void OCTproZ::loadSystemsAndExtensions(){
 	}
 }
 
-void OCTproZ::initExtensionsMenu(){
+void OCTproZ::initExtensionsMenu() {
 	QMenu* extensionMenu = this->extrasMenu->addMenu(tr("&Extensions"));
 	extensionMenu->setIcon(QIcon(":/icons/octproz_extensions_icon.png"));
 
@@ -444,10 +469,9 @@ void OCTproZ::initExtensionsMenu(){
 	}
 }
 
-void OCTproZ::slot_start(){
-	//(re-)init resampling curve, dispersion curve, window curve, streaming
-	this->octParams->acquisitionParamsChanged = true;
-	this->sidebar->slot_updateProcessingParams();
+void OCTproZ::slot_start() {
+	//(re-)init resampling curve, dispersion curve, window curve, streaming //todo: carefully check if this is really necessary here
+	this->forceUpdateProcessingParams();
 	
 	//save current parameters to hdd
 	this->sidebar->saveSettings();
@@ -462,11 +486,11 @@ void OCTproZ::slot_start(){
 	//emit start signal to activate acquisition of current AcquisitionSystem 
 	emit start();
 
-	//For testing: read out thread affinity of current thread
+	//for debugging purposes: read out thread affinity of current thread
 	qDebug() << "Main Thread ID start emit: " << QThread::currentThreadId();
 }
 
-void OCTproZ::slot_stop(){
+void OCTproZ::slot_stop() {
 	//adjust start stop buttons
 	this->actionStart->setEnabled(true);
 	this->actionStop->setEnabled(false);
@@ -485,7 +509,7 @@ void OCTproZ::slot_stop(){
 	}
 }
 
-void OCTproZ::slot_record(){
+void OCTproZ::slot_record() {
 	//check if system is open
 	if (this->currSystem == nullptr) {
 		emit error(tr("Nothing to record, no system opened."));
@@ -528,15 +552,15 @@ void OCTproZ::slot_record(){
 	//if record mode "snaptshot" is activated save snapshot ind record directory
 	if (Settings::getInstance()->recordSettings.value(REC_MODE).toUInt() == RECORD_MODE::SNAPSHOT) {
 		QString savePath = Settings::getInstance()->recordSettings.value(REC_PATH).toString();
-		if(this->bscanWindow->isVisible()){
+		if(this->bscanWindow->isVisible()) {
 			QString fileName = timestamp + recName + "_" + "bscan_snapshot" + ".png";
 			this->bscanWindow->slot_saveScreenshot(savePath, fileName);
 		}
-		if(this->enFaceViewWindow->isVisible()){
+		if(this->enFaceViewWindow->isVisible()) {
 			QString fileName = timestamp + recName + "_" + "enfaceview_snapshot" + ".png";
 			this->enFaceViewWindow->slot_saveScreenshot(savePath, fileName);
 		}
-		if(this->volumeWindow->isVisible()){
+		if(this->volumeWindow->isVisible()) {
 			QString fileName = timestamp + recName + "_" + "volume_snapshot" + ".png";
 			this->volumeWindow->slot_saveScreenshot(savePath, fileName);
 		}
@@ -550,9 +574,13 @@ void OCTproZ::slot_record(){
 
 }
 
-void OCTproZ::slot_selectSystem(){
+void OCTproZ::slot_selectSystem() {
 	QString selectedSystem = this->sysChooser->selectSystem(this->sysManager->getSystemNames());
 	this->setSystem(selectedSystem);
+}
+
+void OCTproZ::slot_menuUserManual() {
+	QDesktopServices::openUrl(QUrl("file:///" + QCoreApplication::applicationDirPath() + "/docs/index.html"));
 }
 
 void OCTproZ::slot_menuAbout() {
@@ -563,7 +591,7 @@ void OCTproZ::slot_menuApplicationSettings() {
 	//todo: application settings dialog
 }
 
-void OCTproZ::slot_menuSystemSettings(){
+void OCTproZ::slot_menuSystemSettings() {
 	if (this->currSystem != nullptr) {
 		emit closeDock2D(); //GL window needs to be closed to avoid linux bug where QFileDialog is not usable when GL window is opend in background
 		emit pluginSettingsRequest();
@@ -607,7 +635,7 @@ void OCTproZ::slot_menuExtensions() {
 	}
 	//else (i.e. extension is visible within sidebar or as separate window) deactivate extension if user unchecked extension in menu
 	else {
-			if(!currAction->isChecked()){
+			if(!currAction->isChecked()) {
 				if(extension->getDisplayStyle() == SIDEBAR_TAB){
 					int index = tabWidget->indexOf(extensionWidget);
 					tabWidget->removeTab(index);
@@ -671,12 +699,11 @@ void OCTproZ::slot_updateAcquistionParameter(AcquisitionParams newParams){
 	this->octParams->bscansPerBuffer = newParams.bscansPerBuffer;
 	this->octParams->buffersPerVolume = newParams.buffersPerVolume;
 	this->octParams->bitDepth = newParams.bitDepth;
-	this->octParams->acquisitionParamsChanged = true;
 	this->sidebar->slot_setMaximumBscansForNoiseDetermination(this->octParams->bscansPerBuffer);
-	this->sidebar->slot_updateProcessingParams();
+	this->forceUpdateProcessingParams();
 }
 
-void OCTproZ::slot_closeOpenGLwindows(){
+void OCTproZ::slot_closeOpenGLwindows() {
 #if !defined(Q_OS_WIN)
 	if (this->dock2D->isVisible()) {
 		this->isDock2DClosed = true;
@@ -747,7 +774,7 @@ void OCTproZ::slot_enableBscanViewProcessing(bool enable) {
 	this->octParams->bscanViewEnabled = enable;
 }
 
-void OCTproZ::slot_enableVolumeViewProcessing(bool enable){
+void OCTproZ::slot_enableVolumeViewProcessing(bool enable) {
 	this->octParams->volumeViewEnabled = enable;
 	QCoreApplication::processEvents();
 	if(enable){
@@ -755,12 +782,43 @@ void OCTproZ::slot_enableVolumeViewProcessing(bool enable){
 	}
 }
 
-void OCTproZ::slot_easterEgg(){
+void OCTproZ::slot_easterEgg() {
 	if(this->dockVolumeView->isVisible()){
 		if(this->currSystem == nullptr){
 			this->volumeWindow->generateTestVolume();
 		}
 	}
+}
+
+void OCTproZ::slot_useCustomResamplingCurve(bool use) {
+	this->octParams->useCustomResampleCurve = use;
+	this->octParams->acquisitionParamsChanged = true;
+	this->sidebar->slot_updateProcessingParams();
+}
+
+void OCTproZ::slot_loadCustomResamplingCurve() {
+	QString filters("CSV (*.csv)");
+	QString defaultFilter("CSV (*.csv)");
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Load Curve"), QDir::currentPath(), filters, &defaultFilter);
+	if(fileName == ""){
+		emit error(tr("Loading of custom resampling curve for k-linearization canceled."));
+		return;
+	}
+
+	QFile file(fileName);
+	QVector<float> curve;
+	file.open(QIODevice::ReadOnly);
+	QTextStream txtStream(&file);
+	QString line = txtStream.readLine();
+	int i = 0;
+	while (!txtStream.atEnd()){
+		line = txtStream.readLine();
+		curve.append((line.section(";", 1, 1).toFloat()));
+	}
+	file.close();
+	this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
+	this->octParams->acquisitionParamsChanged = true;
+	this->sidebar->slot_updateProcessingParams();
 }
 
 void OCTproZ::setSystem(QString systemName) {
@@ -773,7 +831,6 @@ void OCTproZ::setSystem(QString systemName) {
 	if(this->currSystem != nullptr){
 		this->deactivateSystem(this->currSystem);
 	}
-
 	if(!this->activatedSystems.contains(systemName)){ //system got selected for the first time
 		this->activatedSystems.append(systemName);
 		this->activateSystem(system);
@@ -829,4 +886,9 @@ void OCTproZ::reactivateSystem(AcquisitionSystem* system){
 	connect(this, &OCTproZ::loadPluginSettings, system, &AcquisitionSystem::settingsLoaded);
 	connect(this, &OCTproZ::pluginSettingsRequest, system->settingsDialog, &QDialog::show);
 	connect(this, &OCTproZ::pluginSettingsRequest, system->settingsDialog, &QDialog::raise);
+}
+
+void OCTproZ::forceUpdateProcessingParams() {
+	this->octParams->acquisitionParamsChanged = true;
+	this->sidebar->slot_updateProcessingParams();
 }

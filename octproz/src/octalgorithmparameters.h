@@ -60,6 +60,7 @@ public:
 	void updateResampleCurve();
 	void updateDispersionCurve();
 	void updateWindowCurve();
+	void loadCustomResampleCurve(float *externalCurve, int size);
 
 	//acquisition
 	unsigned int samplesPerLine;
@@ -80,10 +81,12 @@ public:
 	float signalAddend;	/// User defined addend. This value will be added to each signal value. 
 
 	float* resampleCurve;
+	float* customResampleCurve;
 	float* resampleReferenceCurve;
 	float c0, c1, c2, c3;
 	bool resampling;
 	bool resamplingUpdated;
+	bool useCustomResampleCurve;
 	INTERPOLATION resamplingInterpolation;
 
 	float* dispersionCurve;
@@ -133,7 +136,6 @@ public:
 	bool streamToHost;
 	unsigned int streamingBuffersToSkip;
 	unsigned int currentBufferNr;
-
 
 
 private:
