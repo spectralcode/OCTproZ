@@ -55,6 +55,7 @@ private:
 	QColor referenceCurveColor;
 	int referenceCurveAlpha;
 
+
 protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
