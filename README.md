@@ -73,6 +73,11 @@ A test dataset that can be used with the Virtual OCT System can be downloaded fr
 If you need OCTproZ for a different operating system, the easiest way is to compile it yourself. See the compiling section.
 
 
+User Manual
+----------
+An online version of the user manual can be found [here](https://spectralcode.github.io/OCTproZ/index.html). 
+
+
 Compiling
 ---------
 
