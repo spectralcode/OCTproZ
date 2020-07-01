@@ -30,6 +30,7 @@ SOFTWARE.
 #include <QThread>
 #include <QDir>
 #include <QDebug>
+#include "math.h"
 #include "virtualoctsystemsettingsdialog.h"
 #include "octproz_devkit.h"
 
