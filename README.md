@@ -110,7 +110,9 @@ If you have developed a plug-in for OCTproZ and want it to be mentioned here, pl
 Publication
 ----------
 Coming soon. In the meantime, you can contact me at </br>
-_zabic_<span style="display:none">magic</span>_@iqo.uni-hannover.de_
+_zabic_ _</br>_
+_at_</br>
+_iqo_._uni_-_hannover_._de_</br>
 
 Authors:</br>
 Miroslav Zabic<sup>1, 2</sup>, Ben Matthias<sup>2</sup>, Alexander Heisterkamp<sup>1</sup>, Tammo Ripken<sup>2</sup></br>
