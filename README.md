@@ -20,17 +20,15 @@ Plug-ins enable the integration of custom OCT systems and software modules. Ther
 
 * **Cross platform** </br>
 OCTproZ runs on Windows and Linux. </br>
-It has been successfully tested on Windows 10 and Ubuntu 16.04
+It has been successfully tested on Windows 10, Ubuntu 16.04 and Ubuntu 18.04
 
 
 Processing Pipeline
 --------
-A detailed overview of the OCTproZ processing pipeline can be found [here.](processing.md)
-
 <p align="center">
-  <img src="images/processing_pipeline_v1_1_0.png" width="420">
+  <img src="images/processing_pipeline_linear_v1_1_0.png" >
 </p>
-Raw data from the OCT system is transferred to host RAM and via direct memory access (DMA) this raw data is then copied asynchronously to GPU memory where OCT signal processing is executed. If the processed data needs to be saved on the hard disk, it can be transferred back to host RAM using DMA.
+A detailed overview of the OCTproZ processing pipeline can be found [here.](processing.md)
 
 Performance
 ----------
@@ -46,7 +44,7 @@ The performance was measured with the full processing pipeline of OCTproZ v1.0.0
 
 Plug-ins
 ----------
-To develope custom plug-ins the [DevKit](octproz_devkit) needs to be used. The easiest way to develop plug-ins is to clone/download the entire OCTproZ project, compile the DevKit and OCTproZ and use the existing examples ([Virtual OCT System](octproz_virtual_oct_system), [Demo Extension](octproz_demo_extension)) as templates. </br></br>
+To develope custom plug-ins the [DevKit](octproz_devkit) needs to be used. The easiest way to develop plug-ins is to clone/download the entire OCTproZ project, compile the DevKit and OCTproZ and use the existing examples ([Virtual OCT System](octproz_virtual_oct_system), [Demo Extension](octproz_demo_extension), [Image Statistics](https://github.com/spectralcode/ImageStatisticsExtension)) as templates. </br></br>
 The following plug-ins are currently available:
 </br></br>
 __Acquisition Systems:__
@@ -80,32 +78,38 @@ An online version of the user manual can be found [here](https://spectralcode.gi
 
 Compiling
 ---------
+Building OCTproZ from source requires: 
+- Installation of [Qt 5](https://www.qt.io/offline-installers)
+- Installation of [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) (version 8 or greater)
+- __Windows:__ MSVC compiler that is compatible with your CUDA version (see [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#system-requirements)) <br>
+__Linux:__ Development environment that is compatible with your CUDA version (see [CUDA installation guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements)) and the third-party libraries mentioned in the [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#install-libraries)
 
-Compiling OCTproZ requires installation of [Qt](https://www.qt.io/) and [CUDA](https://developer.nvidia.com/cuda-zone). On Windows the MSVC2017 compiler is required. Once you have installed Qt the easiest way to compile
-OCTproZ is with the QtCreator. Clone/Download the OCTproZ source files and open the .pro files with QtCreator. The DevKit needs to be compiled first as it generates a folder with files that are used by OCTproZ and any plug-ins during compile time. After successfully compiling the DevKit, OCTproZ can be compiled. </br>
+
+How to compile:
+1. Clone/Download the OCTproZ source files
+2. Start Qt Creator and open [OCTproZ_DevKit.pro](octproz_devkit/OCTproZ_DevKit.pro), [virtualoctsystem.pro](octproz_virtual_oct_system/virtualoctsystem.pro) and [OCTproZ.pro](octproz/OCTproZ.pro)
+3. Build OCTproZ_DevKit first and then virtualoctsystem and OCTproZ.
+4. Run OCTproZ
+
+The DevKit needs to be compiled first as it generates a folder with files that are used by OCTproZ and any plug-in at compile time.  </br>
 
 
 Known issues
 ----------
-- Images in the 2D views (B-scan and En Face View) are distorted when rotated. This should be easy to correct. The OpenGL part of OCTproZ should be revised anyway. Anyone who likes and has some OpenGL experience could check "glwindow2d.cpp" and give me some hints what to improve regarding OpenGL usage.
-- Linux: Floating dock widgets lose mouse focus when dragged. See: [Qt bug](https://bugreports.qt.io/browse/QTBUG-65640)
-- Linux: Processing can be blocked by certain GUI usage. Reason: Processing needs to run in GUI thread otherwise OpenGL output lags. This may be an OpenGL context issue. 
-
+On some Linux distributions floating dock widgets lose mouse focus when dragged. See: [Qt bug](https://bugreports.qt.io/browse/QTBUG-65640)
 
 Contributing
 ----------
 We strongly encourage contributions to the project. To contribute to this repository you can either report issues and bugs or [fork](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks) this repository and create [pull requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests). Pull requests are great if you have improved or extended the software and you believe it could be beneficial for everyone using OCTproZ. </br>
 Currently there is no style guide. New code should be more or less consistent with the style of already existing code.</br>
 
-If you have developed a plug-in for OCTproZ and want it to be included in the precompiled package, please contact us.
+If you have developed a plug-in for OCTproZ and want it to be mentioned here, please contact us.
 
 
 Publication
 ----------
 Coming soon. In the meantime, you can contact me at </br>
-_zabic_ _</br>_
-_at_</br>
-_iqo_._uni_-_hannover_._de_</br>
+_zabic_<span style="display:none">magic</span>_@iqo.uni-hannover.de_
 
 Authors:</br>
 Miroslav Zabic<sup>1, 2</sup>, Ben Matthias<sup>2</sup>, Alexander Heisterkamp<sup>1</sup>, Tammo Ripken<sup>2</sup></br>
