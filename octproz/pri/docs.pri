@@ -22,16 +22,24 @@ DOC_FILES_IMAGES += \
 	$$DOCDIR/images/quickstart6.png
 
 
-CONFIG(debug, debug|release) {
-	DOCEXPORTDIR = $$shell_path($$OUT_PWD/debug/docs)
-	DOCEXPORTDIR_CSS = $$shell_path($$OUT_PWD/debug/docs/css)
-	DOCEXPORTDIR_IMAGES = $$shell_path($$OUT_PWD/debug/docs/images)
+unix{
+	DOCEXPORTDIR = $$shell_path($$OUT_PWD/docs)
+	DOCEXPORTDIR_CSS = $$shell_path($$OUT_PWD/docs/css)
+	DOCEXPORTDIR_IMAGES = $$shell_path($$OUT_PWD/docs/images)
 }
-CONFIG(release, debug|release) {
-	DOCEXPORTDIR = $$shell_path($$OUT_PWD/release/docs)
-	DOCEXPORTDIR_CSS = $$shell_path($$OUT_PWD/release/docs/css)
-	DOCEXPORTDIR_IMAGES = $$shell_path($$OUT_PWD/release/docs/images)
+win32{
+	CONFIG(debug, debug|release) {
+		DOCEXPORTDIR = $$shell_path($$OUT_PWD/debug/docs)
+		DOCEXPORTDIR_CSS = $$shell_path($$OUT_PWD/debug/docs/css)
+		DOCEXPORTDIR_IMAGES = $$shell_path($$OUT_PWD/debug/docs/images)
+	}
+	CONFIG(release, debug|release) {
+		DOCEXPORTDIR = $$shell_path($$OUT_PWD/release/docs)
+		DOCEXPORTDIR_CSS = $$shell_path($$OUT_PWD/release/docs/css)
+		DOCEXPORTDIR_IMAGES = $$shell_path($$OUT_PWD/release/docs/images)
+	}
 }
+
 
 ##Create DOCEXPORTDIR directory if not already existing
 exists($$DOCEXPORTDIR){
@@ -48,4 +56,4 @@ for(file, DOC_FILES_CSS):QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$shell_path($$
 for(file, DOC_FILES_IMAGES):QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$shell_path($$PWD/$${file})) $$quote($$DOCEXPORTDIR_IMAGES) $$escape_expand(\\n\\t)
 
 ##Add documentation files to clean directive. When running "make clean" documentaion will be deleted
-for(file, DOC_FILES):QMAKE_CLEAN += $$shell_path($$DOCEXPORTDIR/$${file})
+#for(file, DOC_FILES):QMAKE_CLEAN += $$shell_path($$DOCEXPORTDIR/$${file}) #todo: this does not work probably because DOC_FILES contains the full paths of the files and not just the file name. Find a nice and easy way to add doc files to QMAKE_CLEAN

@@ -14,13 +14,6 @@ CONFIG(debug, debug|release) {
 CONFIG(release, debug|release) {
 	PLUGINEXPORTDIR = $$shell_path($$SHAREDIR/plugins/release)
 }
-##Create PLUGINEXPORTDIR directory if not already existing
-exists($$PLUGINEXPORTDIR){
-	message("sharedir already existing")
-}else{
-	QMAKE_POST_LINK += $$quote(mkdir $${PLUGINEXPORTDIR} $$escape_expand(\\n\\t))
-}
-
 
 DEFINES += \
 	DEMOEXTENSION_LIBRARY \
@@ -73,6 +66,12 @@ CONFIG(release, debug|release) {
 	}
 }
 
+##Create PLUGINEXPORTDIR directory if not already existing
+exists($$PLUGINEXPORTDIR){
+	message("sharedir already existing")
+}else{
+	QMAKE_POST_LINK += $$quote(mkdir -p $${PLUGINEXPORTDIR} $$escape_expand(\\n\\t))
+}
 
 ##Copy extension to "PLUGINEXPORTDIR"
 unix{

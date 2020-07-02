@@ -12,8 +12,8 @@ win32{
 
 #CUDA system/compiler settings
 SYSTEM_TYPE = 64
-#CUDA_ARCH = sm_61 		  #Type of CUDA architecture, use sm_61 for GeForce GTX 1060 ..1080 TI
-#CUDA_ARCH = sm_50 		 #use sm_50 for Quadro K620, K620M, K1200, K2200, K2200M
+#CUDA_ARCH = sm_61 		#Type of CUDA architecture, use sm_61 for GeForce GTX 1060 ..1080 TI
+#CUDA_ARCH = sm_50		#use sm_50 for Quadro K620, K620M, K1200, K2200, K2200M
 
 ########
 #cuda arch flags for maximum compatibility 
