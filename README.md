@@ -28,7 +28,8 @@ Processing Pipeline
 <p align="center">
   <img src="images/processing_pipeline_linear_v1_1_0.png" >
 </p>
-A detailed overview of the OCTproZ processing pipeline can be found [here.](processing.md)
+
+A detailed overview of the OCTproZ processing pipeline can be found [here.](processing.md).
 
 Performance
 ----------
@@ -39,7 +40,7 @@ GPU           | A-scan rate
 NVIDIA Quadro K620  | ~ 300 kHz ( ~2,2 volumes/s)
 NVIDIA GeForce GTX 1080 Ti  | ~ 4,8 MHz (~ 36 volumes/s)
 
-The performance was measured with the full processing pipeline of OCTproZ v1.0.0 but without the 3D live view. The same perfromance is expected with OCTproZ v1.1.0 if live sinusoidal scan distortion correction is disabled. 
+The performance was measured with the full processing pipeline of OCTproZ v1.0.0 but without the 3D live view. The same perfromance is expected with OCTproZ v1.2.0 if live sinusoidal scan distortion correction is disabled. 
 
 
 Plug-ins
