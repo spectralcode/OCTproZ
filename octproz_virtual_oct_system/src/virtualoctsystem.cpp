@@ -108,6 +108,7 @@ void VirtualOCTSystem::startAcquisition(){
 
 void VirtualOCTSystem::stopAcquisition(){
 	this->acqusitionRunning = false;
+	emit enableGui(true);
 	qDebug() << "Plugin Thread ID stopAcq: " << QThread::currentThreadId();
 }
 
@@ -154,7 +155,7 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 	while (this->acqusitionRunning) {
 
 		//wait untill processing thread is done with previous acquisition buffer. This is not necessary in real oct systems and may even slow down the overall processing speed. In real oct systems just check the bufferReadyArray flag of next buffer.
-		while(this->buffer->bufferReadyArray[buffer->currIndex] == true){
+		while(this->buffer->bufferReadyArray[buffer->currIndex] == true && this->acqusitionRunning){
 			QThread::usleep(100);
 			QCoreApplication::processEvents();
 		}
@@ -204,7 +205,7 @@ void VirtualOCTSystem::acquisitionSimulationWithMultiFileBuffers() {
 	emit acquisitionStarted(this);
 	while (this->acqusitionRunning) {
 		//wait untill processing thread is done with previous acquisition buffer. This is not necessary in real oct systems and may even slow down the overall processing speed. In real oct systems just check the bufferReadyArray flag of the next buffer.
-		while(this->buffer->bufferReadyArray[buffer->currIndex] == true){
+		while(this->buffer->bufferReadyArray[buffer->currIndex] == true && this->acqusitionRunning){
 			QThread::usleep(100);
 			QCoreApplication::processEvents();
 		}
