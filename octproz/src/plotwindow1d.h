@@ -75,6 +75,7 @@ private:
 
 protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
+	void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 signals:
 	void info(QString info);

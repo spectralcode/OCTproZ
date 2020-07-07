@@ -68,6 +68,10 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	this->legend->setTextColor(Qt::white);
 	this->legend->setBorderPen(QColor(180, 180, 180, 200));
 
+	this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+	this->axisRect()->setRangeZoomAxes(0, this->yAxis);
+	this->axisRect()->setRangeDragAxes(0, this->yAxis);
+
 	this->isPlottingRaw = false;
 	this->isPlottingProcessed = false;
 	this->autoscaling = true;
@@ -142,7 +146,7 @@ void PlotWindow1D::setProcessedPlotVisible(bool visible) {
 	visible ? this->graph(1)->addToLegend() : this->graph(1)->removeFromLegend();
 }
 
-void PlotWindow1D::contextMenuEvent(QContextMenuEvent *event){
+void PlotWindow1D::contextMenuEvent(QContextMenuEvent *event) {
 	QMenu menu(this);
 	QAction bitshiftRawValuesAction(tr("Bit shift raw values by 4"), this);
 	bitshiftRawValuesAction.setCheckable(true);
@@ -157,6 +161,10 @@ void PlotWindow1D::contextMenuEvent(QContextMenuEvent *event){
 	menu.exec(event->globalPos());
 }
 
+void PlotWindow1D::mouseDoubleClickEvent(QMouseEvent *event) {
+	this->rescaleAxes();
+	this->replot();
+}
 void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){
 	if(!this->isPlottingRaw && this->displayRaw && this->rawGrabbingAllowed){
 		this->isPlottingRaw = true;
