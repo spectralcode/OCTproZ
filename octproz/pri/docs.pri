@@ -45,9 +45,9 @@ win32{
 exists($$DOCEXPORTDIR){
 	message("docdir already existing")
 }else{
-	QMAKE_POST_LINK += $$quote(mkdir $${DOCEXPORTDIR} $$escape_expand(\\n\\t))
-	QMAKE_POST_LINK += $$quote(mkdir $${DOCEXPORTDIR_CSS} $$escape_expand(\\n\\t))
-	QMAKE_POST_LINK += $$quote(mkdir $${DOCEXPORTDIR_IMAGES} $$escape_expand(\\n\\t))
+	QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR} $$escape_expand(\\n\\t))
+	QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR_CSS} $$escape_expand(\\n\\t))
+	QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR_IMAGES} $$escape_expand(\\n\\t))
 }
 
 ##Copy documentaion folder to "DOCEXPORTDIR"
