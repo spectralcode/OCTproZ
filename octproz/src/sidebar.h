@@ -63,19 +63,19 @@ public:
 private:
 	Ui::Sidebar 			ui;
 	QDockWidget*			dock;
-	QButtonGroup 		   recModeGroup;
+	QButtonGroup			recModeGroup;
 	QWidget*				spacer;
-	QList<QCheckBox*>	   checkBoxes;
-	QList<QDoubleSpinBox*>  doubleSpinBoxes;
+	QList<QCheckBox*>		checkBoxes;
+	QList<QDoubleSpinBox*>	doubleSpinBoxes;
 	QList<QSpinBox*>		spinBoxes;
-	QList<QGroupBox*>	   groupBoxes;
-	QList<QComboBox*>	   comboBoxes;
+	QList<QGroupBox*>		groupBoxes;
+	QList<QComboBox*>		comboBoxes;
 	QList<QRadioButton*>	radioButtons;
-	QList<MiniCurvePlot*>   curvePlots;
-	MiniCurvePlot*		  resampleCurvePlot;
-	MiniCurvePlot*		  dispersionCurvePlot;
-	MiniCurvePlot*		  windowCurvePlot;
-	unsigned int 		   defaultWidth;
+	QList<MiniCurvePlot*>	curvePlots;
+	MiniCurvePlot*			resampleCurvePlot;
+	MiniCurvePlot*			dispersionCurvePlot;
+	MiniCurvePlot*			windowCurvePlot;
+	unsigned int			defaultWidth;
 
 	void initGui();
 	void findGuiElements();

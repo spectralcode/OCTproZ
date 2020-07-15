@@ -39,6 +39,14 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent) {
 	this->makeComboBoxesScrollSave(this->comboBoxes);
 	this->makeCurvePlotsScrollSave(this->curvePlots); //todo: figure out why this does not work
 
+	//Connect curve plots to dialogAboutToOpen signals (this is necessary as workaround for a bug that occurs on Linux systems: if an OpenGL window is open QFileDialog is not usable (the error message "GtkDialog mapped without a transient parent" occurs and software freezes)
+	foreach(MiniCurvePlot* widget, this->curvePlots){
+		connect(widget, &MiniCurvePlot::dialogAboutToOpen, this, &Sidebar::dialogAboutToOpen);
+		connect(widget, &MiniCurvePlot::dialogClosed, this, &Sidebar::dialogClosed);
+		connect(widget, &MiniCurvePlot::info, this, &Sidebar::info);
+		connect(widget, &MiniCurvePlot::error, this, &Sidebar::error);
+	}
+
 	//Add record mode radiobuttons to QButtonGroup
 	this->recModeGroup.addButton(this->ui.radioButton_snapshot);
 	this->recModeGroup.addButton(this->ui.radioButton_raw);

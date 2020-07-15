@@ -195,9 +195,11 @@ void MiniCurvePlot::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 void MiniCurvePlot::slot_saveToDisk() {
+	emit dialogAboutToOpen();
 	QString filters("Image (*.png);;Vector graphic (*.pdf);;CSV (*.csv)");
 	QString defaultFilter("CSV (*.csv)");
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Plot"), QDir::currentPath(), filters, &defaultFilter);
+	emit dialogClosed();
 	if(fileName == ""){
 		emit error(tr("Save plot to disk canceled."));
 		return;
@@ -216,6 +218,7 @@ void MiniCurvePlot::slot_saveToDisk() {
 				stream << QString::number(this->sampleNumbers.at(i)) << ";" << QString::number(this->curve.at(i)) << "\n";
 			}
 		file.close();
+		saved = true;
 		}
 	}
 	if(saved){

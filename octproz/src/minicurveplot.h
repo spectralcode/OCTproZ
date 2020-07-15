@@ -65,6 +65,8 @@ protected:
 signals:
 	void info(QString info);
 	void error(QString error);
+	void dialogAboutToOpen(); //this is necessary as workaround for a bug that occurs on Linux systems: if an OpenGL window is open QFileDialog is not usable (the error message "GtkDialog mapped without a transient parent" occurs and software freezes)
+	void dialogClosed();
 
 
 public slots:
