@@ -10,26 +10,6 @@ QCUSTOMPLOTDIR = $$shell_path($$PWD/../QCustomPlot)
 SOURCEDIR = $$shell_path($$PWD/src)
 
 
-win32{
-	# MSVCRT link option (MT: static, MD:dynamic. Must be the same as Qt SDK link option)
-	MSVCRT_LINK_FLAG_DEBUG   = "/MDd"
-	MSVCRT_LINK_FLAG_RELEASE = "/MD"
-	INCLUDEPATH += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) #this is needed for glew.h
-	INCLUDEPATH += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/lib/x64) #this is needed for OpenGL
-	INCLUDEPATH += $$shell_path($$(CudaToolkitLibDir))
-	INCLUDEPATH_CUDA += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) #this is needed for glew.h
-}
-	INCLUDEPATH_CUDA += $$shell_path($$(QTDIR)\include)
-	INCLUDEPATH_CUDA += $$shell_path($$(QTDIR)\include\QtCore)
-	INCLUDEPATH_CUDA += $$shell_path($(QTDIR)\lib)
-unix{
-	INCLUDEPATH_CUDA += /usr/include/x86_64-linux-gnu/qt5	#todo: is there a more general way to access the qt include directory?
-	INCLUDEPATH_CUDA += /usr/include/x86_64-linux-gnu/qt5/QtCore
-}
-
-message(cuda include_path is $$INCLUDEPATH_CUDA)
-
-
 INCLUDEPATH +=  \
 	$$SOURCEDIR \
 	$$SHAREDIR \

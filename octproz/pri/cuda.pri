@@ -1,22 +1,13 @@
+#CUDA system and compiler settings
+
+#path of cuda source files
 SOURCEDIR = $$shell_path($$PWD/../src)
 CUDA_SOURCES += $$SOURCEDIR/cuda_code.cu \
 
-#Path to cuda toolkit install
-unix{
-	CUDA_DIR = /usr/local/cuda
-}
-win32{
-	CUDA_DIR = $$(CUDA_PATH)
-}
-
-
-#CUDA system/compiler settings
-SYSTEM_TYPE = 64
-#CUDA_ARCH = sm_61 		#Type of CUDA architecture, use sm_61 for GeForce GTX 1060 ..1080 TI
-#CUDA_ARCH = sm_50		#use sm_50 for Quadro K620, K620M, K1200, K2200, K2200M
-
-########
-#cuda arch flags for maximum compatibility 
+#cuda arch flags
+#use sm_30 for max compatibility
+#use sm_50 for Quadro K620, K620M, K1200, K2200, K2200M.
+#use sm_61 for GeForce GTX 1060 ..1080 TI
 CUDA_ARCH += sm_30 \
 -gencode=arch=compute_30,code=sm_30 \
 -gencode=arch=compute_50,code=sm_50 \
@@ -24,8 +15,8 @@ CUDA_ARCH += sm_30 \
 -gencode=arch=compute_60,code=sm_60 \
 -gencode=arch=compute_61,code=sm_61 \
 -gencode=arch=compute_70,code=sm_70 \
-########
 
+#nvcc compiler options
 unix{
 	NVCC_OPTIONS = --use_fast_math -std=c++11 --compiler-options -fPIC
 }
@@ -34,31 +25,47 @@ win32{
 	#NVCC_OPTIONS = --use_fast_math -std=c++11 --compiler-options -fPIC
 }
 
-
-
-# Path to CUDA header and libs files
+#cuda include paths
 unix{
-	INCLUDEPATH_CUDA  += $$CUDA_DIR/include \
-						 $$CUDA_DIR/samples/common/inc
-	INCLUDEPATH  += $$CUDA_DIR/include
-	INCLUDEPATH  += $$CUDA_DIR/samples/common/inc
+	CUDA_DIR = /usr/local/cuda
+
+	INCLUDEPATH_CUDA += /usr/include/x86_64-linux-gnu/qt5 \	#todo: is there a more general way to access the qt include directory?
+		/usr/include/x86_64-linux-gnu/qt5/QtCore\
+		$$CUDA_DIR/include \
+		$$CUDA_DIR/samples/common/inc
+
+	INCLUDEPATH += $$CUDA_DIR/include \
+		$$CUDA_DIR/samples/common/inc
+
 	QMAKE_LIBDIR += $$CUDA_DIR/lib64
 }
 win32{
-	INCLUDEPATH_CUDA  += $$CUDA_DIR/include \
-						 $$CUDA_DIR/common/inc \
-						 $$CUDA_DIR/samples/common/inc
-	INCLUDEPATH += $$CUDA_DIR/include \
-				   $$CUDA_DIR/common/inc \
-				   $$CUDA_DIR/../shared/inc
+	CUDA_DIR = $$(CUDA_PATH)
+
+	MSVCRT_LINK_FLAG_DEBUG  = "/MDd" # MSVCRT link option (MT: static, MD:dynamic. Must be the same as Qt SDK link option)
+	MSVCRT_LINK_FLAG_RELEASE = "/MD"
+
+	INCLUDEPATH += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \ #this is needed for glew.h
+		$$shell_path($$(NVCUDASAMPLES_ROOT)/common/lib/x64) \ #this is needed for OpenGL
+		$$shell_path($$(CudaToolkitLibDir)) \
+		$$CUDA_DIR/include \
+		$$CUDA_DIR/common/inc \
+		$$CUDA_DIR/../shared/inc
+
+	INCLUDEPATH_CUDA += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \ #this is needed for glew.h
+		$$CUDA_DIR/include \
+		$$CUDA_DIR/common/inc \
+		 $$CUDA_DIR/samples/common/inc
 
 	# library directories
 	SYSTEM_NAME = x64
 	QMAKE_LIBDIR += $$CUDA_DIR/lib/$$SYSTEM_NAME \
-					$$CUDA_DIR/common/lib/$$SYSTEM_NAME \
-					$$CUDA_DIR/../shared/lib/$$SYSTEM_NAME
+		$$CUDA_DIR/common/lib/$$SYSTEM_NAME \
+		$$CUDA_DIR/../shared/lib/$$SYSTEM_NAME
 }
-
+INCLUDEPATH_CUDA += $$shell_path($$(QTDIR)\include) \
+	$$shell_path($$(QTDIR)\include\QtCore) \
+	$$shell_path($(QTDIR)\lib)
 
 #cuda libraries
 unix{
@@ -67,22 +74,20 @@ unix{
 win32{
 	CUDA_LIBS += -lcudart -lcuda -lcufft
 }
-
-
-# Put quotation marks to path names (to avoid problems with spaces in path names)
-CUDA_INC = $$join(INCLUDEPATH_CUDA,'" -I"','-I"','"')
-
 LIBS += $$CUDA_LIBS
 
+#put quotation marks to path names (to avoid problems with spaces in path names)
+CUDA_INC = $$join(INCLUDEPATH_CUDA,'" -I"','-I"','"')
+
+#compiler flags
 unix{
-	# SPECIFY THE R PATH FOR NVCC
 	QMAKE_LFLAGS += -Wl,-rpath,$$CUDA_DIR/lib
 	NVCCFLAGS = -Xlinker -rpath,$$CUDA_DIR/lib
 	#NVCCFLAGS = --compiler-options -fno-strict-aliasing -use_fast_math --ptxas-options=-v
 }
 
-
 #CUDA compiler configuration
+SYSTEM_TYPE = 64
 CUDA_OBJECTS_DIR = ./
 unix{
 	CONFIG(debug, debug|release) {
@@ -125,6 +130,5 @@ win32{
 		QMAKE_EXTRA_COMPILERS += cuda
 	}
 }
-
 
 message(NVCClibs are $$NVCC_LIBS)
