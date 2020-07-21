@@ -1,4 +1,4 @@
-/**
+﻿/**
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
@@ -799,7 +799,9 @@ void OCTproZ::slot_useCustomResamplingCurve(bool use) {
 void OCTproZ::slot_loadCustomResamplingCurve() {
 	QString filters("CSV (*.csv)");
 	QString defaultFilter("CSV (*.csv)");
+	this->slot_closeOpenGLwindows();
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Load Curve"), QDir::currentPath(), filters, &defaultFilter);
+	this->slot_reopenOpenGLwindows();
 	if(fileName == ""){
 		emit error(tr("Loading of custom resampling curve for k-linearization canceled."));
 		return;
