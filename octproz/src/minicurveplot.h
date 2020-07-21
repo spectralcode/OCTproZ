@@ -55,7 +55,6 @@ private:
 	QColor referenceCurveColor;
 	int referenceCurveAlpha;
 
-
 protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
@@ -71,6 +70,7 @@ signals:
 
 public slots:
 	virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
+	bool saveCurveDataToFile(QString fileName);
 	void slot_saveToDisk();
 };
 

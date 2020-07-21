@@ -210,20 +210,27 @@ void MiniCurvePlot::slot_saveToDisk() {
 	}else if(defaultFilter == "Vector graphic (*.pdf)"){
 		saved = this->savePdf(fileName);
 	}else if(defaultFilter == "CSV (*.csv)"){
-		QFile file(fileName);
-		if (file.open(QFile::WriteOnly|QFile::Truncate)) {
-			QTextStream stream(&file);
-			stream << "Sample Number" << ";" << "Sample Value" << "\n";
-			for(int i = 0; i < this->sampleNumbers.size(); i++){
-				stream << QString::number(this->sampleNumbers.at(i)) << ";" << QString::number(this->curve.at(i)) << "\n";
-			}
-		file.close();
-		saved = true;
-		}
+		saved = this->saveCurveDataToFile(fileName);
 	}
 	if(saved){
 		emit info(tr("Plot saved to ") + fileName);
 	}else{
 		emit error(tr("Could not save plot to disk."));
 	}
+}
+
+
+bool MiniCurvePlot::saveCurveDataToFile(QString fileName) {
+	bool saved = false;
+	QFile file(fileName);
+	if (file.open(QFile::WriteOnly|QFile::Truncate)) {
+		QTextStream stream(&file);
+		stream << "Sample Number" << ";" << "Sample Value" << "\n";
+		for(int i = 0; i < this->sampleNumbers.size(); i++){
+			stream << QString::number(this->sampleNumbers.at(i)) << ";" << QString::number(this->curve.at(i)) << "\n";
+		}
+	file.close();
+	saved = true;
+	}
+	return saved;
 }
