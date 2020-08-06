@@ -35,12 +35,12 @@ Performance
 ----------
 Performance highly depends on the used computer hardware and the size of the of the OCT data. A test data set with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume was used to measure the performance on two different systems:
 
-GPU           | A-scan rate 
-------------- | -------------
-NVIDIA Quadro K620  | ~ 300 kHz ( ~2,2 volumes/s)
-NVIDIA GeForce GTX 1080 Ti  | ~ 4,8 MHz (~ 36 volumes/s)
+GPU           | A-scan rate without live 3D view | A-scan rate with live 3D view
+------------- | ------------- | -------------
+NVIDIA Quadro K620  | ~ 300 kHz ( ~2,2 volumes/s) | ~ 250 kHz ( ~1,9 volumes/s)
+NVIDIA GeForce GTX 1080 Ti  | ~ 4,8 MHz (~ 36 volumes/s) | ~ 4,0 MHz (~ 30 volumes/s)
 
-The performance was measured with the full processing pipeline of OCTproZ v1.0.0 but without the 3D live view. The same perfromance is expected with OCTproZ v1.2.0 if live sinusoidal scan distortion correction is disabled. 
+The performance was measured with the full processing pipeline of OCTproZ v1.0.0. The same perfromance is expected with OCTproZ v1.2.0 if live sinusoidal scan distortion correction is disabled. 
 
 
 Plug-ins
