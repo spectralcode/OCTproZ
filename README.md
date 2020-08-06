@@ -29,7 +29,7 @@ Processing Pipeline
   <img src="images/processing_pipeline_linear_v1_1_0.png" >
 </p>
 
-A detailed overview of the OCTproZ processing pipeline can be found [here.](processing.md).
+A detailed overview of the OCTproZ processing pipeline can be found [here](processing.md).
 
 Performance
 ----------
