@@ -111,6 +111,7 @@ If you have developed a plug-in for OCTproZ and want it to be mentioned here, pl
 
 Publication
 ----------
+__[Currently looking for reviewers for the public peer review process](https://github.com/openjournals/joss-reviews/issues/2245)__</br>
 Coming soon. In the meantime, you can contact me at </br>
 _zabic_ _</br>_
 _at_</br>
