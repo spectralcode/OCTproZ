@@ -623,10 +623,11 @@ void OCTproZ::slot_menuExtensions() {
 					extensionWidget->setWindowFlag(Qt::WindowStaysOnTopHint);
 					extensionWidget->show();
 				}
-				extension->activateExtension(); //todo: do not call extension methods directly, use signal slot and run extension in separate thread
 				connect(extension, &Extension::info, this->console, &MessageConsole::slot_displayInfo);
 				connect(extension, &Extension::error, this->console, &MessageConsole::slot_displayError);
 				connect(extension, &Extension::storeSettings, this, &OCTproZ::slot_storePluginSettings);
+				extension->activateExtension(); //todo: do not call extension methods directly, use signal slot (or invokeMethod -> see below) and run extension in separate thread
+				//QMetaObject::invokeMethod(extension, "activateExtension", Qt::QueuedConnection); //todo: move activateExtension method to "slots" in extensions.h in devkit! move extension in separate thread
 				connect(this, &OCTproZ::allowRawGrabbing, extension, &Extension::enableRawDataGrabbing);
 				connect(this->signalProcessing, &Processing::streamingBufferEnabled, extension, &Extension::enableProcessedDataGrabbing);
 				connect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailible, extension, &Extension::processedDataReceived);
