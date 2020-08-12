@@ -86,7 +86,7 @@ In this paper, we introduced OCTproZ, an open source software for live OCT signa
 We especially hope for more open source publications within the OCT community to reduce the time necessary for the replication of OCT processing algorithms and thereby accelerate scientific progress.
 
 # Funding
-This work was partially funded by the European Regional Development Fund (ERDF) and the state Lower Saxony as part of the project OPhonLas. 
+This work was partially funded by the European Regional Development Fund and the state of Lower Saxony as part of the project OPhonLas (EFRE-SER 2014-2020, 85007492). 
 
 ![](figures/efre.png) 
 
