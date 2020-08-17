@@ -97,21 +97,18 @@ How to compile:
 The DevKit needs to be compiled first as it generates a folder with files that are used by OCTproZ and any plug-in at compile time.  </br>
 
 
+Contributing
+----------
+You can find the contribution guideliness in [CONTRIBUTING.md](CONTRIBUTING.md),
+
+
 Known issues
 ----------
 On some Linux distributions floating dock widgets lose mouse focus when dragged. See: [Qt bug](https://bugreports.qt.io/browse/QTBUG-65640)
 
-Contributing
-----------
-We strongly encourage contributions to the project. To contribute to this repository you can either report issues and bugs or [fork](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks) this repository and create [pull requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests). Pull requests are great if you have improved or extended the software and you believe it could be beneficial for everyone using OCTproZ. </br>
-Currently there is no style guide. New code should be more or less consistent with the style of already existing code.</br>
-
-If you have developed a plug-in for OCTproZ and want it to be mentioned here, please contact us.
-
 
 Publication
 ----------
-__[Currently looking for reviewers for the public peer review process](https://github.com/openjournals/joss-reviews/issues/2245)__</br>
 Coming soon. In the meantime, you can contact me at </br>
 _zabic_ _</br>_
 _at_</br>
