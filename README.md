@@ -85,7 +85,7 @@ Building OCTproZ from source requires:
 - __Windows:__ MSVC compiler that is compatible with your CUDA version (see [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#system-requirements)) <br>
 __Linux:__ Development environment that is compatible with your CUDA version (see [CUDA installation guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements)) and the third-party libraries mentioned in the [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#install-libraries)
 
-A more detailed Linux guide for the installation steps above can be found [here.](install_dev_tools.md) 
+A more detailed Linux guide for the installation steps above can be found [here](install_dev_tools.md).
 
 
 How to compile:
@@ -99,7 +99,7 @@ The DevKit needs to be compiled first as it generates a folder with files that a
 
 Contributing
 ----------
-You can find the contribution guideliness in [CONTRIBUTING.md](CONTRIBUTING.md).
+Contribution guidelines can be found [here](CONTRIBUTING.md).
 
 
 Known issues

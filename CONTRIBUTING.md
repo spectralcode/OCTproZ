@@ -1,19 +1,17 @@
  # <img style="vertical-align:middle" img src="images/octproz_icon.png" width="64"> OCTproZ - Contribution Guidelines
 
-This document provides guidelines on how to contribute to OCTproZ. 
-
 There are four main ways to contribute: issue reports, feature requests, code contributions and plug-in development.  
 
 
 Issue Reports
 ----------
-- Check if the issue you want to report or a similar one was already reported on the [OCTproZ issue page](https://github.com/spectralcode/OCTproZ/issues). Feel free to comment on already existing issue reports to provide valuable information. 
+- Check if the issue you want to report or a similar one was already reported on the [OCTproZ issue page](https://github.com/spectralcode/OCTproZ/issues). Feel free to comment on already existing issue reports to provide additional information. 
 - Report new issues by using the "Bug report"-template if applicable.
 
 
 Feature Requests
 ----------
-- Check if the feature you want to request or a similar one was already requested on the [OCTproZ issue page](https://github.com/spectralcode/OCTproZ/issues). Feel free to comment on already existing feature requests to provide valuable information. 
+- Check if the feature you want to request or a similar one was already requested on the [OCTproZ issue page](https://github.com/spectralcode/OCTproZ/issues). Feel free to comment on already existing feature requests to provide additional information. 
 - Request new features by using the "Feature request"-template if applicable.
 
 
