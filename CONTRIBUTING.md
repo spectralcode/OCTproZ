@@ -1,4 +1,4 @@
- # <img style="vertical-align:middle" img src="images/octproz_icon.png" width="64"> OCTproZ - Contribution Guidlines
+ # <img style="vertical-align:middle" img src="images/octproz_icon.png" width="64"> OCTproZ - Contribution Guidelines
 
 This document provides guidelines on how to contribute to OCTproZ. 
 

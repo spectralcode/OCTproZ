@@ -99,7 +99,7 @@ The DevKit needs to be compiled first as it generates a folder with files that a
 
 Contributing
 ----------
-You can find the contribution guideliness in [CONTRIBUTING.md](CONTRIBUTING.md),
+You can find the contribution guideliness in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
 Known issues
