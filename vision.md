@@ -1,4 +1,4 @@
- # <img style="vertical-align:middle" img src="images/octproz_icon.png" width="64"> OCTproZ - Vision and long term goals
+ # <img style="vertical-align:middle" img src="images/octproz_icon.png" width="64"> OCTproZ - Vision and long-term goals
 
 This document describes the long-term goals of OCTproZ.   
 
