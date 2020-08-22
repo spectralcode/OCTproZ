@@ -101,6 +101,9 @@ Contributing
 ----------
 Contribution guidelines can be found [here](CONTRIBUTING.md).
 
+Long-term goals
+----------
+Vision and long-term goals can be found [here](vision.md).
 
 Known issues
 ----------
