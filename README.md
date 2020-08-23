@@ -45,7 +45,6 @@ The performance was measured with the full processing pipeline of OCTproZ v1.0.0
 
 Plug-ins
 ----------
-To develope custom plug-ins the [DevKit](octproz_devkit) needs to be used. The easiest way to develop plug-ins is to clone/download the entire OCTproZ project, compile the DevKit and OCTproZ and use the existing examples ([Virtual OCT System](octproz_virtual_oct_system), [Demo Extension](octproz_demo_extension), [Image Statistics](https://github.com/spectralcode/ImageStatisticsExtension)) as templates. </br></br>
 The following plug-ins are currently available:
 </br></br>
 __Acquisition Systems:__
@@ -60,6 +59,8 @@ __Extensions:__
 |[Demo Extension](octproz_demo_extension)| This demo extension is aimed at developers. It has no useful functionality, but the code can be used as a template for developing custom extensions.|
 |[Image Statistics](https://github.com/spectralcode/ImageStatisticsExtension)| Displays useful image statistics, such as a histogram, in real time of currently acquired B-scans |
 
+The easiest way to develop custom plug-ins is to clone/download the entire OCTproZ project, compile the DevKit and OCTproZ and use the existing examples as templates. Have a look at the [plugin developer guide](https://spectralcode.github.io/OCTproZ/developer.html). 
+
 
 Download and Installation
 ----------
@@ -67,35 +68,24 @@ To run OCTproZ a cuda-compatible graphics card with current drivers is required.
 
 A precompiled package for Windows (64bit) can be downloaded from:
 [GitHub release section](https://github.com/spectralcode/OCTproZ/releases). Extract the zip archive and execute OCTproZ, installation is not necessary.
-A test dataset that can be used with the Virtual OCT System can be downloaded from [here](https://figshare.com/articles/SSOCT_test_dataset_for_OCTproZ/12356705). 
 
 If you need OCTproZ for a different operating system, the easiest way is to compile it yourself. See the compiling section.
 
+Test Dataset
+----------
+A test dataset that can be used with the Virtual OCT System can be downloaded from [here](https://figshare.com/articles/SSOCT_test_dataset_for_OCTproZ/12356705). 
 
 User Manual
 ----------
 An online version of the user manual can be found [here](https://spectralcode.github.io/OCTproZ/index.html). 
 
+Developer Guide
+----------
+The plugin developer guide can be found [here](https://spectralcode.github.io/OCTproZ/developer.html). 
 
 Compiling
 ---------
-Building OCTproZ from source requires: 
-- Installation of [Qt 5](https://www.qt.io/offline-installers)
-- Installation of [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) (version 8 or greater)
-- __Windows:__ MSVC compiler that is compatible with your CUDA version (see [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#system-requirements)) <br>
-__Linux:__ Development environment that is compatible with your CUDA version (see [CUDA installation guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements)) and the third-party libraries mentioned in the [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#install-libraries)
-
-A more detailed Linux guide for the installation steps above can be found [here](install_dev_tools.md).
-
-
-How to compile:
-1. Clone/Download the OCTproZ source files
-2. Start Qt Creator and open [OCTproZ_DevKit.pro](octproz_devkit/OCTproZ_DevKit.pro), [virtualoctsystem.pro](octproz_virtual_oct_system/virtualoctsystem.pro) and [OCTproZ.pro](octproz/OCTproZ.pro)
-3. Build OCTproZ_DevKit first and then virtualoctsystem and OCTproZ.
-4. Run OCTproZ
-
-The DevKit needs to be compiled first as it generates a folder with files that are used by OCTproZ and any plug-in at compile time.  </br>
-
+Compiling instructions can be found [here](BUILD.md).
 
 Contributing
 ----------

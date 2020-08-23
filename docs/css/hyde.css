@@ -59,6 +59,7 @@ html {
   color: rgba(255,255,255,.5);
   background-color: #333333;
 }
+
 @media (min-width: 48em) {
   .sidebar {
 /*    overflow-y: scroll;*/
@@ -66,7 +67,7 @@ html {
     top: 0;
     left: 0;
     bottom: 0;
-    width: 12rem;
+    width: 13rem;
     text-align: left;
   }
 }
