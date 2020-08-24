@@ -83,14 +83,14 @@
 &lt;span style="font-style:italic"&gt;+ getWidget() : QWidget*&lt;/span&gt;&lt;br&gt;
 &lt;span style="font-style:italic"&gt;+ activateExtension() : void&lt;/span&gt;&lt;br&gt;  
 &lt;span style="font-style:italic"&gt;+ deactivateExtension() : void&lt;/span&gt;&lt;br&gt;
-&amp;#60;&amp;#60;slot &amp;#62;&amp;#62; &lt;span style="font-style:italic"&gt; rawDataReceived(buffer : void, &lt;br&gt;
+&amp;#60;&amp;#60;slot&amp;#62;&amp;#62; &lt;span style="font-style:italic"&gt; rawDataReceived(buffer : void, &lt;br&gt;
 &amp;#09 bitDepth : uint,&lt;br&gt;
 &amp;#09 samplesPerLine : uint,&lt;br&gt;
 &amp;#09 linesPerFrame : uint,&lt;br&gt;
 &amp;#09 framesPerBuffer : uint,&lt;br&gt;
 &amp;#09 buffersPerVol : uint,&lt;br&gt;
 &amp;#09 currentBufferNr : uint) : void&lt;/span&gt; &lt;br&gt;
-&amp;#60;&amp;#60;slot &amp;#62;&amp;#62; &lt;span style="font-style:italic"&gt; processedDataReceived(buffer : void, &lt;br&gt;
+&amp;#60;&amp;#60;slot&amp;#62;&amp;#62; &lt;span style="font-style:italic"&gt; processedDataReceived(buffer : void, &lt;br&gt;
 &amp;#09 bitDepth : uint,&lt;br&gt;
 &amp;#09 samplesPerLine : uint,&lt;br&gt;
 &amp;#09 linesPerFrame : uint,&lt;br&gt;
@@ -119,8 +119,8 @@
             <y:MethodLabel xml:space="preserve">&lt;html&gt;
 &lt;span style="font-style:italic"&gt;+ startAcquisition() : void&lt;/span&gt;&lt;br&gt;
 &lt;span style="font-style:italic"&gt;+ stopAcquisition() : void&lt;/span&gt;&lt;br&gt;
-&amp;#60;&amp;#60;signal &amp;#62;&amp;#62; &lt;span style="font-style:italic"&gt; acquisitionStarted(AcquisitionSystem*)&lt;/span&gt;&lt;br&gt;
-&amp;#60;&amp;#60;signal &amp;#62;&amp;#62; &lt;span style="font-style:italic"&gt; acquisitionStopped()&lt;/span&gt;&lt;br&gt;
+&amp;#60;&amp;#60;signal&amp;#62;&amp;#62; &lt;span style="font-style:italic"&gt; acquisitionStarted(AcquisitionSystem*)&lt;/span&gt;&lt;br&gt;
+&amp;#60;&amp;#60;signal&amp;#62;&amp;#62; &lt;span style="font-style:italic"&gt; acquisitionStopped()&lt;/span&gt;&lt;br&gt;
 &lt;/html&gt;</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
