@@ -29,7 +29,7 @@
 
 <div class="content container">
   <h1 id="octproz-developer-guide"><a name="main"></a>Plugin Developer Guide for OCTproZ</h1>
-  <p><small>Date: August 23, 2020 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@iqo.uni-hannover.de)</small></p>
+  <p><small>Date: August 24, 2020 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@iqo.uni-hannover.de)</small></p>
 
 
   <h1 id="id-about"><a name="about-section"></a>About this Developer Guide</h1>
@@ -88,7 +88,7 @@
           //check bit depth (depends on your acquisition hardware)
           if(bitDepth == 16){
       
-            //cast buffer type according to bit depth (8bit = char, 16bit = uchar, 32bit = uint)
+            //cast buffer type according to bit depth (8bit = uchar, 16bit = ushort, 32bit = uint)
             unsigned short* bufferArray = (unsigned short*)buffer;
       
             //access the very specific pixel number 42 in the buffer to check if its value has exceeded a threshold value
