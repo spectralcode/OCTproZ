@@ -2,10 +2,11 @@ DOCDIR = ../../docs
 
 DOC_FILES += \
 	$$DOCDIR/index.html \
+	$$DOCDIR/developer.html
 
 DOC_FILES_CSS += \
 	$$DOCDIR/css/hyde.css \
-	$$DOCDIR/css/poole.css \
+	$$DOCDIR/css/poole.css
 
 DOC_FILES_IMAGES += \
 	$$DOCDIR/images/math_linresampling.svg \
@@ -20,7 +21,6 @@ DOC_FILES_IMAGES += \
 	$$DOCDIR/images/quickstart4.png \
 	$$DOCDIR/images/quickstart5.png \
 	$$DOCDIR/images/quickstart6.png
-
 
 unix{
 	DOCEXPORTDIR = $$shell_path($$OUT_PWD/docs)
@@ -40,14 +40,20 @@ win32{
 	}
 }
 
-
-##Create DOCEXPORTDIR directory if not already existing
+##Create dock directories if not already existing
 exists($$DOCEXPORTDIR){
 	message("docdir already existing")
 }else{
-	QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR} $$escape_expand(\\n\\t))
-	QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR_CSS} $$escape_expand(\\n\\t))
-	QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR_IMAGES} $$escape_expand(\\n\\t))
+	unix{
+		QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR} $$escape_expand(\\n\\t))
+		QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR_CSS} $$escape_expand(\\n\\t))
+		QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR_IMAGES} $$escape_expand(\\n\\t))
+	}
+	win32{
+		QMAKE_POST_LINK += $$quote(md $${DOCEXPORTDIR} $$escape_expand(\\n\\t))
+		QMAKE_POST_LINK += $$quote(md $${DOCEXPORTDIR_CSS} $$escape_expand(\\n\\t))
+		QMAKE_POST_LINK += $$quote(md $${DOCEXPORTDIR_IMAGES} $$escape_expand(\\n\\t))
+	}
 }
 
 ##Copy documentaion folder to "DOCEXPORTDIR"
