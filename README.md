@@ -33,7 +33,7 @@ A detailed overview of the OCTproZ processing pipeline can be found [here](proce
 
 Performance
 ----------
-Performance highly depends on the used computer hardware and the size of the of the OCT data. A test data set with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume was used to measure the performance on different systems:
+Performance highly depends on the used computer hardware and the size of the of the OCT data. A test data set with 12 bit per sample, 1024 samples per raw A-scan, 512 A-scans per B-scan and 256 B-scans per volume was used to measure the performance on different systems:
 
 GPU           | A-scan rate without live 3D view | A-scan rate with live 3D view
 ------------- | ------------- | -------------
