@@ -33,14 +33,14 @@ A detailed overview of the OCTproZ processing pipeline can be found [here](proce
 
 Performance
 ----------
-Performance highly depends on the used computer hardware and the size of the of the OCT data. A test data set with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume was used to measure the performance on two different systems:
+Performance highly depends on the used computer hardware and the size of the of the OCT data. A test data set with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume was used to measure the performance on different systems:
 
 GPU           | A-scan rate without live 3D view | A-scan rate with live 3D view
 ------------- | ------------- | -------------
-NVIDIA Quadro K620  | ~ 300 kHz ( ~2,2 volumes/s) | ~ 250 kHz ( ~1,9 volumes/s)
-NVIDIA GeForce GTX 1080 Ti  | ~ 4,8 MHz (~ 36 volumes/s) | ~ 4,0 MHz (~ 30 volumes/s)
+NVIDIA Quadro K620  | ~ 300 kHz ( ~2.2 volumes/s) | ~ 250 kHz ( ~1.9 volumes/s)
+NVIDIA GeForce GTX 1080 Ti  | ~ 4.8 MHz (~ 36 volumes/s) | ~ 4.0 MHz (~ 30 volumes/s)
 
-The performance was measured with the full processing pipeline of OCTproZ v1.0.0. The same perfromance is expected with OCTproZ v1.2.0 if live sinusoidal scan distortion correction is disabled. 
+You can find more information [here](performance.md).
 
 
 Plug-ins
