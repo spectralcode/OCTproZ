@@ -33,7 +33,7 @@ Here are the relevant parameters that were used with Virtual OCT System and OCTp
 |Wait after file read [us]|100|100|100|
 |**OCTproZ Settings**| | |
 |Bit shift sample values by 4|enabled|enabled|enabled|
-|Flip every second B-scan|||
+|Flip every second B-scan|enabled|enabled|enabled|
 |k-linearization|enabled|enabled|enabled|
 |Dispersion Compensation|enabled|enabled|enabled|
 |Windowing|enabled|enabled|enabled|
