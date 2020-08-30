@@ -58,7 +58,7 @@ Processing rate highly depends on the size of the raw data, the used computer ha
 
 <p style="text-align: center;"><small><b>Table 1</b>: Comparison of two computer systems and their respective processing rates for raw data sets with 12 bit per sample, 1024 samples per line, 512 lines per frame and 256 frames per volume.</small></p>
 
-. |**Office Computer**|**Lab Computer**
+| |**Office Computer**|**Lab Computer**
 :-----|:-----|:-----
 CPU|Intel® Core i5-7500|AMD Ryzen Threadripper 1900X
 RAM|16 GB|32 GB
