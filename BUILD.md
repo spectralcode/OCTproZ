@@ -12,7 +12,7 @@ __Linux:__ Development environment that is compatible with your CUDA version (se
 A more detailed Linux guide for the installation steps above can be found in the section "Installing development tools to build OCTproZ on Linux" below. 
 
 How to compile:
-1. Clone/Download the OCTproZ source files
+1. Clone/Download the OCTproZ source files. The destination path should not contain any spaces!
 2. Start Qt Creator and open [OCTproZ_DevKit.pro](octproz_devkit/OCTproZ_DevKit.pro), [virtualoctsystem.pro](octproz_virtual_oct_system/virtualoctsystem.pro) and [OCTproZ.pro](octproz/OCTproZ.pro)
 3. Build OCTproZ_DevKit first and then virtualoctsystem and OCTproZ.
 4. Run OCTproZ
