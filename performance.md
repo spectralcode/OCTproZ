@@ -39,7 +39,7 @@ Here are the relevant parameters that were used with Virtual OCT System and OCTp
 |Windowing|enabled|enabled|enabled|
 |Fixed-Pattern Noise Removal|enabled|enabled|enabled|
 |B-scans for noise determination:|1|26|1|
-|&emsp; once at start of measurement|enabled|enabled|enabled|
+|&emsp;once at start of measurement|enabled|enabled|enabled|
 |&emsp;continuously|disabled|disabled|disabled|
 |Sinusoidal scan correction|disabled|disabled|disabled|
 |Log scaling|enabled|enabled|enabled|
