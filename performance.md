@@ -74,7 +74,8 @@ Additional Information
 --------
 - Processing happens in batches. One batch is equal to one buffer and the size of the buffer has impact on processing performance. If it is too small the processing may be slower than possible. If it is too large the application may crash as a larger buffer size results in higher GPU memory usage, which can exceed the available memory on the used GPU 
 - The optimal buffer size for a specific GPU needs to be determined experimentally 
-- In Virtual OCT System the buffer size can be changed by changing _bit depth_, _Samples per raw A-scan_, _A-scan per B-scan_ and _B-scans per buffer_.
+- In Virtual OCT System the buffer size can be changed by changing _bit depth_, _Samples per raw A-scan_, _A-scans per B-scan_ and _B-scans per buffer_.
+- Buffer size in bytes = 	ceil(bitDepth/8) * SamplesPerRawAscan * AscansPerBscan * BscansPerBuffer
 - When _B-scans per buffer_ is changed in Virtual OCT System, you should also change _Buffers per Volume_ and _Buffers to read from file_ accordingly 
 - If OCTproZ crashes after setting the parameters in Virtual OCT System and starting the processing, try reducing the buffer size (for example instead of _B-scans per buffer_: 256, _Buffers per volume_: 1, _Buffers to read from file_: 2, you could try: _B-scans per buffer_: 128, _Buffers per volume_: 2, _Buffers to read from file_: 4)
 - In Virtual OCT System a value greater than 2 for _Buffers to read from file_ will result in a slower processing rate displayed by OCTproZ. The reason for that is that Virtual OCT System takes more time to provide the raw data if more than two buffers should be read from a file. The processing itself is not slowed down just the time between two batches is increased. 
