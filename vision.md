@@ -1,7 +1,5 @@
  # <img style="vertical-align:middle" img src="images/octproz_icon.png" width="64"> OCTproZ - Vision and long-term goals
 
-This document describes the long-term goals of OCTproZ.   
-
 
 General vision
 ----------
@@ -18,3 +16,4 @@ Long-term goals
 - Multi GPU support
 - Plugin database for most common OCT system hardware configurations
 - Advanced visualization for live view of acquired OCT data (e.g. speckle variance, spectroscopic)
+- Python or scripting interface either as plugin or integrated within OCTproZ
