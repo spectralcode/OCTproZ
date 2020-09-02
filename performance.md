@@ -85,7 +85,7 @@ For performance  determination, you can use the provided [test data set](https:/
 
 Performance and buffer size
 --------
-The following bar graph shows the A-scan rate for different buffer sizes. The __Gaming Computer__ setup described above was used.
+The following bar graph shows the A-scan rate for different buffer sizes. The __Gaming Computer__ setup without 3D live view described above was used.
 To change the buffer size _Buffers to read from file_ was kept at a value of 2 and only _B-scans per buffer_ and  _Buffers per volume_ were changed. 
 
  <p align="center">
