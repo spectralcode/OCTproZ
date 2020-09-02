@@ -21,7 +21,6 @@ affiliations:
    index: 2
 date: 22 May 2020
 bibliography: paper.bib
-csl: modern-language-association.csl
 ---
 
 # Summary
