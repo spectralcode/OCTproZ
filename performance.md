@@ -10,8 +10,8 @@ A test data set with 12 bit per sample, 1024 samples per raw A-scan, 512 A-scans
 |RAM|16 GB|32 GB|16 GB|
 |GPU|NVIDIA Quadro K620|NVIDIA GeForce GTX 1080 Ti| NVIDIA GeForce GTX 1080
 |Operating system|Windows 10|Ubuntu 16.04| Windows 10|
-|A-scan rate with 3D view| ~ 250 kHz ( ~1.9 volumes/s)|~ 4.0 MHz (~ 30 volumes/s)|~ 2.1 MHz (~ 16 volumes/s)|
-|A-scan rate without 3D view| ~ 300 kHz ( ~2.2 volumes/s)|~ 4.8 MHz (~ 36 volumes/s)|~ 2.7 MHz (~ 19 volumes/s)|
+|A-scan rate with 3D view| ~ 250 kHz ( ~1.9 volumes/s)|~ 4.0 MHz (~ 30 volumes/s)|~ 1.9 MHz (~ 15 volumes/s)|
+|A-scan rate without 3D view| ~ 300 kHz ( ~2.2 volumes/s)|~ 4.8 MHz (~ 36 volumes/s)|~ 2.4 MHz (~ 18 volumes/s)|
 
 Office Computer, Lab Computer: <br>
 The performance was measured with the full processing pipeline of OCTproZ v1.0.0. The same performance is expected with OCTproZ v1.2.0 if live sinusoidal scan distortion correction is disabled.
@@ -82,3 +82,12 @@ Additional Information
 
 For performance  determination, you can use the provided [test data set](https://figshare.com/articles/SSOCT_test_dataset_for_OCTproZ/12356705). To replicate the measurements from above you need to set the value for _Samples per raw A-scan_ to 1024. This will cause the resulting OCT images to look distorted as the test data set was recorded with 1664 samples per raw A-scan. This is expected behavior that does not invalidate the performance measurement.
 
+
+Performance and buffer size
+--------
+The following bar graph shows the A-scan rate for different buffer sizes. The __Gaming Computer__ setup described above was used.
+To change the buffer size _Buffers to read from file_ was kept at a value of 2 and only _B-scans per buffer_ and  _Buffers per volume_ were changed. 
+
+ <p align="center">
+  <img src="images/gamingPCbufferSizePerformance.png" >
+</p>
