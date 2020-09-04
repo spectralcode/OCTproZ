@@ -14,5 +14,5 @@ Long-term goals
 ----------
 - Implement OCT processing pipeline in other frameworks besides CUDA (e.g. OpenCL, OpenMP, C ++ AMP) to support various computer hardware for processing
 - Plugin database for most common OCT system hardware configurations
-- Advanced visualization for live view of acquired OCT data (e.g. speckle variance, spectroscopic)
+- Advanced visualization for live view of OCT data (e.g. speckle variance, spectroscopic)
 - Python or scripting interface either as plugin or integrated within OCTproZ
