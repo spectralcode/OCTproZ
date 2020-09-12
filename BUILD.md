@@ -6,18 +6,19 @@ OCTproZ can be build on Windows and Linux.
 Building OCTproZ from source requires: 
 - Installation of [Qt 5](https://www.qt.io/offline-installers)
 - Installation of [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) (version 8 or greater)
-- __Windows:__ MSVC compiler that is compatible with your CUDA version (see [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#system-requirements)) <br>
+- __Windows:__ MSVC compiler that is compatible with your CUDA version (see [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#system-requirements)) To get the MSVC compiler it is the easiest to search online where/how to get it as this changes from time to time. Pay attention that you get the right version of the MSVC compiler as described in the CUDA guide. <br>
 __Linux:__ Development environment that is compatible with your CUDA version (see [CUDA installation guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements)) and the third-party libraries mentioned in the [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#install-libraries)
 
 A more detailed Linux guide for the installation steps above can be found in the section "Installing development tools to build OCTproZ on Linux" below. 
 
 How to compile:
 1. Clone/Download the OCTproZ source files. The destination path should not contain any spaces!
-2. Start Qt Creator and open [OCTproZ_DevKit.pro](octproz_devkit/OCTproZ_DevKit.pro), [virtualoctsystem.pro](octproz_virtual_oct_system/virtualoctsystem.pro) and [OCTproZ.pro](octproz/OCTproZ.pro)
-3. Build OCTproZ_DevKit first and then virtualoctsystem and OCTproZ.
-4. Run OCTproZ
+2. Start Qt Creator and open [octproz_project.pro](octproz_project.pro)
+3. Configure project by selectig appropriate kit in Qt Creator (on Windows you need the MSVC compiler)
+3. Build _octproz_project_ (_right click on _octproz_project_  -> Build_)
+4. Run OCTproZ (right click on _octproz_project_ __or__ right click on _octproz_ -> Run)
 
-The DevKit needs to be compiled first as it generates a folder with files that are used by OCTproZ and any plug-in at compile time.  </br>
+The project file _octproz_project.pro_ ensures that the devkit is compiled first as it generates a folder with files that are used by OCTproZ and any plug-in at compile time.  </br>
 
 
 # Installing development tools to build OCTproZ on Linux
