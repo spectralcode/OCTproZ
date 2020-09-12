@@ -4,6 +4,9 @@
 /octproz/misc
 /octproz_share_dev
 /build
+/octproz_project/octproz_extensions
+/octproz_project/octproz/misc
+/octproz_project/octproz_share_dev
 *.o
 *.obj
 *.pdb
