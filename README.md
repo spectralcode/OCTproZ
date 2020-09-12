@@ -54,13 +54,13 @@ The following plug-ins are currently available:
 __Acquisition Systems:__
 |Name | Description |
 |-----|-----|
-|[Virtual OCT System](octproz_virtual_oct_system)| Can be used to load already acquired OCT raw data from the disk|
+|[Virtual OCT System](octproz_project/octproz_plugins/octproz_virtual_oct_system)| Can be used to load already acquired OCT raw data from the disk|
 
 
 __Extensions:__
 |Name | Description |
 |-----|-----|
-|[Demo Extension](octproz_demo_extension)| This demo extension is aimed at developers. It has no useful functionality, but the code can be used as a template for developing custom extensions.|
+|[Demo Extension](octproz_project/octproz_plugins/octproz_demo_extension)| This demo extension is for developers. It has no useful functionality, but the code can be used as a template for developing custom extensions.|
 |[Image Statistics](https://github.com/spectralcode/ImageStatisticsExtension)| Displays useful image statistics, such as a histogram, in real time of currently acquired B-scans |
 
 The easiest way to develop custom plug-ins is to clone/download the entire OCTproZ project, compile the DevKit and OCTproZ and use the existing examples as templates. Have a look at the [plugin developer guide](https://spectralcode.github.io/OCTproZ/developer.html). 
