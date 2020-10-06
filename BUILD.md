@@ -55,11 +55,11 @@ Now insert the cuda relevant paths as statet in the cuda installation guide at t
 
 To save the file press on your keyboard
 ```
-cntrl + o
+ctrl + o
 ```
 And to close the file press
 ```
-cntrl + x
+ctrl + x
 ```
 
 After this you should verify [that the CUDA toolkit can find and communicate correctly with the CUDA-capable hardware.](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/#verify-installation)
