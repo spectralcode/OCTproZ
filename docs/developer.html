@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-us"><head>
-  <title>OCTproZ User Manual</title>
+  <title>OCTproZ Developer Guide</title>
   <meta name="description" content="OCTproZ Developer Guide. OCTproZ is an open source software for optical coherence tomography processing and visualization.">
   <link rel="stylesheet" href="css/poole.css">
   <link rel="stylesheet" href="css/hyde.css">
@@ -29,7 +29,7 @@
 
 <div class="content container">
   <h1 id="octproz-developer-guide"><a name="main"></a>Plugin Developer Guide for OCTproZ</h1>
-  <p><small>Date: August 24, 2020 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@iqo.uni-hannover.de)</small></p>
+  <p><small>Date: October 15, 2020 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@iqo.uni-hannover.de)</small></p>
 
 
   <h1 id="id-about"><a name="about-section"></a>About this Developer Guide</h1>
@@ -41,26 +41,26 @@
 
   <h1 id="id-before-start"><a name="before-start-section"></a>Before You Start</h1>
 
-  <p>In order to write your own plugins, you need to make sure that you are able to compile the <a href="https://github.com/spectralcode/OCTproZ/tree/master/octproz_devkit">OCTproZ DevKit</a>. Have a look at the compiling instructions on the OCTproZ project page on <a href="https://github.com/spectralcode/OCTproZ">GitHub</a>.</p>
+  <p>In order to write your own plugins, you need to make sure that you are able to compile the <a href="https://github.com/spectralcode/OCTproZ/tree/master/octproz_project/octproz_devkit">OCTproZ DevKit</a>. Have a look at the compiling instructions on the OCTproZ project page on <a href="https://github.com/spectralcode/OCTproZ">GitHub</a>.</p>
 
 
 
   <h1 id="id-plugin"><a name="plugin-section"></a>Plugin System</h1>
 
-  <p>Plugins are dynamic libraries that extend the functionality of OCTproZ. To develop custom plugins the <a href="https://github.com/spectralcode/OCTproZ/tree/master/octproz_devkit">DevKit</a> needs to be used. After downloading and compiling the DevKit code, you get a static library and a collection of C++ header files that specify which classes and methods must be implemented in order to create a custom plugin.</p>
+  <p>Plugins are dynamic libraries that extend the functionality of OCTproZ. To develop custom plugins the <a href="https://github.com/spectralcode/OCTproZ/tree/master/octproz_project/octproz_devkit">DevKit</a> needs to be used. After downloading and compiling the DevKit code, you get a static library and a collection of C++ header files that specify which classes and methods must be implemented in order to create a custom plugin.</p>
   <p>The DevKit defines two types of plugins: Extensions and Acquisition Systems. This can also be seen in the following UML class diagram:</p>
   <img src="images/octproz_plugin_uml.png">
   <p><b><i>Extensions</i></b> are software modules that extend the functionality of an OCT system (e.g. software control of a liquid lens) or provide additional custom defined post processing steps. Extensions have access to raw and processed OCT data, this makes them perfectly suited for implementation of closed loop control algorithms (e.g. for wavefront sensorless adaptive optics). </p>
   <p><b><i>Acquisition Systems</i></b> represent software implementations of actual or virtual OCT systems. Their main task is to control the OCT hardware setup and to provide raw data to OCTproZ.</p>
   <p>Your custom plugin must inherit from either <b>Extension</b> or <b>AcquisitionSystem</b> and implement all the virtual methods from the base class. All methods shown in italics in the class diagram above are virtual.</p>
-  <p>The meaning and functionality of all attributes and methods is documented in the header files of the DevKit. For example have a look at <a href="https://github.com/spectralcode/OCTproZ/blob/master/octproz_devkit/src/extension.h">extension.h</a>.</p>
+  <p>The meaning and functionality of all attributes and methods is documented in the header files of the DevKit. For example have a look at <a href="https://github.com/spectralcode/OCTproZ/blob/master/octproz_project/octproz_devkit/src/extension.h">extension.h</a>.</p>
 
 
 
   <h1 id="id-extensions"><a name="extensions-section"></a>Extensions</h1>
   <p>First of all, you should read the source code of one of the provided Extensions:</p>
   <ul>
-      <li>Basic example: <a href="https://github.com/spectralcode/OCTproZ/tree/master/octproz_demo_extension">Demo Extension</a></li>
+      <li>Basic example: <a href="https://github.com/spectralcode/OCTproZ/tree/master/octproz_project/octproz_plugins/octproz_demo_extension">Demo Extension</a></li>
       <li>More advanced example: <a href="https://github.com/spectralcode/ImageStatisticsExtension">Image Statistics Extension</a></li>
   </ul>
   <p>It is recommended to use one of the examples as a template for your own Extension!</p>
@@ -113,7 +113,7 @@
   
   <p>First of all, you should read the source code of the provided Acquisition System example:</p>
   <ul>
-      <li>Basic example: <a href="https://github.com/spectralcode/OCTproZ/tree/master/octproz_virtual_oct_system">Virtual OCT System</a></li>
+      <li>Basic example: <a href="https://github.com/spectralcode/OCTproZ/tree/master/octproz_project/octproz_plugins/octproz_virtual_oct_system">Virtual OCT System</a></li>
   </ul>
   <p>It is recommended to use this example as a template for your own Acquisition System!</p>
   <p>The two most important methods that you need to implement are <code class="language-plaintext highlighter-rouge">void startAcquisition()</code> and <code class="language-plaintext highlighter-rouge">void stopAcquisition()</code>. These methods are called automatically by OCTproZ as soon the user starts or stops the OCT acquisition. </p>
