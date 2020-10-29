@@ -106,17 +106,25 @@ On some Linux distributions floating dock widgets lose mouse focus when dragged.
 
 Publication
 ----------
-[![status](https://joss.theoj.org/papers/539ea5d7842ff0a7607a4a405ea69730/status.svg)](https://joss.theoj.org/papers/539ea5d7842ff0a7607a4a405ea69730)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.02435/status.svg)](https://doi.org/10.21105/joss.02435)
 
-Coming soon. In the meantime, you can contact me at </br>
-_zabic_ _</br>_
-_at_</br>
-_iqo_._uni_-_hannover_._de_</br>
 
-Authors:</br>
-Miroslav Zabic<sup>1, 2</sup>, Ben Matthias<sup>2</sup>, Alexander Heisterkamp<sup>1</sup>, Tammo Ripken<sup>2</sup></br>
-<sup>1</sup>Institute of Quantum Optics, Leibniz University Hannover, Welfengarten 1, 30167 Hannover, Germany</br>
-<sup>2</sup>Industrial and Biomedical Optics Department, Laser Zentrum Hannover e.V., Hollerithallee 8, 30419 Hannover, Germany</br>
+BibTeX:
+```
+@article{Zabic2020,
+  doi = {10.21105/joss.02580},
+  url = {https://doi.org/10.21105/joss.02580},
+  year = {2020},
+  publisher = {The Open Journal},
+  volume = {5},
+  number = {54},
+  pages = {2580},
+  author = {Miroslav Zabic and Ben Matthias and Alexander Heisterkamp and Tammo Ripken},
+  title = {Open Source Optical Coherence Tomography Software},
+  journal = {Journal of Open Source Software}
+}
+```
+
 
 License
 ----------
