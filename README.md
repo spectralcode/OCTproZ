@@ -106,7 +106,7 @@ On some Linux distributions floating dock widgets lose mouse focus when dragged.
 
 Publication
 ----------
-[![DOI](https://joss.theoj.org/papers/10.21105/joss.02435/status.svg)](https://doi.org/10.21105/joss.02435)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.02580/status.svg)](https://doi.org/10.21105/joss.02580)
 
 
 BibTeX:
