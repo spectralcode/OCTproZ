@@ -13,7 +13,7 @@ A more detailed Linux guide for the installation steps above can be found in the
 
 How to compile:
 1. Clone/Download the OCTproZ project. The destination path should not contain any spaces!
-2. Start Qt Creator and open [octproz_project.pro](octproz_project.pro)
+2. Start Qt Creator and open [octproz_project.pro](octproz_project/octproz_project.pro)
 3. Configure project by selectig appropriate kit in Qt Creator (on Windows you need the MSVC compiler)
 3. Build _octproz_project_ (_right click on _octproz_project_  -> Build_)
 4. Run OCTproZ (right click on _octproz_project_ __or__ right click on _octproz_ -> Run)
