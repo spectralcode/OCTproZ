@@ -20,7 +20,8 @@ DOC_FILES_IMAGES += \
 	$$DOCDIR/images/quickstart3.png \
 	$$DOCDIR/images/quickstart4.png \
 	$$DOCDIR/images/quickstart5.png \
-	$$DOCDIR/images/quickstart6.png
+	$$DOCDIR/images/quickstart6.png \
+	$$DOCDIR/images/octproz_plugin_uml.png
 
 unix{
 	DOCEXPORTDIR = $$shell_path($$OUT_PWD/docs)
