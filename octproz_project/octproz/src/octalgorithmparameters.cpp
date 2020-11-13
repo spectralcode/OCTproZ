@@ -127,7 +127,7 @@ void OctAlgorithmParameters::updateResampleCurve() {
 		}else{
 			this->resampleCurve =  this->customResampleCurve;
 		}
-		Polynomial::clamp(this->resampleCurve, this->samplesPerLine, 0, this->samplesPerLine-4); //resampling curve values shall remain between 0 and number of samples per line - 3 (a line is a raw A-scan). If a value is outside these boundaries the resampling (k-linearization) during processing will fail with a memory access violation //todo: rethink this approach, maybe there is a better way to avoid memeory access violation during interpolation in klinerization kernels
+		Polynomial::clamp(this->resampleCurve, this->samplesPerLine, 0, this->samplesPerLine-3); //resampling curve values shall remain between 0 and number of samples per line - 3 (a line is a raw A-scan). If a value is outside these boundaries the resampling (k-linearization) during processing will fail with a memory access violation //todo: rethink this approach, maybe there is a better way to avoid memeory access violation during interpolation in klinerization kernels
 		this->resamplingUpdated = true;
 
 		//update resample reference curve for plot in sidebar
@@ -136,7 +136,7 @@ void OctAlgorithmParameters::updateResampleCurve() {
 			this->resamplingReferenceCurveCalculator->setCoeff(0, 0);
 			this->resamplingReferenceCurveCalculator->setCoeff(1, 1);
 			this->resampleReferenceCurve = this->resamplingReferenceCurveCalculator->getData();
-			Polynomial::clamp(this->resampleReferenceCurve, this->samplesPerLine, 0, this->samplesPerLine-4);
+			Polynomial::clamp(this->resampleReferenceCurve, this->samplesPerLine, 0, this->samplesPerLine-3);
 		}
 	}
 }

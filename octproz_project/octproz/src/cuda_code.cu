@@ -128,22 +128,22 @@ __global__ void inputToCufftComplex_and_bitshift(cufftComplex* output, const voi
 }
 
 //device functions for endian byte swap //todo: check if big endian to little endian conversion may be needed and extend inputToCufftComplex kernel if necessary
-__device__ inline uint32_t endianSwapUint32(uint32_t val) {
+inline __device__ uint32_t endianSwapUint32(uint32_t val) {
 	val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF);
 	return (val << 16) | ((val >> 16));
 }
-__device__ inline int32_t endianSwapInt32(int32_t val) {
+inline __device__ int32_t endianSwapInt32(int32_t val) {
 	val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF );
 	return (val << 16) | ((val >> 16) & 0xFFFF);
 }
-__device__ inline uint16_t endianSwapUint16(uint16_t val) {
+inline __device__ uint16_t endianSwapUint16(uint16_t val) {
 	return (val << 8) | (val >> 8 );
 }
-__device__ inline int16_t endianSwapInt16(int16_t val) {
+inline __device__ int16_t endianSwapInt16(int16_t val) {
 	return (val << 8) | ((val >> 8) & 0xFF);
 }
 
-//todo: use/evaluate cuda texture for interpolation in klinearization kernel. also try cubic spline interpolation and 3rd order hermite interpolation
+//todo: use/evaluate cuda texture for interpolation in klinearization kernel
 __global__ void klinearization(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = index%width;
@@ -160,7 +160,6 @@ __global__ void klinearization(cufftComplex* out, cufftComplex *in, const float*
 	out[index].y = 0;
 }
 
-//quadratic interpolation
 __global__ void klinearizationQuadratic(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = index%width;
@@ -182,66 +181,34 @@ __global__ void klinearizationQuadratic(cufftComplex* out, cufftComplex *in, con
 	out[index].y = 0;
 }
 
-//cubic interpolation
+inline __device__ float cubicHermiteInterpolation(const float y0, const float y1, const float y2, const float y3, const float positionBetweenY1andY2){
+	const float a = -y0 + 3.0f*(y1-y2) + y3;
+	const float b = 2.0f*y0 - 5.0f*y1 + 4.0f*y2 - y3;
+	const float c = -y0 + y2;
+
+	const float pos = positionBetweenY1andY2;
+	const float pos2 = pos*pos;
+
+	return 0.5f*pos*(a * pos2 + b * pos + c) + y1;
+}
+
 __global__ void klinearizationCubic(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = index%width;
 	int offset = index-j;
 
-	float x = resampleCurve[j];
-	int x0 = (int)x;
-	int x1 = x0 + 1;
-	int x2 = x0 + 2;
-	int x3 = x0 + 3;
+	float nx = resampleCurve[j];
+	const int n1 = (int)nx;
+	int n0 = abs(n1 - 1); //using abs() to avoid negative n0 because offset can be 0 and out of bounds memory access may occur
+	int n2 = n1 + 1;
+	int n3 = n2 + 1; //we do not need to worry here about out of bounds memory access as the resampleCurve is restricted to values that avoid out of bound memory acces in resample kernels
 
-	float f_x0 = in[offset + x0].x;
-	float f_x1 = in[offset + x1].x;
-	float f_x2 = in[offset + x2].x;
-	float f_x3 = in[offset + x2].x;
-	float b0 = f_x0;
-	float b1 = f_x1-f_x0;
-	float b2 = ((f_x2-f_x1)-b1)/(x2-x0);
-	float b3 = ((f_x3-f_x2)-b2)/(x3-x0);
+	float y0 = in[offset + n0].x;
+	float y1 = in[offset + n1].x;
+	float y2 = in[offset + n2].x;
+	float y3 = in[offset + n3].x;
 
-	out[index].x = b0 + b1 * (x - x0) + b2*(x-x0)*(x-x1) + b3*(x-x0)*(x-x1)*(x-x2);
-	out[index].y = 0;
-}
-
-//5th order interpolation
-__global__ void klinearization5thOrder(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
-	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	int j = index%width;
-	int offset = index-j;
-
-	float x = resampleCurve[j];
-//	int x0 = (int)x;
-//	int x1 = x0 + 1;
-//	int x2 = x0 + 2;
-//	int x3 = x0 + 3;
-//	int x4 = x0 + 4;
-//	int x5 = x0 + 5;
-
-	int x3 = (int)x;
-	int x0 = x3 - 3;
-	int x1 = x3 - 2;
-	int x2 = x3 - 1;
-	int x4 = x3 + 1;
-	int x5 = x3 + 2;
-
-	float b0 = in[offset + x0].x;
-	float f_x0 = b0;
-	float f_x1 = in[offset + x1].x;
-	float f_x2 = in[offset + x2].x;
-	float f_x3 = in[offset + x3].x;
-	float f_x4 = in[offset + x4].x;
-	float f_x5 = in[offset + x5].x;
-	float b1 = (f_x1-f_x0)/(x1-x0);
-	float b2 = (((f_x2-f_x1)/(x2-x1))-b1)/(x2-x0);
-	float b3 = (((f_x3-f_x2)/(x3-x2))-b2)/(x3-x0);
-	float b4 = (((f_x4-f_x3)/(x4-x3))-b3)/(x4-x0);
-	float b5 = (((f_x5-f_x4)/(x5-x4))-b4)/(x5-x0);
-
-	out[index].x = b0 + b1 * (x - x0) + b2*(x-x0)*(x-x1) + b3*(x-x0)*(x-x1)*(x-x2) + b4*(x-x0)*(x-x1)*(x-x2)*(x-x3) + b5*(x-x0)*(x-x1)*(x-x2)*(x-x3)*(x-x4);
+	out[index].x = cubicHermiteInterpolation(y0,y1,y2,y3,nx-n1);
 	out[index].y = 0;
 }
 
@@ -272,28 +239,23 @@ __global__ void klinearizationAndWindowing(cufftComplex* out, cufftComplex *in, 
 
 __global__ void klinearizationCubicAndWindowing(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const float* window, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	if(index < samples-4){
-		int j = index%width;
-		int offset = index-j;
+	int j = index%width;
+	int offset = index-j;
 
-		float x = resampleCurve[j];
-		int x0 = (int)x;
-		int x1 = x0 + 1;
-		int x2 = x0 + 2;
-		int x3 = x0 + 3;
+	float nx = resampleCurve[j];
+	const int n1 = (int)nx;
+	int n0 = abs(n1 - 1);
+	int n2 = n1 + 1;
+	int n3 = n2 + 1;
 
-		float f_x0 = in[offset + x0].x;
-		float f_x1 = in[offset + x1].x;
-		float f_x2 = in[offset + x2].x;
-		float f_x3 = in[offset + x2].x;
-		float b0 = f_x0;
-		float b1 = f_x1-f_x0;
-		float b2 = ((f_x2-f_x1)-b1)/(x2-x0);
-		float b3 = ((f_x3-f_x2)-b2)/(x3-x0);
+	float y0 = in[offset + n0].x;
+	float y1 = in[offset + n1].x;
+	float y2 = in[offset + n2].x;
+	float y3 = in[offset + n3].x;
+	float pos = nx-n1;
 
-		out[index].x = (b0 + b1 * (x - x0) + b2*(x-x0)*(x-x1) + b3*(x-x0)*(x-x1)*(x-x2)) * window[j];
-		out[index].y = 0;
-	}
+	out[index].x = cubicHermiteInterpolation(y0,y1,y2,y3,pos) * window[j];
+	out[index].y = 0;
 }
 
 __global__ void klinearizationAndWindowingAndDispersionCompensation(cufftComplex* out, cufftComplex* in, const float* resampleCurve, const float* window, const cufftComplex* phaseComplex, const int width, const int samples) {
@@ -315,29 +277,24 @@ __global__ void klinearizationAndWindowingAndDispersionCompensation(cufftComplex
 
 __global__ void klinearizationCubicAndWindowingAndDispersionCompensation(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const float* window, const cufftComplex* phaseComplex, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	if(index < samples-4){
-		int j = index%width;
-		int offset = index-j;
+	int j = index%width;
+	int offset = index-j;
 
-		float x = resampleCurve[j];
-		int x0 = (int)x;
-		int x1 = x0 + 1;
-		int x2 = x0 + 2;
-		int x3 = x0 + 3;
+	float nx = resampleCurve[j];
+	int n1 = (int)nx;
+	int n0 = abs(n1 - 1);
+	int n2 = n1 + 1;
+	int n3 = n2 + 1;
 
-		float f_x0 = in[offset + x0].x;
-		float f_x1 = in[offset + x1].x;
-		float f_x2 = in[offset + x2].x;
-		float f_x3 = in[offset + x2].x;
-		float b0 = f_x0;
-		float b1 = f_x1-f_x0;
-		float b2 = ((f_x2-f_x1)-b1)/(x2-x0);
-		float b3 = ((f_x3-f_x2)-b2)/(x3-x0);
+	float y0 = in[offset + n0].x;
+	float y1 = in[offset + n1].x;
+	float y2 = in[offset + n2].x;
+	float y3 = in[offset + n3].x;
+	float pos = nx-n1;
 
-		float linearizedAndWindowedInX = (b0 + b1 * (x - x0) + b2*(x-x0)*(x-x1) + b3*(x-x0)*(x-x1)*(x-x2)) * window[j];
-		out[index].x = linearizedAndWindowedInX * phaseComplex[j].x;
-		out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
-	}
+	float linearizedAndWindowedInX = cubicHermiteInterpolation(y0,y1,y2,y3,pos) * window[j];
+	out[index].x = linearizedAndWindowedInX * phaseComplex[j].x;
+	out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
 }
 
 __global__ void sinusoidalScanCorrection(float* out, float *in, float* sinusoidalResampleCurve, const int width, const int height, const int depth, const int samples) { //width: samplesPerAscan; height: ascansPerBscan, depth: bscansPerBuffer
@@ -535,7 +492,7 @@ __global__ void cuda_bscanFlip_slow(float *output, float *input, int samplesPerA
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samplesInVolume) {
 		int samplesPerBscan = ascansPerBscan * samplesPerAscan;
-		int bscanIndex = index / samplesPerBscan; 
+		int bscanIndex = index / samplesPerBscan;
 		int sampleIndex = index % samplesPerBscan;
 		int ascanIndex = sampleIndex / samplesPerAscan;
 		int mirrorIndex = bscanIndex*samplesPerBscan+((ascansPerBscan - 1) - ascanIndex)*samplesPerAscan + (sampleIndex%samplesPerAscan);
