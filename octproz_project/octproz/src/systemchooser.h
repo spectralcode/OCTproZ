@@ -44,12 +44,10 @@ public:
 	SystemChooser();
 	~SystemChooser();
 
-
 	QString selectSystem(QList<QString> systems);
 
 private:
 	QString selectedSystem;
-
 	QLayout* layout;
 	QListWidget* listView;
 	QLabel* label;
@@ -58,12 +56,8 @@ private:
 	void populate(QList<QString> systems);
 
 public slots:
-	void slot_select();
-
+	void onOkClicked();
+	void onDoubleClicked(QListWidgetItem* item);
 };
 
-#endif // SYSTEMCHOOSER_H
-
-
-
-
+#endif //SYSTEMCHOOSER_H
