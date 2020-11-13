@@ -52,7 +52,6 @@ void* d_inputBuffer1;
 void* d_inputBuffer2;
 void* d_outputBuffer;
 
-
 void* host_buffer1 = NULL;
 void* host_buffer2 = NULL;
 void* host_RecordBuffer = NULL;
@@ -68,7 +67,6 @@ cufftComplex* d_phaseCartesian = NULL;
 unsigned int bufferNumber = 0;
 unsigned int bufferNumberInVolume = 0;
 unsigned int streamingBufferNumber = 0;
-
 
 cufftComplex* d_fftBuffer = NULL;
 cufftHandle d_plan;
@@ -223,18 +221,18 @@ __global__ void windowing(cufftComplex* output, cufftComplex* input, const float
 
 __global__ void klinearizationAndWindowing(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const float* window, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-		int j = index%width;
-		int offset = index-j;
+	int j = index%width;
+	int offset = index-j;
 
-		float n_m = resampleCurve[j];
-		int n1 = (int)n_m;
-		int n2 = n1 + 1;
+	float n_m = resampleCurve[j];
+	int n1 = (int)n_m;
+	int n2 = n1 + 1;
 
-		float inN1 = in[offset + n1].x;
-		float inN2 = in[offset + n2].x;
+	float inN1 = in[offset + n1].x;
+	float inN2 = in[offset + n2].x;
 
-		out[index].x = (inN1 + (inN2 - inN1) * (n_m - n1)) * window[j];
-		out[index].y = 0;
+	out[index].x = (inN1 + (inN2 - inN1) * (n_m - n1)) * window[j];
+	out[index].y = 0;
 }
 
 __global__ void klinearizationCubicAndWindowing(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const float* window, const int width, const int samples) {
@@ -260,19 +258,19 @@ __global__ void klinearizationCubicAndWindowing(cufftComplex* out, cufftComplex 
 
 __global__ void klinearizationAndWindowingAndDispersionCompensation(cufftComplex* out, cufftComplex* in, const float* resampleCurve, const float* window, const cufftComplex* phaseComplex, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-		int j = index%width;
-		int offset = index-j;
+	int j = index%width;
+	int offset = index-j;
 
-		float n_m = resampleCurve[j];
-		int n1 = (int)n_m;
-		int n2 = n1 + 1;
+	float n_m = resampleCurve[j];
+	int n1 = (int)n_m;
+	int n2 = n1 + 1;
 
-		float inN1 = in[offset + n1].x;
-		float inN2 = in[offset + n2].x;
+	float inN1 = in[offset + n1].x;
+	float inN2 = in[offset + n2].x;
 
-		float linearizedAndWindowedInX = (inN1 + (inN2 - inN1) * (n_m - n1)) * window[j];
-		out[index].x = linearizedAndWindowedInX * phaseComplex[j].x;
-		out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
+	float linearizedAndWindowedInX = (inN1 + (inN2 - inN1) * (n_m - n1)) * window[j];
+	out[index].x = linearizedAndWindowedInX * phaseComplex[j].x;
+	out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
 }
 
 __global__ void klinearizationCubicAndWindowingAndDispersionCompensation(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const float* window, const cufftComplex* phaseComplex, const int width, const int samples) {
@@ -689,7 +687,7 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	//window curve
 	checkCudaErrors(cudaMalloc((void**)&d_windowCurve, sizeof(float)*signalLength));
 
-	//Allocate device memory for raw signal
+	//allocate device memory for raw signal
 	checkCudaErrors(cudaMalloc((void**)&d_inputBuffer1, bytesPerSample*samplesPerBuffer));
 	cudaMemset(d_inputBuffer1, 0, bytesPerSample*samplesPerBuffer);
 	checkCudaErrors(cudaMalloc((void**)&d_inputBuffer2, bytesPerSample*samplesPerBuffer));
@@ -697,26 +695,26 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	//Allocate device memory for streaming processed signal
+	//allocate device memory for streaming processed signal
 	checkCudaErrors(cudaMalloc((void**)&d_outputBuffer, bytesPerSample*samplesPerBuffer/2));
 	cudaMemset(d_outputBuffer, 0, bytesPerSample*samplesPerBuffer/2);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	//Allocate device memory for k-linearized signal
+	//allocate device memory for k-linearized signal
 	checkCudaErrors(cudaMalloc((void**)&d_inputLinearized, sizeof(cufftComplex)*samplesPerBuffer));
 	cudaMemset(d_inputLinearized, 0, sizeof(cufftComplex)*samplesPerBuffer);
 
-	//Allocate device memory for dispersion compensation phase
+	//allocate device memory for dispersion compensation phase
 	checkCudaErrors(cudaMalloc((void**)&d_phaseCartesian, sizeof(cufftComplex)*signalLength));
 	cudaMemset(d_phaseCartesian, 0, sizeof(cufftComplex)*signalLength);
 
-	//Allocate device memory for processed signal
+	//allocate device memory for processed signal
 	checkCudaErrors(cudaMalloc((void**)&d_processedBuffer, sizeof(float)*samplesPerVolume/2));
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	//Allocate device memory for temporary buffer for sinusoidal scan correction
+	//allocate device memory for temporary buffer for sinusoidal scan correction
 	checkCudaErrors(cudaMalloc((void**)&d_sinusoidalScanTmpBuffer, sizeof(float)*samplesPerBuffer/2));
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
@@ -754,7 +752,7 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	streamedBuffers = 0;
 	fixedPatternNoiseDetermined = false;
 
-	//todo: find a way to automatically determine optimal blockSize and optimal grindSize
+	//todo: find a way to automatically determine optimal blockSize and optimal gridSize
 	blockSize = 128;
 	gridSize = samplesPerBuffer / blockSize;
 }
