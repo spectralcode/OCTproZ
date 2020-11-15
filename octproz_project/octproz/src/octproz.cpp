@@ -44,8 +44,8 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->dockConsole = new QDockWidget((tr("Message Console")), this);
 
 	Settings* settings = Settings::getInstance();
-	connect(settings, &Settings::info, this->console, &MessageConsole::slot_displayInfo);
-	connect(settings, &Settings::error, this->console, &MessageConsole::slot_displayError);
+	connect(settings, &Settings::info, this->console, &MessageConsole::displayInfo);
+	connect(settings, &Settings::error, this->console, &MessageConsole::displayError);
 
 	this->aboutWindow = new AboutDialog(this);
 	connect(this->aboutWindow, &AboutDialog::easterEgg, this, &OCTproZ::slot_easterEgg);
@@ -59,8 +59,8 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->extManager = new ExtensionManager();
 	this->plot1D = new PlotWindow1D(this);
 	connect(this, &OCTproZ::allowRawGrabbing, this->plot1D, &PlotWindow1D::slot_enableRawGrabbing);
-	connect(this->plot1D, &PlotWindow1D::info, this->console, &MessageConsole::slot_displayInfo);
-	connect(this->plot1D, &PlotWindow1D::error, this->console, &MessageConsole::slot_displayError);
+	connect(this->plot1D, &PlotWindow1D::info, this->console, &MessageConsole::displayInfo);
+	connect(this->plot1D, &PlotWindow1D::error, this->console, &MessageConsole::displayError);
 	connect(this, &OCTproZ::linesPerBufferChanged, this->plot1D, &PlotWindow1D::slot_changeLinesPerBuffer);
 
 	this->dock1D = new QDockWidget(tr("1D"), this);
@@ -98,8 +98,8 @@ OCTproZ::OCTproZ(QWidget *parent) :
 
 	this->sidebar = new Sidebar(this);
 	this->sidebar->setObjectName("Sidebar");
-	connect(this->sidebar, &Sidebar::info, this->console, &MessageConsole::slot_displayInfo);
-	connect(this->sidebar, &Sidebar::error, this->console, &MessageConsole::slot_displayError);
+	connect(this->sidebar, &Sidebar::info, this->console, &MessageConsole::displayInfo);
+	connect(this->sidebar, &Sidebar::error, this->console, &MessageConsole::displayError);
 	connect(this->sidebar, &Sidebar::dialogAboutToOpen, this, &OCTproZ::slot_closeOpenGLwindows); //GL windows need to be closed to avoid linux bug where QFileDialog is not usable when a GL window is opend in background
 	connect(this->sidebar, &Sidebar::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
 
@@ -116,8 +116,8 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	#endif
 
 	connect(this, &OCTproZ::enableRecording, this->signalProcessing, &Processing::slot_enableRecording);
-	connect(this->signalProcessing, &Processing::info, this->console, &MessageConsole::slot_displayInfo);
-	connect(this->signalProcessing, &Processing::error, this->console, &MessageConsole::slot_displayError);
+	connect(this->signalProcessing, &Processing::info, this->console, &MessageConsole::displayInfo);
+	connect(this->signalProcessing, &Processing::error, this->console, &MessageConsole::displayError);
 	connect(this->signalProcessing, &Processing::initializationDone, this, &OCTproZ::slot_enableStopAction);
 	connect(this->signalProcessing, &Processing::streamingBufferEnabled, this->plot1D, &PlotWindow1D::slot_enableProcessedGrabbing);
 	connect(this->signalProcessing, &Processing::rawData, this->plot1D, &PlotWindow1D::slot_plotRawData);
@@ -292,14 +292,14 @@ void OCTproZ::initGui() {
 	this->forceUpdateProcessingParams();
 
 	//Message Console connects
-	connect(this, &OCTproZ::info, this->console, &MessageConsole::slot_displayInfo);
-	connect(this, &OCTproZ::error, this->console, &MessageConsole::slot_displayError);
-	connect(this->bscanWindow, &GLWindow2D::info, this->console, &MessageConsole::slot_displayInfo);
-	connect(this->bscanWindow, &GLWindow2D::error, this->console, &MessageConsole::slot_displayError);
-	connect(this->enFaceViewWindow, &GLWindow2D::info, this->console, &MessageConsole::slot_displayInfo);
-	connect(this->enFaceViewWindow, &GLWindow2D::error, this->console, &MessageConsole::slot_displayError);
-	connect(this->volumeWindow, &GLWindow3D::info, this->console, &MessageConsole::slot_displayInfo);
-	connect(this->volumeWindow, &GLWindow3D::error, this->console, &MessageConsole::slot_displayError);
+	connect(this, &OCTproZ::info, this->console, &MessageConsole::displayInfo);
+	connect(this, &OCTproZ::error, this->console, &MessageConsole::displayError);
+	connect(this->bscanWindow, &GLWindow2D::info, this->console, &MessageConsole::displayInfo);
+	connect(this->bscanWindow, &GLWindow2D::error, this->console, &MessageConsole::displayError);
+	connect(this->enFaceViewWindow, &GLWindow2D::info, this->console, &MessageConsole::displayInfo);
+	connect(this->enFaceViewWindow, &GLWindow2D::error, this->console, &MessageConsole::displayError);
+	connect(this->volumeWindow, &GLWindow3D::info, this->console, &MessageConsole::displayInfo);
+	connect(this->volumeWindow, &GLWindow3D::error, this->console, &MessageConsole::displayError);
 
 	//Connects to bypass Linux/Qt bugs
 	connect(this, &OCTproZ::closeDock2D, this, &OCTproZ::slot_closeOpenGLwindows);
@@ -625,8 +625,8 @@ void OCTproZ::slot_menuExtensions() {
 					extensionWidget->setWindowFlag(Qt::WindowStaysOnTopHint);
 					extensionWidget->show();
 				}
-				connect(extension, &Extension::info, this->console, &MessageConsole::slot_displayInfo);
-				connect(extension, &Extension::error, this->console, &MessageConsole::slot_displayError);
+				connect(extension, &Extension::info, this->console, &MessageConsole::displayInfo);
+				connect(extension, &Extension::error, this->console, &MessageConsole::displayError);
 				connect(extension, &Extension::storeSettings, this, &OCTproZ::slot_storePluginSettings);
 				extension->activateExtension(); //todo: do not call extension methods directly, use signal slot (or invokeMethod -> see below) and run extension in separate thread
 				//QMetaObject::invokeMethod(extension, "activateExtension", Qt::QueuedConnection); //todo: move activateExtension method to "slots" in extensions.h in devkit! move extension in separate thread
@@ -644,8 +644,8 @@ void OCTproZ::slot_menuExtensions() {
 					tabWidget->removeTab(index);
 
 					extension->deactivateExtension();
-					disconnect(extension, &Extension::info, this->console, &MessageConsole::slot_displayInfo);
-					disconnect(extension, &Extension::error, this->console, &MessageConsole::slot_displayError);
+					disconnect(extension, &Extension::info, this->console, &MessageConsole::displayInfo);
+					disconnect(extension, &Extension::error, this->console, &MessageConsole::displayError);
 					disconnect(extension, &Extension::storeSettings, this, &OCTproZ::slot_storePluginSettings);
 					disconnect(this, &OCTproZ::allowRawGrabbing, extension, &Extension::enableRawDataGrabbing);
 					disconnect(this->signalProcessing, &Processing::streamingBufferEnabled, extension, &Extension::enableProcessedDataGrabbing);
@@ -674,8 +674,8 @@ void OCTproZ::slot_uncheckExtensionInMenu(Extension* extension) {
 
 	//disconnect signal slots from closed extension
 	extension->deactivateExtension();
-	disconnect(extension, &Extension::info, this->console, &MessageConsole::slot_displayInfo);
-	disconnect(extension, &Extension::error, this->console, &MessageConsole::slot_displayError);
+	disconnect(extension, &Extension::info, this->console, &MessageConsole::displayInfo);
+	disconnect(extension, &Extension::error, this->console, &MessageConsole::displayError);
 	disconnect(extension, &Extension::storeSettings, this, &OCTproZ::slot_storePluginSettings);
 	disconnect(this, &OCTproZ::allowRawGrabbing, extension, &Extension::enableRawDataGrabbing);
 	disconnect(this->signalProcessing, &Processing::streamingBufferEnabled, extension, &Extension::enableProcessedDataGrabbing);
@@ -864,11 +864,11 @@ void OCTproZ::activateSystem(AcquisitionSystem* system){
 			connect(this, &OCTproZ::pluginSettingsRequest, system->settingsDialog, &QDialog::show);
 			connect(this, &OCTproZ::pluginSettingsRequest, system->settingsDialog, &QDialog::raise);
 			connect(system->settingsDialog, &QDialog::finished, this, &OCTproZ::slot_reopenOpenGLwindows); //GL window needs to be closed to avoid linux bug where QFileDialog is not usable when GL window is opend in background
-			connect(system, &AcquisitionSystem::info, this->console, &MessageConsole::slot_displayInfo);
-			connect(system, &AcquisitionSystem::error, this->console, &MessageConsole::slot_displayError);
+			connect(system, &AcquisitionSystem::info, this->console, &MessageConsole::displayInfo);
+			connect(system, &AcquisitionSystem::error, this->console, &MessageConsole::displayError);
 			connect(qApp, &QCoreApplication::aboutToQuit, system, &QObject::deleteLater);
-			connect(system->buffer, &AcquisitionBuffer::info, this->console, &MessageConsole::slot_displayInfo);
-			connect(system->buffer, &AcquisitionBuffer::error, this->console, &MessageConsole::slot_displayError);
+			connect(system->buffer, &AcquisitionBuffer::info, this->console, &MessageConsole::displayInfo);
+			connect(system->buffer, &AcquisitionBuffer::error, this->console, &MessageConsole::displayError);
 			emit newSystem(system);
 			acquisitionThread.start();
 		}

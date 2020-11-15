@@ -28,11 +28,7 @@
 #include "messageconsole.h"
 
 
-
-//-------------------- constructor, destructor --------------------//
-
 MessageConsole::MessageConsole(QWidget *parent) : QWidget(parent){
-
 	this->gridLayout = new QGridLayout(this);
 	this->textEdit = new QTextEdit(this);
 	this->textEdit->setReadOnly(true);
@@ -41,57 +37,43 @@ MessageConsole::MessageConsole(QWidget *parent) : QWidget(parent){
 	this->setMinimumWidth(320);
 	this->setMinimumHeight(160);
 
-
-
 	this->messages = QVector<QString>(MAX_MESSAGES);
 
 	for(auto string : this->messages){
 		string = "";
 	}
-	this->messages_index = 0;
+	this->messagesIndex = 0;
 }
-
 
 MessageConsole::~MessageConsole(){
 
 }
 
-
-//-------------------- public methods -------------------//
-
-
-
-//-------------------- private methods -------------------//
-
 QString MessageConsole::addStringToMessageBuffer(QString message){
-	this->messages[this->messages_index] = message+"<br>";
+	this->messages[this->messagesIndex] = message+"<br>";
 	QString messagesString;
 	//append all messages to messagesString and make first one bold
-	for(int i = messages_index+MAX_MESSAGES; i > messages_index; i--){
-		messagesString = messagesString + (i == messages_index+MAX_MESSAGES ? "<b>"+this->messages.at(i%MAX_MESSAGES)+"</b>" : this->messages.at(i%MAX_MESSAGES));
+	for(int i = this->messagesIndex+MAX_MESSAGES; i > this->messagesIndex; i--){
+		messagesString = messagesString + (i == messagesIndex+MAX_MESSAGES ? "<b>"+this->messages.at(i%MAX_MESSAGES)+"</b>" : this->messages.at(i%MAX_MESSAGES));
 	}
-	this->messages_index = (this->messages_index+1) % MAX_MESSAGES;
+	this->messagesIndex = (this->messagesIndex+1) % MAX_MESSAGES;
 	return messagesString;
 }
 
-
 void MessageConsole::contextMenuEvent(QContextMenuEvent* event){
 	QMenu* menu = this->textEdit->createStandardContextMenu();
-	menu->addAction("test");
 	menu->exec(event->globalPos());
 	delete menu;
-
 }
 
-//-------------------- public slots -------------------//
-void MessageConsole::slot_displayInfo(QString info){
+void MessageConsole::displayInfo(QString info){
 	QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss") + " ";
 	QString htmlStart = "<font color=\"#4863A0\">";	//#4863A0 = "Steel Blue", RGB: 72, 99, 160, (http://www.computerhope.com/htmcolor.htm#color-codes)
 	QString htmlEnd = "</font>";
 	this->textEdit->setText(addStringToMessageBuffer(currentTime + htmlStart + info + htmlEnd));
 }
 
-void MessageConsole::slot_displayError(QString error){
+void MessageConsole::displayError(QString error){
 	QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss") + " ";
 	QString htmlStart = "<font color=\"#E41B17\">";	//#E41B17 = "Love Red" (http://www.computerhope.com/htmcolor.htm#color-codes)
 	QString htmlEnd = "</font>";

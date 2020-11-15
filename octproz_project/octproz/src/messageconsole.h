@@ -50,25 +50,23 @@ public:
 	QDockWidget* getDock(){return this->dock;}
 
 private:
-	QVector<QString>	messages;
-	size_t 			 messages_index;
-	QTextEdit*		  textEdit;
-	QGridLayout*		gridLayout;
-	QDockWidget*		dock;
-	QPoint 			 mousePos;
-
+	QTextEdit* textEdit;
+	QGridLayout* gridLayout;
+	QDockWidget* dock;
+	QPoint mousePos;
+	QVector<QString> messages;
+	int messagesIndex;
 
 	QString addStringToMessageBuffer(QString message);
 	void contextMenuEvent(QContextMenuEvent* event);
-
 
 signals:
 	void error(QString);
 	void info(QString);
 
 public slots:
-	void slot_displayInfo(QString info);
-	void slot_displayError(QString error);
+	void displayInfo(QString info);
+	void displayError(QString error);
 };
 
 #endif // MESSAGECONSOLE_H
