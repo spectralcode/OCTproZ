@@ -130,5 +130,4 @@ BibTeX:
 License
 ----------
 OCTproZ is licensed under [GPLv3](LICENSE).</br>
-The DevKit is licensed under [MIT license](octproz_devkit/LICENSE).
-
+The DevKit is licensed under [MIT license](octproz_project/octproz_devkit/LICENSE).
