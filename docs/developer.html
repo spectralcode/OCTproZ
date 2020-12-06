@@ -20,6 +20,7 @@
       <a class="sidebar-nav-item active" href="#plugin-section">Plugin System</a>
       <a class="sidebar-nav-item active" href="#extensions-section">Extensions</a>
       <a class="sidebar-nav-item active" href="#acquisition-system-section">Acquisition Systems</a>
+      <a class="sidebar-nav-item active" href="#compile-section">Compile Plugins</a>
       </small>
     </nav>
   </div>
@@ -129,6 +130,38 @@
   </ul>
   <p>The actual implementation of these two methods depends heavily on the used OCT hardware configuration. Please refer to the documentation of your hardware components.</p>
   <p>After you have compiled your Acquisition System place the resulting dynamic library (".dll" in Windows and ".so" in Linux) into a folder "plugins" that should be in the same location as the executable of OCTproZ. Start OCTproZ and you should see your Acquisition System in the system manager (<i>File &rarr; Open System</i>)!</p>
+
+
+  <h1 id="id-acquisition"><a name="compile-section"></a>Compile Plugins</h1>
+  
+  <p>This secion shows you how to compile the demo extension without needing to compile OCTproZ.</p>
+  <p>Before you start make sure that you have installed the MSVC compiler on your system, that you have downlaoded the <a href="https://github.com/spectralcode/OCTproZ/releases">precompiled version of OCTproZ</a> and that you are able to run OCTproZ.exe.</p>
+
+  <h5>1. Download the OCTproZ source code from <a href="https://github.com/spectralcode/OCTproZ">GitHub</a> and unzip it to a path that does not contain any spaces.</h5>
+  <img src="images/compileplugin1.png">
+
+  <h5>2. You just need the folders <i>octproz_devkit</i> and <i>octproz_plugins</i>. If you like you can move them to a different location. Each folder contains a .pro file. Open them with the Qt Creator. </h5>
+  <img src="images/compileplugin2.png">
+
+  <h5>3. Configure the Qt projects by selecting the MSVC2015 64bit kit (MSVC17 64bit kit should work as well)</h5>
+  <img src="images/compileplugin3.png">
+
+  <h5>4. If you use OCTproZ v1.2.1 or older: In Qt Creator: <i>Tools</i> &rarr; <i>Options</i> &rarr; <i>Kit</i>. Select <i>Microsoft Visual C++ Compiler 14.0 (x86_amd64)</i> as compiler for C and C++. This is necessary as the precompiled package was compiled with this compiler.</h5>
+  <img src="images/compileplugin4.png">
+
+  <h5>5. Set the build configuration of <i>octproz_devkit</i> and <i>octproz_plugins</i> in Qt Creator to <strong>Release</strong></h5>
+  <img src="images/compileplugin5.png">
+
+  <h5>6. Build the devkit project first and then build the demo extension plugin or the whole plugins project in Qt Creator.</h5>
+  <img src="images/compileplugin6.png">
+
+  <h5>7. The build process should have created a couple of folders by now. Open the build folder of the demo extension project and look for <i>DemoExtension.dll</i>. Copy the dll to the plugins folder of the precompiled OCTproZ package.</h5>
+  <img src="images/compileplugin7.png">
+
+  <h5>8. Run OCTproZ and you should be able to start the demo extension.</h5>
+  <img src="images/compileplugin8.png">
+
+  <h5>9. Feel free to modify the demo extension and have fun!</h5>
 
 </div>
 </body></html>
