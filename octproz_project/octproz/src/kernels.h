@@ -40,6 +40,11 @@
 #include <cufft.h>
 #include <cufftXt.h>
 
+//include gl headers before cuda_gl_interop.h for aarch64 (jetson nano)
+#ifdef __aarch64__
+	#include <QtGui/qopengl.h>
+#endif
+
 //CUDA Runtime, Interop, and includes
 #include <cuda_gl_interop.h>
 #include <cuda_profiler_api.h>

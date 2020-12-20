@@ -30,9 +30,13 @@ unix{
 	CUDA_DIR = /usr/local/cuda
 
 	INCLUDEPATH_CUDA += /usr/include/x86_64-linux-gnu/qt5 \	#todo: is there a more general way to access the qt include directory?
-		/usr/include/x86_64-linux-gnu/qt5/QtCore\
+		/usr/include/x86_64-linux-gnu/qt5/QtCore \
 		$$CUDA_DIR/include \
 		$$CUDA_DIR/samples/common/inc
+
+	#for aarch64 (jetson nano)
+	INCLUDEPATH_CUDA += /usr/include/aarch64-linux-gnu/qt5 \
+		/usr/include/aarch64-linux-gnu/qt5/QtCore
 
 	INCLUDEPATH += $$CUDA_DIR/include \
 		$$CUDA_DIR/samples/common/inc
@@ -55,7 +59,7 @@ win32{
 	INCLUDEPATH_CUDA += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \ #this is needed for glew.h
 		$$CUDA_DIR/include \
 		$$CUDA_DIR/common/inc \
-		 $$CUDA_DIR/samples/common/inc
+		$$CUDA_DIR/samples/common/inc
 
 	# library directories
 	SYSTEM_NAME = x64
