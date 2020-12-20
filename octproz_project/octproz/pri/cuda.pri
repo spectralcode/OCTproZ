@@ -28,19 +28,6 @@ win32{
 #cuda include paths
 unix{
 	CUDA_DIR = /usr/local/cuda
-
-	INCLUDEPATH_CUDA += /usr/include/x86_64-linux-gnu/qt5 \	#todo: is there a more general way to access the qt include directory?
-		/usr/include/x86_64-linux-gnu/qt5/QtCore \
-		$$CUDA_DIR/include \
-		$$CUDA_DIR/samples/common/inc
-
-	#for aarch64 (jetson nano)
-	INCLUDEPATH_CUDA += /usr/include/aarch64-linux-gnu/qt5 \
-		/usr/include/aarch64-linux-gnu/qt5/QtCore
-
-	INCLUDEPATH += $$CUDA_DIR/include \
-		$$CUDA_DIR/samples/common/inc
-
 	QMAKE_LIBDIR += $$CUDA_DIR/lib64
 }
 win32{
@@ -49,27 +36,27 @@ win32{
 	MSVCRT_LINK_FLAG_DEBUG  = "/MDd" # MSVCRT link option (MT: static, MD:dynamic. Must be the same as Qt SDK link option)
 	MSVCRT_LINK_FLAG_RELEASE = "/MD"
 
-	INCLUDEPATH += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \ #this is needed for glew.h
-		$$shell_path($$(NVCUDASAMPLES_ROOT)/common/lib/x64) \ #this is needed for OpenGL
+	INCLUDEPATH += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \
+		$$shell_path($$(NVCUDASAMPLES_ROOT)/common/lib/x64) \
 		$$shell_path($$(CudaToolkitLibDir)) \
-		$$CUDA_DIR/include \
 		$$CUDA_DIR/common/inc \
 		$$CUDA_DIR/../shared/inc
 
-	INCLUDEPATH_CUDA += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \ #this is needed for glew.h
-		$$CUDA_DIR/include \
-		$$CUDA_DIR/common/inc \
-		$$CUDA_DIR/samples/common/inc
+	INCLUDEPATH_CUDA += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \
 
-	# library directories
+	#library directories
 	SYSTEM_NAME = x64
 	QMAKE_LIBDIR += $$CUDA_DIR/lib/$$SYSTEM_NAME \
 		$$CUDA_DIR/common/lib/$$SYSTEM_NAME \
 		$$CUDA_DIR/../shared/lib/$$SYSTEM_NAME
 }
-INCLUDEPATH_CUDA += $$shell_path($$(QTDIR)\include) \
-	$$shell_path($$(QTDIR)\include\QtCore) \
-	$$shell_path($(QTDIR)\lib)
+INCLUDEPATH += $$CUDA_DIR/include \
+	$$CUDA_DIR/samples/common/inc
+
+INCLUDEPATH_CUDA += $$[QT_INSTALL_HEADERS] \
+	$$[QT_INSTALL_HEADERS]/QtCore \
+	$$CUDA_DIR/include \
+	$$CUDA_DIR/samples/common/inc
 
 #cuda libraries
 unix{
@@ -90,21 +77,21 @@ unix{
 	#NVCCFLAGS = --compiler-options -fno-strict-aliasing -use_fast_math --ptxas-options=-v
 }
 
-#CUDA compiler configuration
+#cuda compiler configuration
 SYSTEM_TYPE = 64
 CUDA_OBJECTS_DIR = ./
 unix{
 	CONFIG(debug, debug|release) {
 		cuda_d.input = CUDA_SOURCES
 		cuda_d.output = $$CUDA_OBJECTS_DIR/${QMAKE_FILE_BASE}_cuda.o
-		cuda_d.commands = $$CUDA_DIR/bin/nvcc -D_DEBUG $$NVCC_OPTIONS $$CUDA_INC $$NVCC_LIBS --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+		cuda_d.commands = $$CUDA_DIR/bin/nvcc -D_DEBUG $$NVCC_OPTIONS $$CUDA_INC --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
 		cuda_d.dependency_type = TYPE_C
 		QMAKE_EXTRA_COMPILERS += cuda_d
 	}
 	CONFIG(release, debug|release) {
 		cuda.input = CUDA_SOURCES
 		cuda.output = $$CUDA_OBJECTS_DIR/${QMAKE_FILE_BASE}_cuda.o
-		cuda.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS $$CUDA_INC $$NVCC_LIBS --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+		cuda.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS $$CUDA_INC --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
 		cuda.dependency_type = TYPE_C
 		QMAKE_EXTRA_COMPILERS += cuda
 	}
@@ -113,7 +100,7 @@ win32{
 	CONFIG(debug, debug|release) {
 		cuda_d.input = CUDA_SOURCES
 		cuda_d.output = $$CUDA_OBJECTS_DIR/${QMAKE_FILE_BASE}_cuda.obj
-		cuda_d.commands = $$CUDA_DIR/bin/nvcc.exe -D_DEBUG $$NVCC_OPTIONS $$CUDA_INC $$NVCC_LIBS --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH \
+		cuda_d.commands = $$CUDA_DIR/bin/nvcc.exe -D_DEBUG $$NVCC_OPTIONS $$CUDA_INC --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH \
 					  --compile -cudart static -g -DWIN32 -D_MBCS \
 					  -Xcompiler "/wd4819,/EHsc,/W3,/nologo,/Od,/Zi,/RTC1" \
 					  -Xcompiler $$MSVCRT_LINK_FLAG_DEBUG \
@@ -125,7 +112,7 @@ win32{
 	CONFIG(release, debug|release) {
 		cuda.input = CUDA_SOURCES
 		cuda.output = $$CUDA_OBJECTS_DIR/${QMAKE_FILE_BASE}_cuda.obj
-		cuda.commands = $$CUDA_DIR/bin/nvcc.exe $$NVCC_OPTIONS $$CUDA_INC $$NVCC_LIBS --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH \
+		cuda.commands = $$CUDA_DIR/bin/nvcc.exe $$NVCC_OPTIONS $$CUDA_INC --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH \
 					--compile -cudart static -DWIN32 -D_MBCS \
 					-Xcompiler "/wd4819,/EHsc,/W3,/nologo,/O2,/Zi" \
 					-Xcompiler $$MSVCRT_LINK_FLAG_RELEASE \
@@ -135,4 +122,4 @@ win32{
 	}
 }
 
-message(NVCClibs are $$NVCC_LIBS)
+message(CUDA_INC is $$CUDA_INC)
