@@ -13,6 +13,17 @@ A test data set with 12 bit per sample, 1024 samples per raw A-scan, 512 A-scans
 |A-scan rate with 3D view| ~ 250 kHz ( ~1.9 volumes/s)|~ 4.0 MHz (~ 30 volumes/s)|~ 1.9 MHz (~ 15 volumes/s)|
 |A-scan rate without 3D view| ~ 300 kHz ( ~2.2 volumes/s)|~ 4.8 MHz (~ 36 volumes/s)|~ 2.4 MHz (~ 18 volumes/s)|
 
+<br>
+
+| Embedded System |**NVIDIA Jetson Nano**|
+|:-----|:-----|
+|CPU|ARMv8 Processor rev 1(v8l) x 4|
+|RAM|4 GB|
+|GPU|NVIDIA Tegra X1 (128-core Maxwell)|
+|Operating system|Ubuntu 18.04 (JetPack 4.4)|
+|A-scan rate with 3D view| ~ 81 kHz ( ~0.6 volumes/s)|
+|A-scan rate without 3D view| ~ 122 kHz ( ~0.9 volumes/s)|
+
 Office Computer, Lab Computer: <br>
 The performance was measured with the full processing pipeline of OCTproZ v1.0.0. The same performance is expected with OCTproZ v1.2.0 if live sinusoidal scan distortion correction is disabled.
 
@@ -21,29 +32,29 @@ The performance was measured with OCTproZ v1.2.0 with disabled live sinusoidal s
 
 Here are the relevant parameters that were used with Virtual OCT System and OCTproZ to determine the performance:
 
-| |**Office Computer**|**Lab Computer**|**Gaming Computer**|
-|:-----|:-----|:-----|:-----|
-|**Virtual OCT System Settings**| | |
-|bit depth [bits]|12|12|12|
-|Samples per raw A-scan|1024|1024|1024|
-|A-scan per B-scan|512|512|512|
-|B-scans per buffer|32|256|256|
-|Buffers per volume|8|1|1|
-|Buffers to read from file|16|2|2|
-|Wait after file read [us]|100|100|100|
-|**OCTproZ Settings**| | |
-|Bit shift sample values by 4|enabled|enabled|enabled|
-|Flip every second B-scan|enabled|enabled|enabled|
-|k-linearization|enabled|enabled|enabled|
-|Dispersion Compensation|enabled|enabled|enabled|
-|Windowing|enabled|enabled|enabled|
-|Fixed-Pattern Noise Removal|enabled|enabled|enabled|
-|B-scans for noise determination:|1|26|1|
-|&emsp;once at start of measurement|enabled|enabled|enabled|
-|&emsp;continuously|disabled|disabled|disabled|
-|Sinusoidal scan correction|disabled|disabled|disabled|
-|Log scaling|enabled|enabled|enabled|
-|Stream Processed Data to Ram|enabled|disabled|disabled|
+| |**Office Computer**|**Lab Computer**|**Gaming Computer**|**Jetson Nano**|
+|:-----|:-----|:-----|:-----|:-----|
+|**Virtual OCT System Settings**| | | |
+|bit depth [bits]|12|12|12|12|
+|Samples per raw A-scan|1024|1024|1024|1024|
+|A-scan per B-scan|512|512|512|512|
+|B-scans per buffer|32|256|256|16|
+|Buffers per volume|8|1|1|16|
+|Buffers to read from file|16|2|2|2|
+|Wait after file read [us]|100|100|100|100|
+|**OCTproZ Settings**| | | | |
+|Bit shift sample values by 4|enabled|enabled|enabled|enabled|
+|Flip every second B-scan|enabled|enabled|enabled|enabled|
+|k-linearization|enabled|enabled|enabled|enabled|
+|Dispersion Compensation|enabled|enabled|enabled|enabled|
+|Windowing|enabled|enabled|enabled|enabled|
+|Fixed-Pattern Noise Removal|enabled|enabled|enabled|enabled|
+|B-scans for noise determination:|1|26|1|1|
+|&emsp;once at start of measurement|enabled|enabled|enabled|enabled|
+|&emsp;continuously|disabled|disabled|disabled|disabled|
+|Sinusoidal scan correction|disabled|disabled|disabled|disabled|
+|Log scaling|enabled|enabled|enabled|enabled|
+|Stream Processed Data to Ram|enabled|disabled|disabled|disabled|
 
 
 
