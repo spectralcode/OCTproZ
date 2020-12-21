@@ -109,7 +109,7 @@ In this step you configure Qt for _OpenGL desktop_ (this is necessary!) and remo
 ../qt5/configure -qt-xcb -opengl desktop -nomake examples -nomake tests -skip qtwebengine -skip qtandroidextras -skip qtcanvas3d -skip qtcharts -skip qtconnectivity -skip qtdatavis3d -skip qtdeclarative -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtwinextras
 ```
 
-After the configuration was done a _Configure summary_ will be displayed. Please verify that there is a _yes_ in the line with _Dekstop OpenGL_. Now you can start the build process:
+After the configuration was done a _Configure summary_ will be displayed. Please verify that there is a _yes_ in the line with _Desktop OpenGL_. Now you can start the build process:
 
 ```
 make
