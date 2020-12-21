@@ -21,8 +21,8 @@ A test data set with 12 bit per sample, 1024 samples per raw A-scan, 512 A-scans
 |RAM|4 GB|
 |GPU|NVIDIA Tegra X1 (128-core Maxwell)|
 |Operating system|Ubuntu 18.04 (JetPack 4.4)|
-|A-scan rate with 3D view| ~ 81 kHz ( ~0.6 volumes/s)|
-|A-scan rate without 3D view| ~ 122 kHz ( ~0.9 volumes/s)|
+|A-scan rate with 3D view| ~ 101 kHz ( ~0.77 volumes/s)|
+|A-scan rate without 3D view| ~ 136 kHz ( ~1.0 volumes/s)|
 
 Office Computer, Lab Computer: <br>
 The performance was measured with the full processing pipeline of OCTproZ v1.0.0. The same performance is expected with OCTproZ v1.2.0 if live sinusoidal scan distortion correction is disabled.
@@ -38,9 +38,9 @@ Here are the relevant parameters that were used with Virtual OCT System and OCTp
 |bit depth [bits]|12|12|12|12|
 |Samples per raw A-scan|1024|1024|1024|1024|
 |A-scan per B-scan|512|512|512|512|
-|B-scans per buffer|32|256|256|16|
-|Buffers per volume|8|1|1|16|
-|Buffers to read from file|16|2|2|2|
+|B-scans per buffer|32|256|256|32|
+|Buffers per volume|8|1|1|8|
+|Buffers to read from file|16|2|2|16|
 |Wait after file read [us]|100|100|100|100|
 |**OCTproZ Settings**| | | | |
 |Bit shift sample values by 4|enabled|enabled|enabled|enabled|
@@ -54,7 +54,7 @@ Here are the relevant parameters that were used with Virtual OCT System and OCTp
 |&emsp;continuously|disabled|disabled|disabled|disabled|
 |Sinusoidal scan correction|disabled|disabled|disabled|disabled|
 |Log scaling|enabled|enabled|enabled|enabled|
-|Stream Processed Data to Ram|enabled|disabled|disabled|disabled|
+|Stream Processed Data to Ram|enabled|disabled|disabled|enabled|
 
 
 
