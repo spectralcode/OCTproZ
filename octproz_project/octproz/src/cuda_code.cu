@@ -431,8 +431,14 @@ extern "C" void cuda_updateWindowCurve(float* h_windowCurve, int size) {
 		checkCudaErrors(cudaMemcpyAsync(d_windowCurve, h_windowCurve, size * sizeof(float), cudaMemcpyHostToDevice, processStream));
 }
 
+
+
 extern "C" void cuda_registerProcessedRecordBuffer(void* h_recBuffer, size_t size) {
+#ifdef __aarch64__
+	checkCudaErrors(cudaHostAlloc((void**)&h_recBuffer, size, cudaHostAllocPortable)); //todo: check if memory is allocated twice and adjust host code such that memory allocation just happens once (cudaHostAlloc will allocate memory but the host already allocated memory)
+#else
 	checkCudaErrors(cudaHostRegister(h_recBuffer, size, cudaHostRegisterPortable));
+#endif
 	host_RecordBuffer = h_recBuffer;
 }
 
@@ -442,15 +448,25 @@ extern "C" void cuda_unregisterProcessedRecordBuffer(void* h_recBuffer) {
 }
 
 extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer) {
+#ifdef __aarch64__
+	checkCudaErrors(cudaHostAlloc((void**)&h_streamingBuffer1, bytesPerBuffer, cudaHostAllocPortable)); //todo: check if memory is allocated twice and adjust host code such that memory allocation just happens once (cudaHostAlloc will allocate memory but the host already allocated memory)
+	checkCudaErrors(cudaHostAlloc((void**)&h_streamingBuffer2, bytesPerBuffer, cudaHostAllocPortable));
+#else
 	checkCudaErrors(cudaHostRegister(h_streamingBuffer1, bytesPerBuffer, cudaHostRegisterPortable));
 	checkCudaErrors(cudaHostRegister(h_streamingBuffer2, bytesPerBuffer, cudaHostRegisterPortable));
+#endif
 	host_streamingBuffer1 = h_streamingBuffer1;
 	host_streamingBuffer2 = h_streamingBuffer2;
 }
 
 extern "C" void cuda_unregisterStreamingBuffers() {
+#ifdef __aarch64__
+	checkCudaErrors(cudaFreeHost(host_streamingBuffer1));
+	checkCudaErrors(cudaFreeHost(host_streamingBuffer2));
+#else
 	checkCudaErrors(cudaHostUnregister(host_streamingBuffer1));
 	checkCudaErrors(cudaHostUnregister(host_streamingBuffer2));
+#endif
 	host_streamingBuffer1 = NULL;
 	host_streamingBuffer2 = NULL;
 }
@@ -732,8 +748,13 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	//register existing host memory for use by cuda to accelerate cudaMemcpy
+#ifdef __aarch64__
+	checkCudaErrors(cudaHostAlloc((void**)&host_buffer1, samplesPerBuffer * bytesPerSample, cudaHostAllocPortable)); //todo: check if memory is allocated twice and adjust host code such that memory allocation just happens once (cudaHostAlloc will allocate memory but the host already allocated memory)
+	checkCudaErrors(cudaHostAlloc((void**)&host_buffer2, samplesPerBuffer * bytesPerSample, cudaHostAllocPortable));
+#else
 	checkCudaErrors(cudaHostRegister(host_buffer1, samplesPerBuffer * bytesPerSample, cudaHostRegisterPortable));
 	checkCudaErrors(cudaHostRegister(host_buffer2, samplesPerBuffer * bytesPerSample, cudaHostRegisterPortable));
+#endif
 
 	//create fft plan and set stream
 	cufftPlan1d(&d_plan, signalLength, CUFFT_C2C, ascansPerBscan*bscansPerBuffer);
