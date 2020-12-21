@@ -72,3 +72,53 @@ sudo apt-get install g++ freeglut3-dev build-essential libx11-dev \
 
 
 That is all! Now you are able to compile OCTproZ by opening the OCTproZ project files with Qt Creator. 
+
+
+# OCTproZ on the NVIDIA Jetson Nano with JetPack
+
+To compile and run OCTproZ on the Jetson Nano you need Qt with enabled _OpenGL desktop_ option.
+
+For this Qt can be built from source on the Jetson Nano:
+
+### 1. Install build dependencies
+Enable the "Source code" option in Software and Updates > Ubuntu Software under the "Downloadable from the Internet" section.
+
+Open a terminal (ctrl + alt + t) an install the build dependencies like this
+```
+sudo apt-get build-dep qt5-default
+```
+
+### 2. Get the Qt source
+```
+git clone https://code.qt.io/qt/qt5.git
+cd qt5
+git checkout 5.12.9
+```
+then
+```
+git submodule update --init --recursive
+cd ~
+mkdir qt5-build
+cd qt5-build
+```
+
+### 3. Configure and build
+In this step you configure Qt for _OpenGL desktop_ (this is necessary!) and remove some packages with _-skip_ (this is optional. Removing those packages slightly reduces the build time)
+
+```
+../qt5/configure -qt-xcb -opengl desktop -nomake examples -nomake tests -skip qtwebengine -skip qtandroidextras -skip qtcanvas3d -skip qtcharts -skip qtconnectivity -skip qtdatavis3d -skip qtdeclarative -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtwinextras
+```
+
+After the configuration was done a _Configure summary_ will be displayed. Please verify that there is a _yes_ in the line with _Dekstop OpenGL_. Now you can start the build process:
+
+```
+make
+sudo make install
+```
+Be aware  that _make_ will take about 5 hours on the Jetson Nano. 
+
+When everything has been successfully completed you can start Qt Creator and build OCTproZ!
+
+References:
+- [wiki.qt.io Building Qt 5 from Git](https://wiki.qt.io/Building_Qt_5_from_Git)
+- [stackoverflow.com Qt-default version issue on migration from RPi4 to NVIDIA Jetson Nano](https://stackoverflow.com/questions/62190967/qt-default-version-issue-on-migration-from-rpi4-to-nvidia-jetson-nano)
