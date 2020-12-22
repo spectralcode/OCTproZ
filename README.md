@@ -24,7 +24,7 @@ Plug-ins enable the integration of custom OCT systems and software modules. Ther
 
 * **Cross platform** </br>
 OCTproZ runs on Windows and Linux. </br>
-It has been successfully tested on Windows 10, Ubuntu 16.04 and Ubuntu 18.04
+It has been successfully tested on Windows 10, Ubuntu 16.04, Ubuntu 18.04 and JetPack 4.4.1 (Jetson Nano 4 GB)
 
 
 Processing Pipeline
