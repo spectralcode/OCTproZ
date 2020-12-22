@@ -21,8 +21,8 @@ A test data set with 12 bit per sample, 1024 samples per raw A-scan, 512 A-scans
 |RAM|4 GB|
 |GPU|NVIDIA Tegra X1 (128-core Maxwell)|
 |Operating system|Ubuntu 18.04 (JetPack 4.4.1)|
-|A-scan rate with 3D view| ~ 101 kHz ( ~0.77 volumes/s)|
-|A-scan rate without 3D view| ~ 136 kHz ( ~1.0 volumes/s)|
+|A-scan rate with 3D view| ~ 24 kHz ( ~0.18 volumes/s)|
+|A-scan rate without 3D view| ~ 103 kHz ( ~0.78 volumes/s)|
 
 Office Computer, Lab Computer: <br>
 The performance was measured with the full processing pipeline of OCTproZ v1.0.0. The same performance is expected with OCTproZ v1.2.0 if live sinusoidal scan distortion correction is disabled.

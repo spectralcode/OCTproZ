@@ -95,6 +95,13 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->dockVolumeView->setFeatures(QDockWidget::DockWidgetClosable); //make dock not floatable, and not movable
 	connect(this, &OCTproZ::glBufferTextureSizeBscan, this->volumeWindow, &GLWindow3D::slot_changeBufferAndTextureSize);
 	connect(this->dockVolumeView, &QDockWidget::visibilityChanged, this, &OCTproZ::slot_enableVolumeViewProcessing);
+	connect(this->volumeWindow, &GLWindow3D::dialogAboutToOpen, this, &OCTproZ::slot_closeOpenGLwindows); //GL windows need to be closed to avoid linux bug where QFileDialog is not usable when a GL window is opend in background
+	connect(this->volumeWindow, &GLWindow3D::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
+
+	//init bools that are used to save state of OpenGL windows to reopen them after QFileDialog was used on Linux
+	this->isDock2DClosed = false;
+	this->isDockEnFaceViewClosed = false;
+	this->isDockVolumeViewClosed = false;
 
 	this->sidebar = new Sidebar(this);
 	this->sidebar->setObjectName("Sidebar");
@@ -105,7 +112,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 
 	this->processingInThread = false;
 	this->signalProcessing = new Processing();
-	#if defined(Q_OS_WIN)
+	#if defined(Q_OS_WIN) || defined(__aarch64__)
 		this->signalProcessing->moveToThread(&processingThread);
 		this->processingInThread = true;
 		connect(&processingThread, &QThread::finished, this->signalProcessing, &Processing::deleteLater);
@@ -474,10 +481,10 @@ void OCTproZ::initExtensionsMenu() {
 void OCTproZ::slot_start() {
 	//(re-)init resampling curve, dispersion curve, window curve, streaming //todo: carefully check if this is really necessary here
 	this->forceUpdateProcessingParams();
-	
+
 	//save current parameters to hdd
 	this->sidebar->saveSettings();
-	
+
 	//disable start/stop buttons
 	this->actionStart->setEnabled(false);
 	this->actionStop->setEnabled(false); //stop button will be enabled again as soon as processing initialization is done
@@ -485,7 +492,7 @@ void OCTproZ::slot_start() {
 	//enalbe 1d plotting and extensions
 	emit allowRawGrabbing(true);
 
-	//emit start signal to activate acquisition of current AcquisitionSystem 
+	//emit start signal to activate acquisition of current AcquisitionSystem
 	emit start();
 
 	//for debugging purposes: read out thread affinity of current thread
