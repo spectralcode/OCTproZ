@@ -20,7 +20,7 @@ A test data set with 12 bit per sample, 1024 samples per raw A-scan, 512 A-scans
 |CPU|ARMv8 Processor rev 1(v8l) x 4|
 |RAM|4 GB|
 |GPU|NVIDIA Tegra X1 (128-core Maxwell)|
-|Operating system|Ubuntu 18.04 (JetPack 4.4)|
+|Operating system|Ubuntu 18.04 (JetPack 4.4.1)|
 |A-scan rate with 3D view| ~ 101 kHz ( ~0.77 volumes/s)|
 |A-scan rate without 3D view| ~ 136 kHz ( ~1.0 volumes/s)|
 
