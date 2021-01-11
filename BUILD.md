@@ -21,6 +21,7 @@ How to compile:
 The project file _octproz_project.pro_ ensures that the devkit is compiled first as it generates a folder with files that are used by OCTproZ and any plug-in at compile time.  </br>
 
 
+
 # Installing development tools to build OCTproZ on Linux
 
 ## Debian based systems
@@ -122,3 +123,28 @@ When everything has been successfully completed you can start Qt Creator and bui
 References:
 - [wiki.qt.io Building Qt 5 from Git](https://wiki.qt.io/Building_Qt_5_from_Git)
 - [stackoverflow.com Qt-default version issue on migration from RPi4 to NVIDIA Jetson Nano](https://stackoverflow.com/questions/62190967/qt-default-version-issue-on-migration-from-rpi4-to-nvidia-jetson-nano)
+
+
+# Troubleshooting
+
+## 
+GitHub user Ledinor had problems compiling OCTproZ with the default Qt Creator settings. He described  what steps were necessary for him to successfully compile OCTproZ:
+
+>QT Version: Desktop Qt 5.12.10 MSVC2017 64bit
+>Compiler C/C++: Compiler 14.0 (x86_amd64)
+>CUDA: cuda_9.0.176_win10
+>
+>1. Use jom.exe instead of cmake! Even when I checked "Use jom instead of nmake" (settings > Build & Run), Qt Ctreator did not use it. Therefore, I use it manually. So UNCHECK this jom setting.
+>-	Download jom 1.1.0
+>-	In Build settings, Build steps > details, instead C:\yourpath\nmake.exe use: select the directory of the jom.exe
+>-	No arguments for make (delete "clear" if this is pre-set)
+>-	Uncheck “disable in subdirectories” 
+>-	Do the same for the "Clean Steps"
+>
+>2. Qt also seems to miss the location of the rc.exe (I do not know what it does). I add the rc.exe path in "Build Environment" under PATH (for me C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64)
+>
+>3. After building the release file I had to add multiple QT.dll from the Qt bin folder to the release folder where the OCTproZ.exe is. For me: QT5Gui.dll, QT5Widgets.dll, QT5Core.dll, QT5PrintSupport.dll
+>
+>4. I had a compile error that virtualoctsystemsettingsdialog.ui could not be found, anyway it was in the correct folder. The problem solves itself when I put everything on the same hard drive as the QT installation folder. (C:/ for me)
+>
+> -- <cite>[Ledinor](https://github.com/spectralcode/OCTproZ/issues/12#issue-783140395)</cite>
