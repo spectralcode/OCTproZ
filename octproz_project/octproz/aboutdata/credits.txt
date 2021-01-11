@@ -1,0 +1,19 @@
+<html><body>
+
+<h2>Code contributors</h2>
+<ul>
+	<li><b>Ben Matthias</b></li>
+	<li><b>Miroslav Zabic</b></li>
+</ul>
+
+<h2>Special thanks to</h2>
+<ul>
+	<li><b>Hannes Benecke</b> for valuable suggestions on how to improve user experience</li>
+	<li><b>Jan Hahn</b> for very helpful hands on discussions on the use of OpenGL</li>
+	<li><b>Manuel Geggus</b> for valuable suggestions on how to improve user experience</li>
+	<li><b>Ruben Hohndorf</b> for very helpful general software discussions</li>
+	<li><b>Sebastian Bleeker</b> for very helpful discussions about software design</li>
+	<li><b>Simon Hansert</b> for valuable suggestions on how to improve user experience</li>
+</ul>
+
+</body></html>
