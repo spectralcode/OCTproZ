@@ -127,7 +127,6 @@ References:
 
 # Troubleshooting
 
-## 
 GitHub user Ledinor had problems compiling OCTproZ with the default Qt Creator settings. He described  what steps were necessary for him to successfully compile OCTproZ:
 
 >QT Version: Desktop Qt 5.12.10 MSVC2017 64bit
