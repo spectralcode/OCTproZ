@@ -4,7 +4,7 @@ OCTproZ can be build on Windows and Linux.
 
 # Compiling
 Building OCTproZ from source requires: 
-- Installation of [Qt 5](https://www.qt.io/offline-installers) (version 5.11.1 or later)
+- Installation of [Qt 5](https://www.qt.io/offline-installers) (version 5.10.1 or later)
 - Installation of [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) (version 8 or later)
 - __Windows:__ MSVC compiler that is compatible with your CUDA version (see [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#system-requirements)) To get the MSVC compiler it is the easiest to search online where/how to get it as this changes from time to time. Pay attention that you get the right version of the MSVC compiler as described in the CUDA guide. <br>
 __Linux:__ Development environment that is compatible with your CUDA version (see [CUDA installation guide for Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements)) and the third-party libraries mentioned in the [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#install-libraries)
