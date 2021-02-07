@@ -51,7 +51,7 @@ CONFIG(debug, debug|release) {
 	SHAREDIR_LIB = $$shell_path($$SHAREDIR/debug)
 	unix{
 		OUTFILE = $$shell_path($$OUT_PWD/lib$$TARGET'.'$${QMAKE_EXTENSION_STATICLIB})
-        }
+	}
 	win32{
 		OUTFILE = $$shell_path($$OUT_PWD/debug/$$TARGET'.'$${QMAKE_EXTENSION_STATICLIB})
 	}

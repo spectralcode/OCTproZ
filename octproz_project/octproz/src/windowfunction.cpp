@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2020 Miroslav Zabic
+**  Copyright (C) 2019-2021 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -125,7 +125,7 @@ void WindowFunction::calculateRectangular() {
 		minPos = maxPos;
 		maxPos = tmp;
 	}
-	for (int i = 0; i<this->size; i++) {
+	for (int i = 0; i < this->size; i++) {
 		int xi = i - minPos;
 		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
 		if (xiNorm > 0.999f || xiNorm < 0.0001f) {
@@ -147,7 +147,7 @@ void WindowFunction::calculateHanning() {
 		minPos = maxPos;
 		maxPos = tmp;
 	}
-	for (int i = 0; i<this->size; i++) {
+	for (int i = 0; i < this->size; i++) {
 		int xi = i - minPos;
 		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
 		if (xiNorm > 0.999f || xiNorm < 0.0001f) {
