@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2020 Miroslav Zabic
+**  Copyright (C) 2019-2021 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -55,8 +55,8 @@
 
 #include "ui_octproz.h"
 
-#define APP_VERSION "1.2.1"
-#define APP_VERSION_DATE "28 October 2020"
+#define APP_VERSION "1.3.0"
+#define APP_VERSION_DATE "7 February 2021"
 #define APP_NAME "OCTproZ"
 
 
