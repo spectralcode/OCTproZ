@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2020 Miroslav Zabic
+**  Copyright (C) 2019-2021 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -56,6 +56,10 @@
 #include <QComboBox>
 #include <QFileDialog>
 #include <QLineEdit>
+#include <QToolButton>
+#include <QPainter>
+#include <QCheckBox>
+#include <QLineEdit>
 
 #include "stringspinbox.h"
 
@@ -86,7 +90,7 @@ enum FRAME_EDGE {
 };
 
 
-
+class ScaleBar;
 class ControlPanel2D;
 class GLWindow2D : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -98,7 +102,7 @@ public:
 
 	ControlPanel2D* getControlPanel()const {return this->panel;}
 	FRAME_EDGE getMarkerOrigin() const {return this->markerOrigin;}
-	void setMarkerOrigin(FRAME_EDGE markerOrigin);
+	void setMarkerOrigin(FRAME_EDGE origin);
 	QAction* getMarkerAction(){return this->markerAction;}
 
 
@@ -114,10 +118,13 @@ private:
 	bool initialized;
 	bool changeBufferSizeFlag;
 	bool keepAspectRatio;
-	double rotationAngle;
+	float stretchX;
+	float stretchY;
+	float rotationAngle;
 	//OctAlgorithmParameters::DISPLAY_FUNCTION displayFuntion;
 	unsigned int markerPosition;
-	bool markerVisible;
+	bool markerEnabled;
+
 
 	QMenu* contextMenu;
 	QAction* keepAspectRatioAction;
@@ -137,7 +144,13 @@ private:
 	ControlPanel2D* panel;
 	QVBoxLayout* layout;
 
+	ScaleBar* horizontalScaleBar;
+	ScaleBar* verticalScaleBar;
+
 	void initContextMenu();
+	void displayScalebars();
+	void displayMarker();
+	void displayOrientationLine(int x, int y, int length);
 
 
 protected:
@@ -158,11 +171,13 @@ public slots:
 	void slot_changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth);
 	void slot_initProcessingThreadOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void slot_registerGLbufferWithCuda();
-	void setKeepAspectRatio(bool keepAspectRatio);
-	void setRotationAngle(double rotationAngle);
+	void setKeepAspectRatio(bool enable);
+	void setRotationAngle(float angle);
+	void setStretchX(float stretchFactor);
+	void setStretchY(float stretchFactor);
 	void slot_screenshot();
-	void slot_displayMarker(bool display);
-	void slot_setMarkerPosition(unsigned int position);
+	void enableMarker(bool enable);
+	void setMarkerPosition(unsigned int position);
 
 
 signals:
@@ -182,7 +197,40 @@ signals:
 
 
 
+class ScaleBar : public QObject, public QPainter
+{
+	Q_OBJECT
+public:
+	enum ScaleBarOrientation {
+		Horizontal,
+		Vertical
+	};
 
+	ScaleBar();
+	~ScaleBar();
+
+	void enable(bool enable){this->enabled = enable;}
+	bool isEnabled(){return this->enabled;}
+	void setOrientation(ScaleBarOrientation orientation){this->orientation = orientation;}
+	void setPos(QPoint pos){this->pos = pos;}
+	void setLength(int lengthInPx){this->lenghInPx = lengthInPx;}
+	void setText(QString text);
+	void draw(QPaintDevice* paintDevice, float scaleFactor = 1.0);
+
+
+private:
+	void updateTextSizeInfo();
+
+	bool enabled;
+	ScaleBarOrientation orientation;
+	QPoint pos;
+	int lenghInPx;
+	QString text;
+	int textDistanceToScaleBarInPx;
+	int textWidth;
+	int textHeight;
+	bool textChanged;
+};
 
 
 
@@ -202,6 +250,9 @@ public:
 
 
 private:
+	void enableExtendedView(bool enable);
+
+	bool extendedView;
 	QWidget* panel;
 	QSpinBox* spinBoxAverage;
 	QSpinBox* spinBoxFrame;
@@ -213,6 +264,22 @@ private:
 	QSlider* slider;
 	//QComboBox* comboBox; //due to a Qt bug QComboBox is not displayed correctly on top of a QOpenGLWidget. StringSpinBox is used as work around
 	StringSpinBox* stringBoxFunctions;
+	QToolButton* toolButtonMore;
+	QDoubleSpinBox* doubleSpinBoxStretchX;
+	QLabel* labelStretchX;
+	QDoubleSpinBox* doubleSpinBoxStretchY;
+	QLabel* labelStretchY;
+	QCheckBox* checkBoxHorizontalScaleBar;
+	QLabel* labelHorizontalScaleBar;
+	QSpinBox* spinBoxHorizontalScaleBar;
+	QLabel* labelHorizontalScaleBarText;
+	QLineEdit* lineEditHorizontalScaleBarText;
+	QCheckBox* checkBoxVerticalScaleBar;
+	QLabel* labelVerticalScaleBar;
+	QLabel* labelVerticalScaleBarText;
+	QSpinBox* spinBoxVerticalScaleBar;
+	QLineEdit* lineEditVerticalScaleBarText;
+
 	QHBoxLayout* widgetLayout;
 	QGridLayout* layout;
 
@@ -222,6 +289,7 @@ protected:
 
 public slots:
 	void updateDisplayFrameSettings();
+	void toggleExtendedView();
 
 
 signals:
@@ -231,4 +299,4 @@ signals:
 friend class GLWindow2D;
 };
 
-#endif  // GLWINDOW2D_H
+#endif // GLWINDOW2D_H
