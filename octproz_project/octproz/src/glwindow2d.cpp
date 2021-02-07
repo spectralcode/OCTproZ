@@ -327,10 +327,23 @@ void GLWindow2D::initializeGL() {
 }
 
 void GLWindow2D::paintGL() {
+	//reset matrix state (resets previous translation, rotation and scale operations)
 	glLoadIdentity();
+
+	//translation
 	glTranslatef(this->xTranslation, this->yTranslation, 0);
+
+	//rotation
+	float screenWidth = static_cast<float>(this->size().width());
+	float screenHeight = static_cast<float>(this->size().height());
+	glScalef(1.0f,screenWidth/screenHeight,1.0f);
 	glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
+	glScalef(1.0f,screenHeight/screenWidth,1.0f);
+
+	//zoom
 	glScalef(this->scaleFactor*this->stretchX, this->scaleFactor*this->stretchY, 0.f);
+
+	//display oct data
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, this->buf);
 	glBindTexture(GL_TEXTURE_2D, this->texture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this->width, this->height, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
