@@ -21,7 +21,15 @@ DOC_FILES_IMAGES += \
 	$$DOCDIR/images/quickstart4.png \
 	$$DOCDIR/images/quickstart5.png \
 	$$DOCDIR/images/quickstart6.png \
-	$$DOCDIR/images/octproz_plugin_uml.png
+	$$DOCDIR/images/octproz_plugin_uml.png \
+	$$DOCDIR/images/compileplugin1.png \
+	$$DOCDIR/images/compileplugin2.png \
+	$$DOCDIR/images/compileplugin3.png \
+	$$DOCDIR/images/compileplugin4.png \
+	$$DOCDIR/images/compileplugin5.png \
+	$$DOCDIR/images/compileplugin6.png \
+	$$DOCDIR/images/compileplugin7.png \
+	$$DOCDIR/images/compileplugin8.png
 
 unix{
 	DOCEXPORTDIR = $$shell_path($$OUT_PWD/docs)
