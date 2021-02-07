@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2020 Miroslav Zabic
+**  Copyright (C) 2019-2021 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -71,8 +71,8 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->enFaceViewWindow = new GLWindow2D(this);
 	this->enFaceViewWindow->setMarkerOrigin(LEFT);
 
-	connect(this->bscanWindow, &GLWindow2D::currentFrameNr, this->enFaceViewWindow, &GLWindow2D::slot_setMarkerPosition);
-	connect(this->enFaceViewWindow, &GLWindow2D::currentFrameNr, this->bscanWindow, &GLWindow2D::slot_setMarkerPosition);
+	connect(this->bscanWindow, &GLWindow2D::currentFrameNr, this->enFaceViewWindow, &GLWindow2D::setMarkerPosition);
+	connect(this->enFaceViewWindow, &GLWindow2D::currentFrameNr, this->bscanWindow, &GLWindow2D::setMarkerPosition);
 	connect(this->bscanWindow, &GLWindow2D::dialogAboutToOpen, this, &OCTproZ::slot_closeOpenGLwindows); //GL windows need to be closed to avoid linux bug where QFileDialog is not usable when a GL window is opend in background
 	connect(this->enFaceViewWindow, &GLWindow2D::dialogAboutToOpen, this, &OCTproZ::slot_closeOpenGLwindows); //GL windows need to be closed to avoid linux bug where QFileDialog is not usable when a GL window is opend in background
 	connect(this->bscanWindow, &GLWindow2D::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
