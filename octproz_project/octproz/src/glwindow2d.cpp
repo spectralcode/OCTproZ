@@ -368,7 +368,6 @@ void GLWindow2D::paintGL() {
 	update();
 }
 
-//todo: add rotational angle calculation for screenheightScaled und screenWidthScaled!
 void GLWindow2D::resizeGL(int w, int h) {
 	this->screenWidthScaled = 1.0f;
 	this->screenHeightScaled = 1.0f;
@@ -445,8 +444,6 @@ void GLWindow2D::contextMenuEvent(QContextMenuEvent *event) {
 
 
 
-
-#include <QDebug>
 
 //_______________________
 
