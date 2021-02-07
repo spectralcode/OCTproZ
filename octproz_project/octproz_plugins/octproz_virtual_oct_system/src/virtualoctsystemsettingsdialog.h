@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2020 Miroslav Zabic
+Copyright (c) 2019-2021 Miroslav Zabic
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ SOFTWARE.
 #define BUFFERS_PER_VOLUME "buffers_per_volume"
 #define BUFFERS_FROM_FILE "buffers_from_file"
 #define WAITTIME "wait_time"
+#define COPY_TO_RAM "copy_file_to_ram"
 
 
 #include <qstandardpaths.h>
@@ -51,6 +52,7 @@ struct simulatorParams {
 	int buffersPerVolume;
 	int buffersFromFile;
 	int waitTimeUs;
+	bool copyFileToRam;
 };
 
 class VirtualOCTSystemSettingsDialog : public QDialog

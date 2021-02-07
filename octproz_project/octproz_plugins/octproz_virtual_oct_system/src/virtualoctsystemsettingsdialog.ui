@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>632</width>
-    <height>306</height>
+    <height>330</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -353,6 +353,19 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox_copyFileToRam">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy entire raw file to RAM to speed up data transfer to OCTproZ. For very large files this should be disabled. This option only has an effect if buffers to read from file is greater than two.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="whatsThis">
+        <string>Copy entire raw file to RAM to speed up data transfer to OCTproZ. For very large files this should be disabled. This option only has an effect if buffers to read from file is greater than two. </string>
+       </property>
+       <property name="text">
+        <string>Copy file to RAM</string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="verticalSpacer">

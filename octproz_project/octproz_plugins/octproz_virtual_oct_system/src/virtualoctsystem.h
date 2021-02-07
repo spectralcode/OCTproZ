@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2020 Miroslav Zabic
+Copyright (c) 2019-2021 Miroslav Zabic
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@ SOFTWARE.
 #ifndef OCTSYSTEMSIMULATORPLUGIN_H
 #define OCTSYSTEMSIMULATORPLUGIN_H
 
+#define STREAM_BUFFER_SIZE 2097152
+
 #include <QObject>
 #include <QCoreApplication>
 #include <QThread>
@@ -33,6 +35,7 @@ SOFTWARE.
 #include "math.h"
 #include "virtualoctsystemsettingsdialog.h"
 #include "octproz_devkit.h"
+#include <fstream>
 
 
 class VirtualOCTSystem : public AcquisitionSystem
@@ -53,11 +56,13 @@ private:
 	FILE* file;
 	VirtualOCTSystemSettingsDialog* systemDialog;
 	simulatorParams currParams;
-	AcquisitionBuffer* multiBuffer;
+	AcquisitionBuffer* streamBuffer;
 
 	bool init();
 	void cleanup();
+	bool openFileToCopyToRam();
 	void acqcuisitionSimulation();
+	void acqcuisitionSimulationLargeFile();
 	void acquisitionSimulationWithMultiFileBuffers();
 
 public slots:
