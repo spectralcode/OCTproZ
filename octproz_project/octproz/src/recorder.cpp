@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2020 Miroslav Zabic
+**  Copyright (C) 2019-2021 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -65,7 +65,8 @@ void Recorder::slot_abortRecording(){
 
 void Recorder::slot_init(RecordingParams recParams){
 	this->currRecParams = recParams;
-	this->recordBuffer->allocateMemory(1, this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes); //todo: check if allocation of one big page aligned memory block is better or worse than allocateMemory(currRecParams.buffersToRecord, currRecParams.bufferSizeInBytes)
+	///this->recordBuffer->allocateMemory(1, this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes); //todo: check if allocation of one big page aligned memory block is better or worse than allocateMemory(currRecParams.buffersToRecord, currRecParams.bufferSizeInBytes)
+	this->recordBuffer->allocateMemory(currRecParams.buffersToRecord, currRecParams.bufferSizeInBytes); //allocate multiple memory blocks
 	this->savePath = this->currRecParams.savePath + "/" + this->currRecParams.timeStamp + this->currRecParams.fileName + "_" + this->name + ".raw";
 	this->initialized = true;
 	this->recordingFinished = false;
@@ -96,9 +97,11 @@ void Recorder::slot_record(void* buffer, unsigned bitDepth, unsigned int samples
 	if (this->receivedBuffers % (this->currRecParams.buffersToSkip + 1) == 0){
 		this->receivedBuffers = 0; //set to zero to avoid overflow
 		//record/copy buffer to current position in recordBuffer
-		char* recBufferPointer = (char*)(this->recordBuffer->bufferArray[0]);
-		void* currPosiotionInRecBuffer = &(recBufferPointer[this->recordedBuffers * this->currRecParams.bufferSizeInBytes]);
-		memcpy(currPosiotionInRecBuffer, buffer, this->currRecParams.bufferSizeInBytes);
+		///char* recBufferPointer = (char*)(this->recordBuffer->bufferArray[0]);//this is for the one single big memory approach
+		char* recBufferPointer = (char*)(this->recordBuffer->bufferArray[this->recordedBuffers]); //todo: compare this multi memory block approach with allocation of a single big memory block //todo: check if recordedBuffers > bufferCnt of recordBuffer
+		///void* currPosiotionInRecBuffer = &(recBufferPointer[this->recordedBuffers * this->currRecParams.bufferSizeInBytes]); //this is for the one single big memory block approach
+		///memcpy(currPosiotionInRecBuffer, buffer, this->currRecParams.bufferSizeInBytes); //this is for the one single big memory approach
+		memcpy(recBufferPointer, buffer, this->currRecParams.bufferSizeInBytes); //todo: compare this multi memory block approach with allocation of a single big memory block
 		this->recordedBuffers++;
 
 		//stop recording if enough buffers have been recorded, save recordBuffer to disk and release bufferArray memory
@@ -117,7 +120,7 @@ void Recorder::saveToDisk() {
 		return;
 	}
 	QString fileName = this->savePath;
-	char* recBuffer = (char*)(this->recordBuffer->bufferArray[0]);
+	///char* recBuffer = (char*)(this->recordBuffer->bufferArray[0]);
 	QFile outputFile(fileName);
 	if (!outputFile.open(QIODevice::WriteOnly)) {
 		emit error(tr("Recording failed! Could not write file to disk."));
@@ -127,7 +130,11 @@ void Recorder::saveToDisk() {
 	emit info(tr("Writing data to disk..."));
 	QCoreApplication::processEvents();
 	//outputFile.write(recBuffer, this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes);
-	outputFile.write(recBuffer, this->recordedBuffers * this->currRecParams.bufferSizeInBytes);
+	///outputFile.write(recBuffer, this->recordedBuffers * this->currRecParams.bufferSizeInBytes);
+	for(int i = 0; i < this->recordedBuffers; i++){
+		char* recBuffer = static_cast<char*>(this->recordBuffer->bufferArray[i]);
+		outputFile.write(recBuffer, this->currRecParams.bufferSizeInBytes); //todo: is it possible to use multiple threads for writing into the output file?
+	}
 	outputFile.close();
 	emit info(tr("Data written to disk! ") + fileName);
 }
