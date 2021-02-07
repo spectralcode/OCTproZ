@@ -334,13 +334,17 @@ void GLWindow2D::paintGL() {
 	glTranslatef(this->xTranslation, this->yTranslation, 0);
 
 	//rotation
-	float screenWidth = static_cast<float>(this->size().width());
-	float screenHeight = static_cast<float>(this->size().height());
-	glScalef(1.0f,screenWidth/screenHeight,1.0f);
-	glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
-	glScalef(1.0f,screenHeight/screenWidth,1.0f);
+	if(this->keepAspectRatio){
+		float screenWidth = static_cast<float>(this->size().width());
+		float screenHeight = static_cast<float>(this->size().height());
+		glScalef(1.0f,screenWidth/screenHeight,1.0f);
+		glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
+		glScalef(1.0f,screenHeight/screenWidth,1.0f);
+	}else{
+		glRotatef(this->rotationAngle, 0.0, 0.0, 1.0);
+	}
 
-	//zoom
+	//zoom and stretch
 	glScalef(this->scaleFactor*this->stretchX, this->scaleFactor*this->stretchY, 0.f);
 
 	//display oct data
