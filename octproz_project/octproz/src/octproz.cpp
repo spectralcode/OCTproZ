@@ -371,6 +371,7 @@ void OCTproZ::initMenu() {
 	this->actionUseCustomKLinCurve->setCheckable(true);
 	this->actionUseSidebarKLinCurve->setActionGroup(customKlinCurveGroup);
 	this->actionUseCustomKLinCurve->setActionGroup(customKlinCurveGroup);
+	this->actionUseCustomKLinCurve->setEnabled(false);
 	this->actionUseSidebarKLinCurve->setChecked(true);
 	connect(this->actionUseCustomKLinCurve, &QAction::toggled, this, &OCTproZ::slot_useCustomResamplingCurve);
 	klinMenu->addAction(this->actionUseSidebarKLinCurve);
@@ -804,6 +805,7 @@ void OCTproZ::slot_useCustomResamplingCurve(bool use) {
 	this->octParams->useCustomResampleCurve = use;
 	this->octParams->acquisitionParamsChanged = true;
 	this->sidebar->slot_updateProcessingParams();
+	this->sidebar->disableKlinCoeffInput(use);
 }
 
 void OCTproZ::slot_loadCustomResamplingCurve() {
@@ -831,6 +833,7 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 	this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
 	this->octParams->acquisitionParamsChanged = true;
 	this->sidebar->slot_updateProcessingParams();
+	this->actionUseCustomKLinCurve->setEnabled(true);
 }
 
 void OCTproZ::setSystem(QString systemName) {
