@@ -30,6 +30,9 @@
 
 #include "kernels.h"
 
+#define M_PI_OVER_8 0.3926990817f
+#define EIGHT_OVER_PI_SQUARED 0.8105694691f
+
 int blockSize;
 int gridSize;
 
@@ -210,6 +213,87 @@ __global__ void klinearizationCubic(cufftComplex* out, cufftComplex *in, const f
 	out[index].y = 0;
 }
 
+inline __device__ float lanczosKernel(const float a, const float x) {
+	if(x < 0.00000001f && x > -0.00000001){
+		return 1.0f;
+	}
+	if(x >= -a || x < a){
+		return (a*sinf(M_PI*x)*sinf(M_PI*x/a))/(M_PI*M_PI*x*x); //todo: optimize
+	}
+	return 0.0f;
+}
+
+inline __device__ float lanczosKernel8(const float x) {
+	if(x < 0.00000001f && x > -0.00000001){
+		return 1.0f;
+	}
+	if(x >= -8.0 || x < 8.0){
+		return (EIGHT_OVER_PI_SQUARED*sinf(M_PI*x)*sinf(M_PI_OVER_8*x))/(x*x); //todo: optimize
+	}
+	return 0.0f;
+}
+
+__global__ void klinearizationLanczos(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = index%width;
+	int offset = index-j;
+
+	float nx = resampleCurve[j];
+	const int n0 = (int)nx;
+	int nm7 = abs(n0 - 7);
+	int nm6 = abs(n0 - 6);
+	int nm5 = abs(n0 - 5);
+	int nm4 = abs(n0 - 4);
+	int nm3 = abs(n0 - 3);
+	int nm2 = abs(n0 - 2);
+	int nm1 = abs(n0 - 1);
+	int n1 = (n0 + 1)%width;
+	int n2 = (n0 + 2)%width;
+	int n3 = (n0 + 3)%width;
+	int n4 = (n0 + 4)%width;
+	int n5 = (n0 + 5)%width;
+	int n6 = (n0 + 6)%width;
+	int n7 = (n0 + 7)%width;
+	int n8 = (n0 + 8)%width;
+
+	float ym7 = in[offset + nm7].x;
+	float ym6 = in[offset + nm6].x;
+	float ym5 = in[offset + nm5].x;
+	float ym4 = in[offset + nm4].x;
+	float ym3 = in[offset + nm3].x;
+	float ym2 = in[offset + nm2].x;
+	float ym1 = in[offset + nm1].x;
+	float y0 = in[offset + n0].x;
+	float y1 = in[offset + n1].x;
+	float y2 = in[offset + n2].x;
+	float y3 = in[offset + n3].x;
+	float y4 = in[offset + n4].x;
+	float y5 = in[offset + n5].x;
+	float y6 = in[offset + n6].x;
+	float y7 = in[offset + n7].x;
+	float y8 = in[offset + n8].x;
+
+	float sm7 = ym7 * lanczosKernel8(nx-nm7);
+	float sm6 = ym6 * lanczosKernel8(nx-nm6);
+	float sm5 = ym5 * lanczosKernel8(nx-nm5);
+	float sm4 = ym4 * lanczosKernel8(nx-nm4);
+	float sm3 = ym3 * lanczosKernel8(nx-nm3);
+	float sm2 = ym2 * lanczosKernel8(nx-nm2);
+	float sm1 = ym1 * lanczosKernel8(nx-nm1);
+	float s0 = y0 * lanczosKernel8(nx-n0);
+	float s1 = y1 * lanczosKernel8(nx-n1);
+	float s2 = y2 * lanczosKernel8(nx-n2);
+	float s3 = y3 * lanczosKernel8(nx-n3);
+	float s4 = y4 * lanczosKernel8(nx-n4);
+	float s5 = y5 * lanczosKernel8(nx-n5);
+	float s6 = y6 * lanczosKernel8(nx-n6);
+	float s7 = y7 * lanczosKernel8(nx-n7);
+	float s8 = y8 * lanczosKernel8(nx-n8);
+
+	out[index].x = sm7 + sm6 + sm5 + sm4 + sm3 + sm2 + sm1 + s0+ s1 + s2 + s3 +s4 +s5 +s6 +s7 + s8;
+	out[index].y = 0;
+}
+
 __global__ void windowing(cufftComplex* output, cufftComplex* input, const float* window, const int lineWidth, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples) {
@@ -256,6 +340,67 @@ __global__ void klinearizationCubicAndWindowing(cufftComplex* out, cufftComplex 
 	out[index].y = 0;
 }
 
+__global__ void klinearizationLanczosAndWindowing(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const float* window, const int width, const int samples) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = index%width;
+	int offset = index-j;
+
+	float nx = resampleCurve[j];
+	const int n0 = (int)nx;
+	int nm7 = abs(n0 - 7);
+	int nm6 = abs(n0 - 6);
+	int nm5 = abs(n0 - 5);
+	int nm4 = abs(n0 - 4);
+	int nm3 = abs(n0 - 3);
+	int nm2 = abs(n0 - 2);
+	int nm1 = abs(n0 - 1);
+	int n1 = (n0 + 1)%width;
+	int n2 = (n0 + 2)%width;
+	int n3 = (n0 + 3)%width;
+	int n4 = (n0 + 4)%width;
+	int n5 = (n0 + 5)%width;
+	int n6 = (n0 + 6)%width;
+	int n7 = (n0 + 7)%width;
+	int n8 = (n0 + 8)%width;
+
+	float ym7 = in[offset + nm7].x;
+	float ym6 = in[offset + nm6].x;
+	float ym5 = in[offset + nm5].x;
+	float ym4 = in[offset + nm4].x;
+	float ym3 = in[offset + nm3].x;
+	float ym2 = in[offset + nm2].x;
+	float ym1 = in[offset + nm1].x;
+	float y0 = in[offset + n0].x;
+	float y1 = in[offset + n1].x;
+	float y2 = in[offset + n2].x;
+	float y3 = in[offset + n3].x;
+	float y4 = in[offset + n4].x;
+	float y5 = in[offset + n5].x;
+	float y6 = in[offset + n6].x;
+	float y7 = in[offset + n7].x;
+	float y8 = in[offset + n8].x;
+
+	float sm7 = ym7 * lanczosKernel8(nx-nm7);
+	float sm6 = ym6 * lanczosKernel8(nx-nm6);
+	float sm5 = ym5 * lanczosKernel8(nx-nm5);
+	float sm4 = ym4 * lanczosKernel8(nx-nm4);
+	float sm3 = ym3 * lanczosKernel8(nx-nm3);
+	float sm2 = ym2 * lanczosKernel8(nx-nm2);
+	float sm1 = ym1 * lanczosKernel8(nx-nm1);
+	float s0 = y0 * lanczosKernel8(nx-n0);
+	float s1 = y1 * lanczosKernel8(nx-n1);
+	float s2 = y2 * lanczosKernel8(nx-n2);
+	float s3 = y3 * lanczosKernel8(nx-n3);
+	float s4 = y4 * lanczosKernel8(nx-n4);
+	float s5 = y5 * lanczosKernel8(nx-n5);
+	float s6 = y6 * lanczosKernel8(nx-n6);
+	float s7 = y7 * lanczosKernel8(nx-n7);
+	float s8 = y8 * lanczosKernel8(nx-n8);
+
+	out[index].x = (sm7 + sm6 + sm5 + sm4 + sm3 + sm2 + sm1 + s0+ s1 + s2 + s3 +s4 +s5 +s6 +s7 + s8) * window[j];
+	out[index].y = 0;
+}
+
 __global__ void klinearizationAndWindowingAndDispersionCompensation(cufftComplex* out, cufftComplex* in, const float* resampleCurve, const float* window, const cufftComplex* phaseComplex, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = index%width;
@@ -291,6 +436,68 @@ __global__ void klinearizationCubicAndWindowingAndDispersionCompensation(cufftCo
 	float pos = nx-n1;
 
 	float linearizedAndWindowedInX = cubicHermiteInterpolation(y0,y1,y2,y3,pos) * window[j];
+	out[index].x = linearizedAndWindowedInX * phaseComplex[j].x;
+	out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
+}
+
+__global__ void klinearizationLanczosAndWindowingAndDispersionCompensation(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const float* window, const cufftComplex* phaseComplex, const int width, const int samples) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = index%width;
+	int offset = index-j;
+
+	float nx = resampleCurve[j];
+	const int n0 = (int)nx;
+	int nm7 = abs(n0 - 7);
+	int nm6 = abs(n0 - 6);
+	int nm5 = abs(n0 - 5);
+	int nm4 = abs(n0 - 4);
+	int nm3 = abs(n0 - 3);
+	int nm2 = abs(n0 - 2);
+	int nm1 = abs(n0 - 1);
+	int n1 = (n0 + 1)%width;
+	int n2 = (n0 + 2)%width;
+	int n3 = (n0 + 3)%width;
+	int n4 = (n0 + 4)%width;
+	int n5 = (n0 + 5)%width;
+	int n6 = (n0 + 6)%width;
+	int n7 = (n0 + 7)%width;
+	int n8 = (n0 + 8)%width;
+
+	float ym7 = in[offset + nm7].x;
+	float ym6 = in[offset + nm6].x;
+	float ym5 = in[offset + nm5].x;
+	float ym4 = in[offset + nm4].x;
+	float ym3 = in[offset + nm3].x;
+	float ym2 = in[offset + nm2].x;
+	float ym1 = in[offset + nm1].x;
+	float y0 = in[offset + n0].x;
+	float y1 = in[offset + n1].x;
+	float y2 = in[offset + n2].x;
+	float y3 = in[offset + n3].x;
+	float y4 = in[offset + n4].x;
+	float y5 = in[offset + n5].x;
+	float y6 = in[offset + n6].x;
+	float y7 = in[offset + n7].x;
+	float y8 = in[offset + n8].x;
+
+	float sm7 = ym7 * lanczosKernel8(nx-nm7);
+	float sm6 = ym6 * lanczosKernel8(nx-nm6);
+	float sm5 = ym5 * lanczosKernel8(nx-nm5);
+	float sm4 = ym4 * lanczosKernel8(nx-nm4);
+	float sm3 = ym3 * lanczosKernel8(nx-nm3);
+	float sm2 = ym2 * lanczosKernel8(nx-nm2);
+	float sm1 = ym1 * lanczosKernel8(nx-nm1);
+	float s0 = y0 * lanczosKernel8(nx-n0);
+	float s1 = y1 * lanczosKernel8(nx-n1);
+	float s2 = y2 * lanczosKernel8(nx-n2);
+	float s3 = y3 * lanczosKernel8(nx-n3);
+	float s4 = y4 * lanczosKernel8(nx-n4);
+	float s5 = y5 * lanczosKernel8(nx-n5);
+	float s6 = y6 * lanczosKernel8(nx-n6);
+	float s7 = y7 * lanczosKernel8(nx-n7);
+	float s8 = y8 * lanczosKernel8(nx-n8);
+
+	float linearizedAndWindowedInX = (sm7 + sm6 + sm5 + sm4 + sm3 + sm2 + sm1 + s0+ s1 + s2 + s3 +s4 +s5 +s6 +s7 + s8) * window[j];
 	out[index].x = linearizedAndWindowedInX * phaseComplex[j].x;
 	out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
 }
@@ -1004,10 +1211,14 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 
 	//k-linearization and windowing
 	if (d_inputLinearized != NULL && params->resampling && params->windowing && !params->dispersionCompensation) {
-		if(params->resamplingInterpolation == INTERPOLATION::CUBIC){
+		if(params->resamplingInterpolation == INTERPOLATION::CUBIC) {
 			klinearizationCubicAndWindowing<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
-		} else {
+		}
+		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
 			klinearizationAndWindowing<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
+		}
+		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+			klinearizationLanczosAndWindowing<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
 	} else
@@ -1015,8 +1226,12 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	if (d_inputLinearized != NULL && params->resampling && params->windowing && params->dispersionCompensation) {
 		if(params->resamplingInterpolation == INTERPOLATION::CUBIC){
 			klinearizationCubicAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
-		} else {
+		}
+		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
 			klinearizationAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
+		}
+		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+			klinearizationLanczosAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
 	} else
@@ -1028,8 +1243,12 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	if (d_inputLinearized != NULL && params->resampling && !params->windowing && !params->dispersionCompensation) {
 		if(params->resamplingInterpolation == INTERPOLATION::CUBIC){
 			klinearizationCubic<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
-		} else {
+		}
+		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
 			klinearization<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
+		}
+		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+			klinearizationLanczos<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
 	} else
@@ -1043,10 +1262,14 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	} else
 		//k-linearization and dispersion compensation. nobody will use this in a serious manner, so an optimized "klinearizationAndDispersionCompensation" kernel is not necessary
 	if (d_inputLinearized != NULL && params->resampling && !params->windowing && params->dispersionCompensation) {
-		if(params->resamplingInterpolation == INTERPOLATION::CUBIC){
+		if(params->resamplingInterpolation == INTERPOLATION::CUBIC) {
 			klinearizationCubic<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
-		} else {
+		}
+		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
 			klinearization<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
+		}
+		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+			klinearizationLanczos<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
 		dispersionCompensation<<<gridSize, blockSize, 0, processStream>>> (d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, signalLength, samplesPerBuffer);

@@ -36,7 +36,8 @@
 
 enum INTERPOLATION {
 	LINEAR,
-	CUBIC
+	CUBIC,
+	LANCZOS
 };
 
 

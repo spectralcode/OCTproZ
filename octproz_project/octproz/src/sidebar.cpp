@@ -88,7 +88,7 @@ void Sidebar::initGui() {
 	this->dock->setTitleBarWidget(new QWidget());
 
 	//Interpolation ComboBox
-	QStringList interpolationOptions = { "Linear", "Cubic"}; //todo: think of better way to add available options
+	QStringList interpolationOptions = { "Linear", "Cubic", "Lanczos"}; //todo: think of better way to add available options
 	this->ui.comboBox_interpolation->addItems(interpolationOptions);
 
 	//Windownig ComboBox
