@@ -30,8 +30,10 @@
 
 #include "kernels.h"
 
-#define M_PI_OVER_8 0.3926990817f
 #define EIGHT_OVER_PI_SQUARED 0.8105694691f
+#define PI_OVER_8 0.3926990817f
+#define PI 3.141592654f
+
 
 int blockSize;
 int gridSize;
@@ -224,11 +226,11 @@ inline __device__ float lanczosKernel(const float a, const float x) {
 }
 
 inline __device__ float lanczosKernel8(const float x) {
-	if(x < 0.00000001f && x > -0.00000001){
+	if(x < 0.00001f && x > -0.00001f) {
 		return 1.0f;
 	}
-	if(x >= -8.0 || x < 8.0){
-		return (EIGHT_OVER_PI_SQUARED*sinf(M_PI*x)*sinf(M_PI_OVER_8*x))/(x*x); //todo: optimize
+	if(x >= -8.0f || x < 8.0f) {
+		return (EIGHT_OVER_PI_SQUARED*sinf(PI*x)*sinf(PI_OVER_8*x))/(x*x);
 	}
 	return 0.0f;
 }
