@@ -376,8 +376,11 @@ void OCTproZ::initMenu() {
 	connect(this->actionUseCustomKLinCurve, &QAction::toggled, this, &OCTproZ::slot_useCustomResamplingCurve);
 	klinMenu->addAction(this->actionUseSidebarKLinCurve);
 	klinMenu->addAction(this->actionUseCustomKLinCurve);
-	klinMenu->addSeparator();
+	QAction* klinSeparator = klinMenu->addSeparator();
 	klinMenu->addAction(this->actionSetCustomKLinCurve);
+	QList<QAction*> klinActions;
+	klinActions << this->actionUseSidebarKLinCurve << this->actionUseCustomKLinCurve << klinSeparator <<this->actionSetCustomKLinCurve;
+	this->sidebar->addActionsForKlinGroupBoxMenu(klinActions);
 
 	//help menu
 	QMenu *helpMenu = this->menuBar()->addMenu(tr("&Help"));
@@ -834,6 +837,7 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 	this->octParams->acquisitionParamsChanged = true;
 	this->sidebar->slot_updateProcessingParams();
 	this->actionUseCustomKLinCurve->setEnabled(true);
+	this->actionUseCustomKLinCurve->setChecked(true);
 }
 
 void OCTproZ::setSystem(QString systemName) {

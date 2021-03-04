@@ -59,6 +59,7 @@ public:
 	void updateProcessingParams();
 	void updateStreamingParams(); //todo: find a nice way to enable/disable streaming (allocate/release memory for streaming buffers)
 	void enableRecordTab(bool enable);
+	void addActionsForKlinGroupBoxMenu(QList<QAction*> actions);
 
 private:
 	Ui::Sidebar 			ui;
@@ -76,6 +77,7 @@ private:
 	MiniCurvePlot*			dispersionCurvePlot;
 	MiniCurvePlot*			windowCurvePlot;
 	unsigned int			defaultWidth;
+	QAction*				copyInfoAction;
 
 	void initGui();
 	void findGuiElements();
@@ -97,6 +99,7 @@ public slots:
 	void slot_setKLinCoeffs(double* k0, double* k1, double* k2, double* k3);
 	void slot_setDispCompCoeffs(double* d0, double* d1, double* d2, double* d3);
 	void disableKlinCoeffInput(bool disable);
+	void copyInfoToClipboard();
 	void show();
 
 signals:

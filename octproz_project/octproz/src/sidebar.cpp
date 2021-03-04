@@ -99,6 +99,10 @@ void Sidebar::initGui() {
 	connect(this->ui.pushButton_showSidebar, &QPushButton::clicked, this, &Sidebar::show);
 	connect(this->ui.pushButton_redetermine, &QPushButton::clicked, this, &Sidebar::slot_redetermineFixedPatternNoise);
 	connect(this->ui.radioButton_continuously, &QRadioButton::toggled, this, &Sidebar::slot_disableRedetermineButtion);
+
+	this->copyInfoAction = new QAction(tr("Copy info to clipboard"), this);
+	connect(copyInfoAction, &QAction::triggered, this, &Sidebar::copyInfoToClipboard);
+	this->ui.groupBox_info->addAction(copyInfoAction);
 }
 
 void Sidebar::findGuiElements() {
@@ -250,7 +254,6 @@ void Sidebar::saveSettings() {
 	settings->streamingSettings.insert(STREAM_STREAMING, this->ui.groupBox_streaming->isChecked());
 	settings->streamingSettings.insert(STREAM_STREAMING_SKIP, this->ui.spinBox_streamingBuffersToSkip->value());
 
-
 	settings->storeSettings(SETTINGS_PATH);
 	//emit info("Settings saved");
 }
@@ -330,8 +333,12 @@ void Sidebar::updateStreamingParams() {
 	params->streamingBuffersToSkip = this->ui.spinBox_streamingBuffersToSkip->value();
 }
 
-void Sidebar::enableRecordTab(bool enable){
+void Sidebar::enableRecordTab(bool enable) {
 	this->ui.tab_3->setEnabled(enable);
+}
+
+void Sidebar::addActionsForKlinGroupBoxMenu(QList<QAction *> actions) {
+	this->ui.groupBox_resampling->addActions(actions);
 }
 
 void Sidebar::updateResamplingParams() {
@@ -469,10 +476,24 @@ void Sidebar::slot_setDispCompCoeffs(double *d0, double *d1, double *d2, double 
 }
 
 void Sidebar::disableKlinCoeffInput(bool disable) {
+	bool groupBoxState = ui.groupBox_resampling->isChecked();
+	this->ui.groupBox_resampling->setChecked(!groupBoxState);
 	this->ui.doubleSpinBox_c0->setDisabled(disable);
 	this->ui.doubleSpinBox_c1->setDisabled(disable);
 	this->ui.doubleSpinBox_c2->setDisabled(disable);
 	this->ui.doubleSpinBox_c3->setDisabled(disable);
+	this->ui.groupBox_resampling->setChecked(groupBoxState);
+}
+
+void Sidebar::copyInfoToClipboard() {
+	QClipboard *clipboard = QApplication::clipboard();
+	QString infoText = this->ui.label_name_volumesPerSecond->text() + "\t" + this->ui.label_volumesPerSecond->text() + "\n"
+		+ this->ui.label_name_buffersPerSecond->text() + "\t" + this->ui.label_buffersPerSecond->text() + "\n"
+		+ this->ui.label_name_bscansPerSecond->text() + "\t" + this->ui.label_bscansPerSecond->text() + "\n"
+		+ this->ui.label_name_ascansPerSecond->text() + "\t" + this->ui.label_ascansPerSecond->text() + "\n"
+		+ this->ui.label_name_bufferSize->text() + "\t" + this->ui.label_bufferSize->text() + "\n"
+		+ this->ui.label_name_dataThroughput->text() + "\t" + this->ui.label_dataThroughput->text() + "\n";
+	clipboard->setText(infoText);
 }
 
 void Sidebar::show() {
