@@ -230,7 +230,7 @@ inline __device__ float lanczosKernel8(const float x) {
 		return 1.0f;
 	}
 	if(x >= -8.0f || x < 8.0f) {
-		return (EIGHT_OVER_PI_SQUARED*sinf(PI*x)*sinf(PI_OVER_8*x))/(x*x);
+		return (EIGHT_OVER_PI_SQUARED*__sinf(PI*x)*__sinf(PI_OVER_8*x))/(x*x);
 	}
 	return 0.0f;
 }
