@@ -150,6 +150,23 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	processingThread.start();
 
 	this->initGui();
+
+
+
+	this->dockManager = new ads::CDockManager(this);
+
+	QLabel* l = new QLabel();
+	l->setWordWrap(true);
+	l->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+	l->setText("Lorem ipsum dolor sit amet, consectetuer adipiscing elit. ");
+	ads::CDockWidget* DockWidget = new ads::CDockWidget("Label 1");
+	DockWidget->setWidget(l);
+	dockManager->addDockWidget(ads::RightDockWidgetArea, DockWidget);
+
+	ads::CDockWidget* DockWidget2 = new ads::CDockWidget("side");
+	DockWidget2->setWidget(this->sidebar);
+	dockManager->addDockWidget(ads::RightDockWidgetArea, DockWidget2);
+
 	this->loadSystemsAndExtensions();
 
 	this->processedDataNotifier = Gpu2HostNotifier::getInstance();

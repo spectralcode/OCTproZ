@@ -52,6 +52,7 @@
 #include "octproz_devkit.h"
 #include "octalgorithmparameters.h"
 #include "aboutdialog.h"
+#include "DockManager.h"
 
 #include "ui_octproz.h"
 
@@ -119,6 +120,7 @@ private:
 	void forceUpdateProcessingParams();
 
 	Ui::OCTproZ *ui;
+	ads::CDockManager* dockManager;
 	AboutDialog* aboutWindow;
 	Sidebar* sidebar;
 	SystemManager* sysManager;

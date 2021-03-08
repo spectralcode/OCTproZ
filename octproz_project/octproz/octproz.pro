@@ -7,13 +7,15 @@ TEMPLATE = app
 #define path of OCTproZ_DevKit share directory
 SHAREDIR = $$shell_path($$PWD/../octproz_share_dev)
 QCUSTOMPLOTDIR = $$shell_path($$PWD/../thirdparty/QCustomPlot)
+DOCKINGSYSTEMDIR = $$shell_path($$PWD/../thirdparty/ads)
 SOURCEDIR = $$shell_path($$PWD/src)
 
 
 INCLUDEPATH +=  \
 	$$SOURCEDIR \
 	$$SHAREDIR \
-	$$QCUSTOMPLOTDIR
+	$$QCUSTOMPLOTDIR \
+	$$DOCKINGSYSTEMDIR
 
 SOURCES += \
 	$$SOURCEDIR/aboutdialog.cpp \
@@ -90,6 +92,11 @@ RESOURCES += \
 
 DISTFILES += \
 	$$SOURCEDIR/cuda_code.cu \
+
+#Qt-Advanced-Docking-System lib
+LIBS += -L$${shell_path(OUT_PWD/../../thirdparty/lib)}
+include($$DOCKINGSYSTEMDIR/ads.pri)
+
 
 #OCTproZ_DevKit libraries
 CONFIG(debug, debug|release) {
