@@ -28,9 +28,6 @@
 #include "settings.h"
 
 
-//////////////////////////////////////////////////////////////////////////
-//			constructor (singleton pattern!), destructor				//
-//////////////////////////////////////////////////////////////////////////
 Settings* Settings::settings = nullptr;
 
 Settings::Settings() {
@@ -42,7 +39,6 @@ Settings::Settings() {
 	this->recordSettings.insert(REC_SKIP, QVariant(uint(0)));
 	this->recordSettings.insert(REC_NAME, QVariant(QString("")));
 	this->recordSettings.insert(REC_DESCRIPTION, QVariant(QString("")));
-
 	this->processingSettings.insert(PROC_FLIP_BSCANS, QVariant(false));
 	this->processingSettings.insert(PROC_BITSHIFT, QVariant(false));
 	this->processingSettings.insert(PROC_MAX, QVariant(100.0));
@@ -69,16 +65,18 @@ Settings::Settings() {
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_Continuously, QVariant(false));
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, QVariant(uint(1)));
 	this->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, QVariant(false));
-
 	this->streamingSettings.insert(STREAM_STREAMING, QVariant(false));
 	this->streamingSettings.insert(STREAM_STREAMING_SKIP, QVariant(uint(0)));
-
 	this->mainWindowSettings.insert(MAIN_GEOMETRY, QVariant(QByteArray()));
 	this->mainWindowSettings.insert(MAIN_STATE, QVariant(QByteArray()));
 
-	//if settings file does not exists, create a settings file with the above defined values to fill the gui/octalgorithmparameters with reasonable inital values
+	//if settings file does not exists, copy default settings file with reasonable inital values
 	if(!QFileInfo::exists(SETTINGS_PATH)){
-		this->storeSettings(SETTINGS_PATH);
+		bool success = QFile::copy(":misc/default/settings.ini", SETTINGS_PATH);
+		if(!success){
+			emit error(tr("Could not create settings file in: ") + SETTINGS_PATH);
+		}
+		QFile::setPermissions(SETTINGS_PATH, QFileDevice::WriteOther);
 	}
 }
 
@@ -90,10 +88,6 @@ Settings* Settings::getInstance() {
 Settings::~Settings() {
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-//					public methods										//
-//////////////////////////////////////////////////////////////////////////
 void Settings::storeSettings(QString path) {
 	QSettings settings(path, QSettings::IniFormat);
 	settings.setValue(TIMESTAMP, this->timestamp);
@@ -144,10 +138,6 @@ void Settings::copySettingsFile(QString path) {
 	}
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-//					private methods										//
-//////////////////////////////////////////////////////////////////////////
 void Settings::storeValues(QSettings* settings, QString groupName, QVariantMap* settingsMap) {
 	QMapIterator<QString, QVariant> i(*settingsMap);
 	settings->beginGroup(groupName);
@@ -167,7 +157,3 @@ void Settings::loadValues(QSettings* settings, QString groupName, QVariantMap* s
 	}
 	settings->endGroup();
 }
-
-//////////////////////////////////////////////////////////////////////////
-//					public slots										//
-//////////////////////////////////////////////////////////////////////////

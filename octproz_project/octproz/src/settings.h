@@ -26,7 +26,8 @@
 **/
 
 //!	Settings
-/*!	Class for storing processing, visualization and record settings to the hard drive.
+/*!	The Settings class is implemented with the singleton pattern and is used to load and save all user-modifiable settings of OCTproZ and every plugin.
+ * The settings are stored in an ini file. The save path is QStandardPaths::ConfigLocation (for Windows this is usually "C:/Users/<USER>/AppData/Local/<APPNAME>"
 */
 
 #ifndef SETTINGS_H

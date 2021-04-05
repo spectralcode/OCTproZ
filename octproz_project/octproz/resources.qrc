@@ -28,5 +28,6 @@
         <file>icons/octproz_stop_icon.png</file>
         <file>icons/octproz_volume_icon.png</file>
         <file>icons/octproz_manual_icon.png</file>
+		<file>misc/default/settings.ini</file>
     </qresource>
 </RCC>
