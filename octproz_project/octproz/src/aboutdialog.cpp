@@ -69,10 +69,7 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	hLayoutTop->addWidget(tabWidget);
 
 	//about
-	QString aboutText = tr("<b>OCTproZ</b> is an open source software for online processig of optical coherence tomography (OCT) raw data. "
-			  "It can be extended by plugins, which are divided into two kinds: systems and extensions. Systems are software "
-			  "representations of actual OCT systems and provide raw data. Extensions are software modules that extend the "
-			  "functionality of an OCT system and/or OCTproZ.");
+	QString aboutText = tr("<b>OCTproZ</b> is an open source software for optical coherence tomography (OCT) processing and visualization. A plug-in system enables the integration of custom OCT systems and software modules.");
 	QTextEdit* aboutTextEdit = new QTextEdit(this);
 	aboutTextEdit->setReadOnly(true);
 	aboutTextEdit->setText(aboutText);
