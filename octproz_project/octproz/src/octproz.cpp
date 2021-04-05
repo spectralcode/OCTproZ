@@ -68,8 +68,10 @@ OCTproZ::OCTproZ(QWidget *parent) :
 
 	this->bscanWindow = new GLWindow2D(this);
 	this->bscanWindow->setMarkerOrigin(TOP);
+	this->bscanWindow->setName("bscan-window");
 	this->enFaceViewWindow = new GLWindow2D(this);
 	this->enFaceViewWindow->setMarkerOrigin(LEFT);
+	this->enFaceViewWindow->setName("enfaceview-window");
 
 	connect(this->bscanWindow, &GLWindow2D::currentFrameNr, this->enFaceViewWindow, &GLWindow2D::setMarkerPosition);
 	connect(this->enFaceViewWindow, &GLWindow2D::currentFrameNr, this->bscanWindow, &GLWindow2D::setMarkerPosition);
@@ -90,6 +92,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->dockEnFaceView, &QDockWidget::visibilityChanged, this, &OCTproZ::slot_enableEnFaceViewProcessing);
 
 	this->volumeWindow = new GLWindow3D(this);
+	this->volumeWindow->setName("3d-volume-window");
 	this->dockVolumeView = new QDockWidget(tr("3D - Volume"), this);
 	this->dockVolumeView->setObjectName("3D - Volume");
 	this->dockVolumeView->setFeatures(QDockWidget::DockWidgetClosable); //make dock not floatable, and not movable
@@ -171,6 +174,11 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	//memorize stream2host setings
 	this->streamToHostMemorized = this->octParams->streamToHost;
 	this->streamingBuffersToSkipMemorized = octParams->streamingBuffersToSkip;
+
+	//restore B-scan window and EnFaceView window settings
+	this->bscanWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->bscanWindow->getName()));
+	this->enFaceViewWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->enFaceViewWindow->getName()));
+	this->volumeWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->volumeWindow->getName()));
 }
 
 OCTproZ::~OCTproZ(){
@@ -226,9 +234,9 @@ void OCTproZ::initActionsAndDocks() {
 	QAction* bscanMarkerAction = this->bscanWindow->getMarkerAction();
 	QAction* enfaceMarkerAction = this->enFaceViewWindow->getMarkerAction();
 	bscanMarkerAction->setIcon(QIcon(":/icons/octproz_bscanmarker_icon.png"));
-	bscanMarkerAction->setToolTip(tr("Display orthogonal marker in B-scan"));
+	bscanMarkerAction->setToolTip(tr("Display en face view position marker in B-scan"));
 	enfaceMarkerAction->setIcon(QIcon(":/icons/octproz_enfacemarker_icon.png"));
-	enfaceMarkerAction->setToolTip(tr("Display orthogonal marker in en face view"));
+	enfaceMarkerAction->setToolTip(tr("Display B-scan position marker in en face view"));
 	this->view2DExtrasToolBar->addAction(bscanMarkerAction);
 	this->view2DExtrasToolBar->addAction(enfaceMarkerAction);
 

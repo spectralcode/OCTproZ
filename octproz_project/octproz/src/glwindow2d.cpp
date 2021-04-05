@@ -26,6 +26,7 @@
 **/
 
 #include "glwindow2d.h"
+#include "settings.h"
 
 
 GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
@@ -75,16 +76,20 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	connect(this->panel->lineEditHorizontalScaleBarText, &QLineEdit::textChanged, this->horizontalScaleBar, &ScaleBar::setText);
 	connect(this->panel->lineEditVerticalScaleBarText, &QLineEdit::textChanged, this->verticalScaleBar, &ScaleBar::setText);
 
+
 	//set default values //todo: find a better way to do this and also save and reload user values from last session
 	this->panel->lineEditVerticalScaleBarText->setText("1 mm");
 	this->panel->lineEditHorizontalScaleBarText->setText("1 mm");
 	this->panel->spinBoxHorizontalScaleBar->setValue(128);
 	this->panel->spinBoxVerticalScaleBar->setValue(256);
+
+	connect(this->panel, &ControlPanel2D::settingsChanged, this, &GLWindow2D::onSettingsChanged);
 }
 
 
 GLWindow2D::~GLWindow2D()
 {
+	this->onSettingsChanged();
 	delete this->horizontalScaleBar;
 	delete this->verticalScaleBar;
 	//todo: check if cleanup (probably for processingContext and processingSurface) is necessary and implement it
@@ -92,6 +97,43 @@ GLWindow2D::~GLWindow2D()
 
 void GLWindow2D::setMarkerOrigin(FRAME_EDGE origin) {
 	this->markerOrigin = origin;
+}
+
+void GLWindow2D::setSettings(QVariantMap settings) {
+	GLWindow2DParams params;
+	params.extendedViewEnabled = settings.value(EXTENDED_PANEL).toBool();
+	params.displayedFrames = settings.value(DISPLAYED_FRAMES).toInt();
+	params.currentFrame = settings.value(CURRENT_FRAME).toInt();
+	params.rotationAngle = settings.value(ROTATION_ANGLE).toDouble();
+	params.displayFunction = settings.value(DISPLAY_MODE).toInt();
+	params.stretchX = settings.value(STRETCH_X).toDouble();
+	params.stretchY = settings.value(STRETCH_Y).toDouble();
+	params.horizontalScaleBarEnabled = settings.value(HORIZONTAL_SCALE_BAR_ENABLED).toBool();
+	params.verticalScaleBarEnabled = settings.value(VERTICAL_SCALE_BAR_ENABLED).toBool();
+	params.horizontalScaleBarText = settings.value(HORIZONTAL_SCALE_BAR_TEXT).toString();
+	params.verticalScaleBarText = settings.value(VERTICAL_SCALE_BAR_TEXT).toString();
+	params.horizontalScaleBarLength = settings.value(HORIZONTAL_SCALE_BAR_LENGTH).toInt();
+	params.verticalScaleBarLength = settings.value(VERTICAL_SCALE_BAR_LENGTH).toInt();
+	this->panel->setParams(params);
+}
+
+QVariantMap GLWindow2D::getSettings() {
+	QVariantMap settings;
+	GLWindow2DParams params = this->panel->getParams();
+	settings.insert(EXTENDED_PANEL, params.extendedViewEnabled);
+	settings.insert(DISPLAYED_FRAMES, params.displayedFrames);
+	settings.insert(CURRENT_FRAME, params.currentFrame);
+	settings.insert(ROTATION_ANGLE, params.rotationAngle);
+	settings.insert(DISPLAY_MODE, params.displayFunction);
+	settings.insert(STRETCH_X, params.stretchX);
+	settings.insert(STRETCH_Y, params.stretchY);
+	settings.insert(HORIZONTAL_SCALE_BAR_ENABLED, params.horizontalScaleBarEnabled);
+	settings.insert(VERTICAL_SCALE_BAR_ENABLED, params.verticalScaleBarEnabled);
+	settings.insert(HORIZONTAL_SCALE_BAR_TEXT, params.horizontalScaleBarText);
+	settings.insert(VERTICAL_SCALE_BAR_TEXT, params.verticalScaleBarText);
+	settings.insert(HORIZONTAL_SCALE_BAR_LENGTH, params.horizontalScaleBarLength);
+	settings.insert(VERTICAL_SCALE_BAR_LENGTH, params.verticalScaleBarLength);
+	return settings;
 }
 
 void GLWindow2D::initContextMenu() {
@@ -279,6 +321,10 @@ void GLWindow2D::setMarkerPosition(unsigned int position) {
 		this->markerCoordinates.y2 = -this->screenHeightScaled;
 		break;
 	}
+}
+
+void GLWindow2D::onSettingsChanged() {
+	Settings::getInstance()->storeSystemSettings(this->getName(), this->getSettings());
 }
 
 void GLWindow2D::slot_saveScreenshot(QString savePath, QString fileName) {
@@ -617,6 +663,8 @@ ControlPanel2D::ControlPanel2D(QWidget *parent) : QWidget(parent) {
 	this->spinBoxVerticalScaleBar->setMaximum(9999);
 	this->spinBoxVerticalScaleBar->setSingleStep(1);
 
+	this->setMaxFrame(4095);
+
 	connect(this->slider, &QSlider::valueChanged, this->spinBoxFrame, &QSpinBox::setValue);
 	connect(this->spinBoxFrame, QOverload<int>::of(&QSpinBox::valueChanged), this->slider, &QSlider::setValue);
 	connect(this->slider, &QSlider::valueChanged, this, &ControlPanel2D::updateDisplayFrameSettings);
@@ -625,6 +673,9 @@ ControlPanel2D::ControlPanel2D(QWidget *parent) : QWidget(parent) {
 	connect(this->toolButtonMore, &QToolButton::clicked, this, &ControlPanel2D::toggleExtendedView);
 
 	this->enableExtendedView(false);
+	this->findGuiElements();
+	this->spinBoxes.removeOne(this->spinBoxFrame);//remove frame spinbox to avoid updating settings.ini file every single time the current frame is changed by user
+	this->connectGuiToSettingsChangedSignal();
 }
 
 ControlPanel2D::~ControlPanel2D()
@@ -639,6 +690,20 @@ void ControlPanel2D::setMaxFrame(unsigned int maxFrame) {
 
 void ControlPanel2D::setMaxAverage(unsigned int maxAverage) {
 	this->spinBoxAverage->setMaximum(maxAverage);
+}
+
+GLWindow2DParams ControlPanel2D::getParams() {
+	this->updateParams();
+	return this->params;
+}
+
+void ControlPanel2D::findGuiElements() {
+	this->lineEdits = this->findChildren<QLineEdit*>();
+	this->checkBoxes = this->findChildren<QCheckBox*>();
+	this->doubleSpinBoxes = this->findChildren<QDoubleSpinBox*>();
+	this->spinBoxes = this->findChildren<QSpinBox*>();
+	this->stringSpinBoxes = this->findChildren<StringSpinBox*>();
+	this->comboBoxes = this->findChildren<QComboBox*>();
 }
 
 void ControlPanel2D::enableExtendedView(bool enable) {
@@ -661,6 +726,79 @@ void ControlPanel2D::enableExtendedView(bool enable) {
 	this->lineEditVerticalScaleBarText->setVisible(enable);
 	this->spinBoxHorizontalScaleBar->setVisible(enable);
 	this->spinBoxVerticalScaleBar->setVisible(enable);
+}
+
+void ControlPanel2D::updateParams() {
+	this->params.extendedViewEnabled = this->extendedView; //todo: avoid redundant bools
+	this->params.displayedFrames = this->spinBoxAverage->value(); //todo: rename spinBoxAverage to spinBoxDisplayedFrames
+	this->params.currentFrame = this->spinBoxFrame->value();
+	this->params.rotationAngle = this->doubleSpinBoxRotationAngle->value();
+	this->params.displayFunction = this->stringBoxFunctions->getIndex();
+	this->params.stretchX = this->doubleSpinBoxStretchX->value();
+	this->params.stretchY = this->doubleSpinBoxStretchY->value();
+	this->params.horizontalScaleBarEnabled = this->checkBoxHorizontalScaleBar->isChecked();
+	this->params.verticalScaleBarEnabled = this->checkBoxVerticalScaleBar->isChecked();
+	this->params.horizontalScaleBarText = this->lineEditHorizontalScaleBarText->text();
+	this->params.verticalScaleBarText = this->lineEditVerticalScaleBarText->text();
+	this->params.horizontalScaleBarLength = this->spinBoxHorizontalScaleBar->value();
+	this->params.verticalScaleBarLength = this->spinBoxVerticalScaleBar->value();
+	//this->params.markerCoordinates;
+}
+
+void ControlPanel2D::connectGuiToSettingsChangedSignal() {
+	foreach(auto element,this->spinBoxes) {
+		connect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &ControlPanel2D::settingsChanged);
+	}
+	foreach(auto element,this->doubleSpinBoxes) {
+		connect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlPanel2D::settingsChanged);
+	}
+	foreach(auto element,this->stringSpinBoxes) {
+		connect(element, &StringSpinBox::indexChanged, this, &ControlPanel2D::settingsChanged);
+	}
+	foreach(auto element,this->lineEdits) {
+		connect(element, &QLineEdit::textChanged, this, &ControlPanel2D::settingsChanged);
+	}
+	foreach(auto element,this->checkBoxes) {
+		connect(element, &QCheckBox::clicked, this, &ControlPanel2D::settingsChanged);
+	}
+}
+
+void ControlPanel2D::disconnectGuiFromSettingsChangedSignal() {
+	foreach(auto element,this->spinBoxes) {
+		disconnect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &ControlPanel2D::settingsChanged);
+	}
+	foreach(auto element,this->doubleSpinBoxes) {
+		disconnect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlPanel2D::settingsChanged);
+	}
+	foreach(auto element,this->stringSpinBoxes) {
+		disconnect(element, &StringSpinBox::indexChanged, this, &ControlPanel2D::settingsChanged);
+	}
+	foreach(auto element,this->lineEdits) {
+		disconnect(element, &QLineEdit::textChanged, this, &ControlPanel2D::settingsChanged);
+	}
+	foreach(auto element,this->checkBoxes) {
+		disconnect(element, &QCheckBox::clicked, this, &ControlPanel2D::settingsChanged);
+	}
+}
+
+void ControlPanel2D::setParams(GLWindow2DParams params) {
+	this->disconnectGuiFromSettingsChangedSignal();
+	this->params = params;
+	this->enableExtendedView(this->params.extendedViewEnabled);
+	this->spinBoxAverage->setValue(this->params.displayedFrames); //todo: rename spinBoxAverage to spinBoxDisplayedFrames
+	this->spinBoxFrame->setValue(this->params.currentFrame);
+	this->doubleSpinBoxRotationAngle->setValue(this->params.rotationAngle);
+	this->stringBoxFunctions->setIndex(this->params.displayFunction);
+	this->doubleSpinBoxStretchX->setValue(this->params.stretchX);
+	this->doubleSpinBoxStretchY->setValue(this->params.stretchY);
+	this->checkBoxHorizontalScaleBar->setChecked(this->params.horizontalScaleBarEnabled);
+	this->checkBoxVerticalScaleBar->setChecked(this->params.verticalScaleBarEnabled);
+	this->lineEditVerticalScaleBarText->setText(this->params.verticalScaleBarText);
+	this->lineEditHorizontalScaleBarText->setText(this->params.horizontalScaleBarText);
+	this->spinBoxHorizontalScaleBar->setValue(this->params.horizontalScaleBarLength);
+	this->spinBoxVerticalScaleBar->setValue(this->params.verticalScaleBarLength);
+	this->updateDisplayFrameSettings();
+	this->connectGuiToSettingsChangedSignal();
 }
 
 void ControlPanel2D::updateDisplayFrameSettings() {

@@ -76,7 +76,7 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 	: QOpenGLWidget {parent}
 	, raycastingVolume {nullptr}
 {
-	qRegisterMetaType<DisplayParams >("DisplayParams");
+	qRegisterMetaType<GLWindow3DParams >("GLWindow3DParams");
 	this->panel = new ControlPanel3D(this);
 
 
@@ -117,6 +117,37 @@ GLWindow3D::~GLWindow3D()
 		delete element.second;
 	}
 	delete this->raycastingVolume;
+}
+
+void GLWindow3D::setSettings(QVariantMap settings) {
+	GLWindow3DParams params;
+	params.extendedViewEnabled = settings.value(EXTENDED_PANEL).toBool();
+	params.displayMode = settings.value(DISPLAY_MODE).toString();
+	params.displayModeIndex = settings.value(DISPLAY_MODE_INDEX).toInt();
+	params.isosurfaceThreshold = settings.value(ISO_SURFACE_THRESHOLD).toReal();
+	params.rayMarchStepLength = settings.value(RAY_STEP_LENGTH).toReal();
+	params.stretchX = settings.value(STRETCH_X).toReal();
+	params.stretchY= settings.value(STRETCH_Y).toReal();
+	params.stretchZ = settings.value(STRETCH_Z).toReal();
+	params.updateContinuously = settings.value(CONTINUOUS_UPDATE_ENABLED).toBool();
+	params.gamma = settings.value(GAMMA).toReal();
+	this->panel->setParams(params);
+}
+
+QVariantMap GLWindow3D::getSettings() {
+	QVariantMap settings;
+	GLWindow3DParams params = this->panel->getParams();
+	settings.insert(EXTENDED_PANEL, params.extendedViewEnabled);
+	settings.insert(DISPLAY_MODE, params.displayMode);
+	settings.insert(DISPLAY_MODE_INDEX, params.displayModeIndex);
+	settings.insert(ISO_SURFACE_THRESHOLD, params.isosurfaceThreshold);
+	settings.insert(RAY_STEP_LENGTH, params.rayMarchStepLength);
+	settings.insert(STRETCH_X, params.stretchX);
+	settings.insert(STRETCH_Y, params.stretchY);
+	settings.insert(STRETCH_Z, params.stretchZ);
+	settings.insert(CONTINUOUS_UPDATE_ENABLED, params.updateContinuously);
+	settings.insert(GAMMA, params.gamma);
+	return settings;
 }
 
 void GLWindow3D::setStretch(const qreal x, const qreal y, const qreal z) {
@@ -366,13 +397,14 @@ void GLWindow3D::slot_registerGLbufferWithCuda() {
 	}
 }
 
-void GLWindow3D::slot_updateDisplayParams(DisplayParams params) {
-	this->setMode(params.mode);
+void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
+	this->setMode(params.displayMode);
 	this->setStepLength(params.rayMarchStepLength);
-	this->setThreshold(params.isosurfaceThreashold);
+	this->setThreshold(params.isosurfaceThreshold);
 	this->updateContinuously = params.updateContinuously;
 	this->setStretch(params.stretchX, params.stretchY, params.stretchZ);
 	this->m_gamma = params.gamma;
+	Settings::getInstance()->storeSystemSettings(this->getName(), this->getSettings());
 }
 
 void GLWindow3D::slot_saveScreenshot(QString savePath, QString fileName) {

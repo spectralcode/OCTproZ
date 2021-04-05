@@ -119,18 +119,13 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->doubleSpinBoxGamma->setSingleStep(0.1);
 	this->doubleSpinBoxGamma->setValue(2.2);
 
-	connect(this->checkBoxUpdateContinuously, &QCheckBox::toggled, this, &ControlPanel3D::updateDisplayParameters);
-	connect(this->doubleSpinBoxStepLength, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ControlPanel3D::updateDisplayParameters);
-	connect(this->doubleSpinBoxIsosurfaceThreshold, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ControlPanel3D::updateDisplayParameters);
-	connect(this->stringBoxModes, &StringSpinBox::indexChanged, this, &ControlPanel3D::updateDisplayParameters);
-	connect(this->doubleSpinBoxStretchX, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ControlPanel3D::updateDisplayParameters);
-	connect(this->doubleSpinBoxStretchY, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ControlPanel3D::updateDisplayParameters);
-	connect(this->doubleSpinBoxStretchZ, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ControlPanel3D::updateDisplayParameters);
-	connect(this->doubleSpinBoxGamma, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ControlPanel3D::updateDisplayParameters);
 	connect(this->toolButtonMore, &QToolButton::clicked, this, &ControlPanel3D::toggleExtendedView);
 
 	this->enableExtendedView(false);
 	this->updateDisplayParameters();
+	this->findGuiElements();
+	this->connectGuiToSettingsChangedSignal();
+	connect(this, &ControlPanel3D::settingsChanged, this, &ControlPanel3D::updateDisplayParameters);
 }
 
 
@@ -147,29 +142,87 @@ void ControlPanel3D::enableContinuousUpdate(bool enable) {
 	this->checkBoxUpdateContinuously->setChecked(enable);
 }
 
-void ControlPanel3D::updateDisplayParameters() {
-	this->currParams.mode = this->stringBoxModes->getText();
-	this->currParams.isosurfaceThreashold = this->doubleSpinBoxIsosurfaceThreshold->value();
-	this->currParams.rayMarchStepLength = this->doubleSpinBoxStepLength->value();
-	this->currParams.updateContinuously = this->checkBoxUpdateContinuously->isChecked();
-	this->currParams.stretchX = this->doubleSpinBoxStretchX->value();
-	this->currParams.stretchY = this->doubleSpinBoxStretchY->value();
-	this->currParams.stretchZ = this->doubleSpinBoxStretchZ->value();
-	this->currParams.gamma = this->doubleSpinBoxGamma->value();
+GLWindow3DParams ControlPanel3D::getParams() {
+	this->params.extendedViewEnabled = this->extendedView;
+	this->params.displayMode = this->stringBoxModes->getText();
+	this->params.displayModeIndex = this->stringBoxModes->getIndex();
+	this->params.isosurfaceThreshold = this->doubleSpinBoxIsosurfaceThreshold->value();
+	this->params.rayMarchStepLength = this->doubleSpinBoxStepLength->value();
+	this->params.updateContinuously = this->checkBoxUpdateContinuously->isChecked();
+	this->params.stretchX = this->doubleSpinBoxStretchX->value();
+	this->params.stretchY = this->doubleSpinBoxStretchY->value();
+	this->params.stretchZ = this->doubleSpinBoxStretchZ->value();
+	this->params.gamma = this->doubleSpinBoxGamma->value();
 
-	if(this->currParams.mode == "Isosurface"){
+	return this->params;
+}
+
+void ControlPanel3D::updateDisplayParameters() {
+	emit displayParametersChanged(this->getParams());
+
+	if(this->params.displayMode == "Isosurface"){
 		this->labelIsosurfaceThreshold->setVisible(true);
 		this->doubleSpinBoxIsosurfaceThreshold->setVisible(true);
 	}else{
 		this->labelIsosurfaceThreshold->setVisible(false);
 		this->doubleSpinBoxIsosurfaceThreshold->setVisible(false);
 	}
-
-	emit displayParametersChanged(this->currParams);
 }
 
 void ControlPanel3D::toggleExtendedView(){
 	this->enableExtendedView(!this->extendedView);
+}
+
+void ControlPanel3D::connectGuiToSettingsChangedSignal() {
+	foreach(auto element,this->spinBoxes) {
+		connect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &ControlPanel3D::settingsChanged);
+	}
+	foreach(auto element,this->doubleSpinBoxes) {
+		connect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlPanel3D::settingsChanged);
+	}
+	foreach(auto element,this->stringSpinBoxes) {
+		connect(element, &StringSpinBox::indexChanged, this, &ControlPanel3D::settingsChanged);
+	}
+	foreach(auto element,this->lineEdits) {
+		connect(element, &QLineEdit::textChanged, this, &ControlPanel3D::settingsChanged);
+	}
+	foreach(auto element,this->checkBoxes) {
+		connect(element, &QCheckBox::clicked, this, &ControlPanel3D::settingsChanged);
+	}
+}
+
+void ControlPanel3D::disconnectGuiFromSettingsChangedSignal() {
+	foreach(auto element,this->spinBoxes) {
+		disconnect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &ControlPanel3D::settingsChanged);
+	}
+	foreach(auto element,this->doubleSpinBoxes) {
+		disconnect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlPanel3D::settingsChanged);
+	}
+	foreach(auto element,this->stringSpinBoxes) {
+		disconnect(element, &StringSpinBox::indexChanged, this, &ControlPanel3D::settingsChanged);
+	}
+	foreach(auto element,this->lineEdits) {
+		disconnect(element, &QLineEdit::textChanged, this, &ControlPanel3D::settingsChanged);
+	}
+	foreach(auto element,this->checkBoxes) {
+		disconnect(element, &QCheckBox::clicked, this, &ControlPanel3D::settingsChanged);
+	}
+}
+
+void ControlPanel3D::setParams(GLWindow3DParams params) {
+	this->disconnectGuiFromSettingsChangedSignal();
+	this->params = params;
+	this->enableExtendedView(params.extendedViewEnabled);
+	this->stringBoxModes->setIndex(params.displayModeIndex);
+	this->doubleSpinBoxIsosurfaceThreshold->setValue(params.isosurfaceThreshold);
+	this->doubleSpinBoxStepLength->setValue(params.rayMarchStepLength);
+	this->checkBoxUpdateContinuously->setChecked(params.updateContinuously);
+	this->doubleSpinBoxStretchX->setValue(params.stretchX);
+	this->doubleSpinBoxStretchY->setValue(params.stretchY);
+	this->doubleSpinBoxStretchZ->setValue(params.stretchZ);
+	this->doubleSpinBoxGamma->setValue(params.gamma);
+	this->updateDisplayParameters();
+	this->connectGuiToSettingsChangedSignal();
 }
 
 void ControlPanel3D::enableExtendedView(bool enable) {
@@ -183,4 +236,13 @@ void ControlPanel3D::enableExtendedView(bool enable) {
 	this->labelStretchZ->setVisible(enable);
 	this->labelGamma->setVisible(enable);
 	this->doubleSpinBoxGamma->setVisible(enable);
+}
+
+void ControlPanel3D::findGuiElements() {
+	this->lineEdits = this->findChildren<QLineEdit*>();
+	this->checkBoxes = this->findChildren<QCheckBox*>();
+	this->doubleSpinBoxes = this->findChildren<QDoubleSpinBox*>();
+	this->spinBoxes = this->findChildren<QSpinBox*>();
+	this->stringSpinBoxes = this->findChildren<StringSpinBox*>();
+	this->comboBoxes = this->findChildren<QComboBox*>();
 }

@@ -28,6 +28,17 @@
 #ifndef CONTROLPANEL_H
 #define CONTROLPANEL_H
 
+#define EXTENDED_PANEL "extended_panel"
+#define DISPLAY_MODE "display_mode"
+#define DISPLAY_MODE_INDEX "display_mode_index"
+#define ISO_SURFACE_THRESHOLD "iso_surface_threshold"
+#define RAY_STEP_LENGTH "ray_step_length"
+#define STRETCH_X "strecth_x"
+#define STRETCH_Y "strecth_y"
+#define STRETCH_Z "strecth_z"
+#define CONTINUOUS_UPDATE_ENABLED "continuous_update_enabled"
+#define GAMMA "gamma"
+
 #include <QSpinBox>
 #include <QLabel>
 #include <QLayout>
@@ -38,6 +49,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QToolButton>
+#include <QObject>
 
 #include "stringspinbox.h"
 
@@ -45,11 +57,14 @@
 //todo: common base class for ControlPanel2D and ControlPanel3D
 
 
-struct DisplayParams {
+
+struct GLWindow3DParams {
+	bool extendedViewEnabled;
 	qreal rayMarchStepLength;
-	qreal isosurfaceThreashold;
+	qreal isosurfaceThreshold;
 	bool updateContinuously;
-	QString mode;
+	QString displayMode;
+	int displayModeIndex;
 	qreal stretchX;
 	qreal stretchY;
 	qreal stretchZ;
@@ -65,13 +80,17 @@ public:
 	~ControlPanel3D();
 	void setModes(QStringList modes);
 	void enableContinuousUpdate(bool enable);
+	GLWindow3DParams getParams();
 
 
 private:
 	void enableExtendedView(bool enable);
+	void findGuiElements();
+	void connectGuiToSettingsChangedSignal();
+	void disconnectGuiFromSettingsChangedSignal();
 
+	GLWindow3DParams params;
 	bool extendedView;
-	DisplayParams currParams;
 	QWidget* panel;
 	QDoubleSpinBox* doubleSpinBoxStepLength;
 	QDoubleSpinBox* doubleSpinBoxIsosurfaceThreshold;
@@ -94,19 +113,25 @@ private:
 	QDoubleSpinBox* doubleSpinBoxGamma;
 	QLabel* labelGamma;
 
-protected:
+	QList<QLineEdit*> lineEdits;
+	QList<QCheckBox*> checkBoxes;
+	QList<QDoubleSpinBox*> doubleSpinBoxes;
+	QList<QSpinBox*> spinBoxes;
+	QList<StringSpinBox*> stringSpinBoxes;
+	QList<QComboBox*> comboBoxes;
 
+protected:
 
 
 public slots:
 	void updateDisplayParameters();
 	void toggleExtendedView();
-
-
+	void setParams(GLWindow3DParams params);
 
 
 signals:
-   void displayParametersChanged(DisplayParams params);
+	void displayParametersChanged(GLWindow3DParams params);
+	void settingsChanged();
 
 };
 
@@ -114,4 +139,4 @@ signals:
 
 
 
-#endif  // CONTROLPANEL_H
+#endif// CONTROLPANEL_H

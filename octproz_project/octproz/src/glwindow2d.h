@@ -28,6 +28,20 @@
 #ifndef GLWINDOW2D_H
 #define GLWINDOW2D_H
 
+#define EXTENDED_PANEL "extended_panel"
+#define DISPLAYED_FRAMES "displayed_frames"
+#define CURRENT_FRAME "current_frame"
+#define ROTATION_ANGLE "rotation_angle"
+#define DISPLAY_MODE "display_mode"
+#define STRETCH_X "strecth_x"
+#define STRETCH_Y "strecth_y"
+#define HORIZONTAL_SCALE_BAR_ENABLED "horizontal_scale_bar_enabeld"
+#define VERTICAL_SCALE_BAR_ENABLED "vertical_scale_bar_enabeld"
+#define HORIZONTAL_SCALE_BAR_TEXT "horizontal_scale_bar_text"
+#define VERTICAL_SCALE_BAR_TEXT "vertical_scale_bar_text"
+#define HORIZONTAL_SCALE_BAR_LENGTH "horizontal_scale_bar_length"
+#define VERTICAL_SCALE_BAR_LENGTH "vertical_scale_bar_length"
+
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMouseEvent>
@@ -62,6 +76,7 @@
 #include <QLineEdit>
 
 #include "stringspinbox.h"
+#include "outputwindow.h"
 
 //#include "octalgorithmparameters.h" //needed for the definition of DISPLAY_FUNCTION enum
 
@@ -69,17 +84,28 @@
 #define DEFAULT_WIDTH  2048
 #define DEFAULT_HEIGHT 512
 
-struct DisplayFrameParams {
-	unsigned int frameNr;
-	unsigned int displayFunctionFrames;
-	int displayFunction;
-};
 
 struct LineCoordinates{
 	float x1;
 	float y1;
 	float x2;
 	float y2;
+};
+
+struct GLWindow2DParams {
+	bool extendedViewEnabled;
+	int displayedFrames;
+	int currentFrame;
+	double rotationAngle;
+	int displayFunction;
+	double stretchX;
+	double stretchY;
+	bool horizontalScaleBarEnabled;
+	bool verticalScaleBarEnabled;
+	int horizontalScaleBarLength;
+	int verticalScaleBarLength;
+	QString horizontalScaleBarText;
+	QString verticalScaleBarText;
 };
 
 enum FRAME_EDGE {
@@ -92,7 +118,7 @@ enum FRAME_EDGE {
 
 class ScaleBar;
 class ControlPanel2D;
-class GLWindow2D : public QOpenGLWidget, protected QOpenGLFunctions
+class GLWindow2D : public QOpenGLWidget, protected QOpenGLFunctions, public OutputWindow
 {
 	Q_OBJECT
 
@@ -104,6 +130,9 @@ public:
 	FRAME_EDGE getMarkerOrigin() const {return this->markerOrigin;}
 	void setMarkerOrigin(FRAME_EDGE origin);
 	QAction* getMarkerAction(){return this->markerAction;}
+
+	void setSettings(QVariantMap settings) override;
+	QVariantMap getSettings() override;
 
 
 private:
@@ -124,7 +153,6 @@ private:
 	//OctAlgorithmParameters::DISPLAY_FUNCTION displayFuntion;
 	unsigned int markerPosition;
 	bool markerEnabled;
-
 
 	QMenu* contextMenu;
 	QAction* keepAspectRatioAction;
@@ -178,6 +206,7 @@ public slots:
 	void slot_screenshot();
 	void enableMarker(bool enable);
 	void setMarkerPosition(unsigned int position);
+	void onSettingsChanged();
 
 
 signals:
@@ -236,7 +265,6 @@ private:
 
 
 
-
 class ControlPanel2D : public QWidget
 {
 	Q_OBJECT
@@ -247,11 +275,17 @@ public:
 
 	void setMaxFrame(unsigned int maxFrame);
 	void setMaxAverage(unsigned int maxAverage);
+	GLWindow2DParams getParams();
 
 
 private:
+	void findGuiElements();
 	void enableExtendedView(bool enable);
+	void updateParams();
+	void connectGuiToSettingsChangedSignal();
+	void disconnectGuiFromSettingsChangedSignal();
 
+	GLWindow2DParams params;
 	bool extendedView;
 	QWidget* panel;
 	QSpinBox* spinBoxAverage;
@@ -283,17 +317,26 @@ private:
 	QHBoxLayout* widgetLayout;
 	QGridLayout* layout;
 
+	QList<QLineEdit*> lineEdits;
+	QList<QCheckBox*> checkBoxes;
+	QList<QDoubleSpinBox*> doubleSpinBoxes;
+	QList<QSpinBox*> spinBoxes;
+	QList<StringSpinBox*> stringSpinBoxes;
+	QList<QComboBox*> comboBoxes;
+
 
 protected:
 
 
 public slots:
+	void setParams(GLWindow2DParams params);
 	void updateDisplayFrameSettings();
 	void toggleExtendedView();
 
 
 signals:
 	void displayFrameSettingsChanged(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
+	void settingsChanged();
 
 
 friend class GLWindow2D;

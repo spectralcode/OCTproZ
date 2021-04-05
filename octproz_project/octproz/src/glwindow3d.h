@@ -52,7 +52,6 @@
 
 #pragma once
 
-
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMouseEvent>
@@ -62,31 +61,31 @@
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 
-
 #include <functional>
 #include <vector>
 
 #include <QtMath>
 
-
+#include "outputwindow.h"
 #include "mesh.h"
 #include "raycastvolume.h"
 #include "trackball.h"
 #include "controlpanel.h"
+#include "settings.h"
+
 
 /*!
  * \brief Class for a raycasting canvas widget.
  */
-class GLWindow3D : public QOpenGLWidget, protected QOpenGLExtraFunctions
+class GLWindow3D : public QOpenGLWidget, protected QOpenGLExtraFunctions, public OutputWindow
 {
 	Q_OBJECT
 public:
 	explicit GLWindow3D(QWidget *parent = nullptr);
-
-	/*!
-	 * \brief Destructor.
-	 */
 	~GLWindow3D();
+
+	void setSettings(QVariantMap settings) override;
+	QVariantMap getSettings() override;
 
 	void setStepLength(const GLfloat step_length) {
 		m_stepLength = step_length;
@@ -152,7 +151,7 @@ public slots:
 	void slot_changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth);
 	void slot_initProcessingThreadOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void slot_registerGLbufferWithCuda();
-	void slot_updateDisplayParams(DisplayParams params);
+	void slot_updateDisplayParams(GLWindow3DParams params);
 
 protected:
 

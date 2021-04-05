@@ -79,7 +79,8 @@ HEADERS += \
 	$$SOURCEDIR/recorder.h \
 	$$SOURCEDIR/stringspinbox.h \
 	$$SOURCEDIR/controlpanel.h \
-	$$SOURCEDIR/extensioneventfilter.h
+	$$SOURCEDIR/extensioneventfilter.h \
+	$$SOURCEDIR/outputwindow.h
 
 FORMS += \
 	$$SOURCEDIR/octproz.ui \
