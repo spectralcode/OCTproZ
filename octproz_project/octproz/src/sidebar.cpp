@@ -106,6 +106,7 @@ void Sidebar::initGui() {
 }
 
 void Sidebar::findGuiElements() {
+	this->lineEdits = this->dock->findChildren<QLineEdit*>();
 	this->checkBoxes = this->dock->findChildren<QCheckBox*>();
 	this->doubleSpinBoxes = this->dock->findChildren<QDoubleSpinBox*>();
 	this->spinBoxes = this->dock->findChildren<QSpinBox*>();
@@ -258,36 +259,49 @@ void Sidebar::saveSettings() {
 	//emit info("Settings saved");
 }
 
-void Sidebar::connectSaveSettings() { //todo: check if this method is really necessary
+void Sidebar::connectSaveSettings() { //todo: change save settings behaviour: update settings object but just save settings file to hard drive if octproz is closed or if recording is started //todo: check if this method is really necessary (this method updates the settings file on the hard drive every time a single parameter is changed)
 	//Connects to store recording settings
+	foreach(auto element,this->spinBoxes) {
+		connect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::saveSettings);
+	}
+	foreach(auto element,this->doubleSpinBoxes) {
+		connect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Sidebar::saveSettings);
+	}
+	foreach(auto element,this->lineEdits) {
+		connect(element, &QLineEdit::textChanged, this, &Sidebar::saveSettings);
+	}
+	foreach(auto element,this->checkBoxes) {
+		connect(element, &QCheckBox::clicked, this, &Sidebar::saveSettings);
+	}
 	connect(this->ui.toolButton, &QToolButton::clicked, this, &Sidebar::slot_selectSaveDir);
-	connect(this->ui.lineEdit_saveFolder, &QLineEdit::textChanged, this, &Sidebar::saveSettings);
-	connect(this->ui.lineEdit_saveFolder, &QLineEdit::editingFinished, this, &Sidebar::saveSettings);
 	connect(&(this->recModeGroup), static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, &Sidebar::saveSettings);
-	connect(this->ui.checkBox_stopAfterRec, &QCheckBox::clicked, this, &Sidebar::saveSettings);
-	connect(this->ui.checkBox_meta, &QCheckBox::clicked, this, &Sidebar::saveSettings);
-	connect(this->ui.spinBox_volumes, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::saveSettings);
-	connect(this->ui.spinBox_buffersToSkip, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::saveSettings);
-	connect(this->ui.lineEdit_recName, &QLineEdit::textChanged, this, &Sidebar::saveSettings);
 	connect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::saveSettings); //this may result in too many hard drive write operations
 }
 
 void Sidebar::disconnectSaveSettings() {
 	//Disconnects to store recording settings
+	foreach(auto element,this->spinBoxes) {
+		disconnect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::saveSettings);
+	}
+	foreach(auto element,this->doubleSpinBoxes) {
+		disconnect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Sidebar::saveSettings);
+	}
+	foreach(auto element,this->lineEdits) {
+		disconnect(element, &QLineEdit::textChanged, this, &Sidebar::saveSettings);
+	}
+	foreach(auto element,this->checkBoxes) {
+		disconnect(element, &QCheckBox::clicked, this, &Sidebar::saveSettings);
+	}
 	disconnect(this->ui.toolButton, &QToolButton::clicked, this, &Sidebar::slot_selectSaveDir);
-	disconnect(this->ui.lineEdit_saveFolder, &QLineEdit::textChanged, this, &Sidebar::saveSettings);
-	disconnect(this->ui.lineEdit_saveFolder, &QLineEdit::editingFinished, this, &Sidebar::saveSettings);
 	disconnect(&(this->recModeGroup), static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, &Sidebar::saveSettings);
-	disconnect(this->ui.checkBox_stopAfterRec, &QCheckBox::clicked, this, &Sidebar::saveSettings);
-	disconnect(this->ui.checkBox_meta, &QCheckBox::clicked, this, &Sidebar::saveSettings);
-	disconnect(this->ui.spinBox_volumes, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::saveSettings);
-	disconnect(this->ui.spinBox_buffersToSkip, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::saveSettings);
-	disconnect(this->ui.lineEdit_recName, &QLineEdit::textChanged, this, &Sidebar::saveSettings);
 	disconnect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::saveSettings);
 }
 
 void Sidebar::connectUpdateProcessingParams() {
 	//Connect gui elements to updateProcessingParams slot to allow live update of oct algorithm parameters
+	foreach(auto lineEdit, this->lineEdits){
+		connect(lineEdit, &QLineEdit::textChanged, this, &Sidebar::slot_updateProcessingParams);
+	}
 	foreach(auto checkBox, this->checkBoxes){
 		connect(checkBox, &QCheckBox::clicked, this, &Sidebar::slot_updateProcessingParams);
 	}

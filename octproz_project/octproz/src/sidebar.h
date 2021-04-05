@@ -66,6 +66,7 @@ private:
 	QDockWidget*			dock;
 	QButtonGroup			recModeGroup;
 	QWidget*				spacer;
+	QList<QLineEdit*>		lineEdits;
 	QList<QCheckBox*>		checkBoxes;
 	QList<QDoubleSpinBox*>	doubleSpinBoxes;
 	QList<QSpinBox*>		spinBoxes;
