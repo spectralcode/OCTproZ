@@ -72,7 +72,7 @@ Settings::Settings() {
 
 	//if settings file does not exists, copy default settings file with reasonable inital values
 	if(!QFileInfo::exists(SETTINGS_PATH)){
-		bool success = QFile::copy(":misc/default/settings.ini", SETTINGS_PATH);
+		bool success = QFile::copy(":default/settings.ini", SETTINGS_PATH);
 		if(!success){
 			emit error(tr("Could not create settings file in: ") + SETTINGS_PATH);
 		}
