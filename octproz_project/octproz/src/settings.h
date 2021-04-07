@@ -149,7 +149,7 @@ public:
 	*
 	* @param timestamp contains date and time information
 	**/
-	void setTimestamp(QString timestamp) { this->timestamp = timestamp; }
+	void setTimestamp(QString timestamp);
 
 	/**
 	* Set timestamp variable which will be saved together with all other settings inside settings file. The timestamp can be used as a part of several filenames to enable easy identification of related files. 

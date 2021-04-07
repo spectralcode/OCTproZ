@@ -108,6 +108,12 @@ void Settings::loadSettings(QString path) {
 	this->loadValues(&settings, MAIN, &this->mainWindowSettings);
 }
 
+void Settings::setTimestamp(QString timestamp) {
+	this->timestamp = timestamp;
+	QSettings settings(SETTINGS_PATH, QSettings::IniFormat);
+	settings.setValue(TIMESTAMP, this->timestamp);
+}
+
 void Settings::storeSystemSettings(QString sysName, QVariantMap settingsMap) {
 	this->systemSettings = settingsMap;
 	this->systemSettings.detach(); //force deep copy
