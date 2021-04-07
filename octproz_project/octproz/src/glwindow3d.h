@@ -152,6 +152,7 @@ public slots:
 	void slot_initProcessingThreadOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void slot_registerGLbufferWithCuda();
 	void slot_updateDisplayParams(GLWindow3DParams params);
+	void saveSettings();
 
 protected:
 

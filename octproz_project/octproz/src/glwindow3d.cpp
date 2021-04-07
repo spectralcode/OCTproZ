@@ -113,6 +113,7 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 
 GLWindow3D::~GLWindow3D()
 {
+	this->saveSettings();
 	foreach (auto element, m_shaders) {
 		delete element.second;
 	}
@@ -404,6 +405,9 @@ void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
 	this->updateContinuously = params.updateContinuously;
 	this->setStretch(params.stretchX, params.stretchY, params.stretchZ);
 	this->m_gamma = params.gamma;
+}
+
+void GLWindow3D::saveSettings() {
 	Settings::getInstance()->storeSystemSettings(this->getName(), this->getSettings());
 }
 

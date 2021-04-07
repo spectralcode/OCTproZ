@@ -206,7 +206,7 @@ public slots:
 	void slot_screenshot();
 	void enableMarker(bool enable);
 	void setMarkerPosition(unsigned int position);
-	void onSettingsChanged();
+	void saveSettings();
 
 
 signals:

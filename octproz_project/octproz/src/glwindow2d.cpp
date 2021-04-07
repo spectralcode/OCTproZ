@@ -76,20 +76,13 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	connect(this->panel->lineEditHorizontalScaleBarText, &QLineEdit::textChanged, this->horizontalScaleBar, &ScaleBar::setText);
 	connect(this->panel->lineEditVerticalScaleBarText, &QLineEdit::textChanged, this->verticalScaleBar, &ScaleBar::setText);
 
-
-	//set default values //todo: find a better way to do this and also save and reload user values from last session
-	this->panel->lineEditVerticalScaleBarText->setText("1 mm");
-	this->panel->lineEditHorizontalScaleBarText->setText("1 mm");
-	this->panel->spinBoxHorizontalScaleBar->setValue(128);
-	this->panel->spinBoxVerticalScaleBar->setValue(256);
-
-	connect(this->panel, &ControlPanel2D::settingsChanged, this, &GLWindow2D::onSettingsChanged);
+	//connect(this->panel, &ControlPanel2D::settingsChanged, this, &GLWindow2D::saveSettings);
 }
 
 
 GLWindow2D::~GLWindow2D()
 {
-	this->onSettingsChanged();
+	this->saveSettings();
 	delete this->horizontalScaleBar;
 	delete this->verticalScaleBar;
 	//todo: check if cleanup (probably for processingContext and processingSurface) is necessary and implement it
@@ -323,7 +316,7 @@ void GLWindow2D::setMarkerPosition(unsigned int position) {
 	}
 }
 
-void GLWindow2D::onSettingsChanged() {
+void GLWindow2D::saveSettings() {
 	Settings::getInstance()->storeSystemSettings(this->getName(), this->getSettings());
 }
 

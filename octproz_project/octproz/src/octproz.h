@@ -117,6 +117,7 @@ private:
 	void deactivateSystem(AcquisitionSystem* system);
 	void reactivateSystem(AcquisitionSystem* system);
 	void forceUpdateProcessingParams();
+	void saveSettings();
 
 	Ui::OCTproZ *ui;
 	AboutDialog* aboutWindow;

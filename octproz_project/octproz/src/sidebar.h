@@ -53,8 +53,8 @@ public:
 	void init(QAction* start, QAction* stop, QAction* rec, QAction* system, QAction* settings);
 	void loadSettings();
 	void saveSettings();
-	void connectSaveSettings();
-	void disconnectSaveSettings();
+	void connectGuiElementsToUpdateSettingsMaps();
+	void disconnectGuiElementsFromUpdateSettingsMaps();
 	void connectUpdateProcessingParams();
 	void updateProcessingParams();
 	void updateStreamingParams(); //todo: find a nice way to enable/disable streaming (allocate/release memory for streaming buffers)
@@ -102,6 +102,7 @@ public slots:
 	void disableKlinCoeffInput(bool disable);
 	void copyInfoToClipboard();
 	void show();
+	void updateSettingsMaps();
 
 signals:
 	void streamingParamsChanged();

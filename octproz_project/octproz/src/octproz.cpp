@@ -179,10 +179,14 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->bscanWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->bscanWindow->getName()));
 	this->enFaceViewWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->enFaceViewWindow->getName()));
 	this->volumeWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->volumeWindow->getName()));
+
+	//connect(qApp, &QCoreApplication::aboutToQuit, this, &OCTproZ::saveSettings); //todo: check if there is any difference between calling saveSettings via aboutToQuit signal and via the OCTproZ destructor
 }
 
 OCTproZ::~OCTproZ(){
 	qDebug() << "OCTproZ destructor";
+	this->saveSettings();
+
 	processingThread.quit();
 	processingThread.wait();
 	notifierThread.quit();
@@ -495,7 +499,7 @@ void OCTproZ::slot_start() {
 	this->forceUpdateProcessingParams();
 
 	//save current parameters to hdd
-	this->sidebar->saveSettings();
+	this->saveSettings();
 
 	//disable start/stop buttons
 	this->actionStart->setEnabled(false);
@@ -537,9 +541,11 @@ void OCTproZ::slot_record() {
 		return;
 	}
 
-	//generate timestamp for file name of recording and if needed for the file name of the corresponding meta info
-	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hh-mm-ss-zzz");
-	Settings::getInstance()->setTimestamp(timestamp);
+	//save current parameters to hdd
+	this->saveSettings();
+
+	//get timestamp for file name of recording and if needed for the file name of the corresponding meta info
+	QString timestamp = Settings::getInstance()->getTimestamp();
 
 	bool enableRawRecording = false;
 	bool enableProcessedRecording = false;
@@ -573,17 +579,15 @@ void OCTproZ::slot_record() {
 	//if record mode "snaptshot" is activated save snapshot ind record directory
 	if (Settings::getInstance()->recordSettings.value(REC_MODE).toUInt() == RECORD_MODE::SNAPSHOT) {
 		QString savePath = Settings::getInstance()->recordSettings.value(REC_PATH).toString();
+		QString fileName = timestamp + recName + "_";
 		if(this->bscanWindow->isVisible()) {
-			QString fileName = timestamp + recName + "_" + "bscan_snapshot" + ".png";
-			this->bscanWindow->slot_saveScreenshot(savePath, fileName);
+			this->bscanWindow->slot_saveScreenshot(savePath, fileName + "bscan_snapshot.png");
 		}
 		if(this->enFaceViewWindow->isVisible()) {
-			QString fileName = timestamp + recName + "_" + "enfaceview_snapshot" + ".png";
-			this->enFaceViewWindow->slot_saveScreenshot(savePath, fileName);
+			this->enFaceViewWindow->slot_saveScreenshot(savePath, fileName + "enfaceview_snapshot.png");
 		}
 		if(this->volumeWindow->isVisible()) {
-			QString fileName = timestamp + recName + "_" + "volume_snapshot" + ".png";
-			this->volumeWindow->slot_saveScreenshot(savePath, fileName);
+			this->volumeWindow->slot_saveScreenshot(savePath, fileName + "volume_snapshot.png");
 		}
 	}
 
@@ -918,4 +922,13 @@ void OCTproZ::reactivateSystem(AcquisitionSystem* system){
 void OCTproZ::forceUpdateProcessingParams() {
 	this->octParams->acquisitionParamsChanged = true;
 	this->sidebar->slot_updateProcessingParams();
+}
+
+void OCTproZ::saveSettings() {
+	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmsszzz");
+	Settings::getInstance()->setTimestamp(timestamp);
+	this->sidebar->saveSettings();
+	this->bscanWindow->saveSettings();
+	this->enFaceViewWindow->saveSettings();
+	this->volumeWindow->saveSettings();
 }
