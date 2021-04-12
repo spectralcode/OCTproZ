@@ -180,6 +180,7 @@ private:
 	bool initialized;
 	bool changeTextureSizeFlag;
 	bool updateContinuously;
+	GLWindow3DParams displayParams;
 
 	unsigned int volumeWidth;
 	unsigned int volumeHeight;

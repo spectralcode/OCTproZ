@@ -192,6 +192,8 @@ void GLWindow3D::initializeGL() {
 		this->slot_changeBufferAndTextureSize(this->volumeWidth, this->volumeHeight, this->volumeDepth);
 		this->changeTextureSizeFlag = false;
 	}
+
+	this->slot_updateDisplayParams(this->displayParams); //set display parameters that are restored from previous octproz session
 }
 
 
@@ -399,6 +401,7 @@ void GLWindow3D::slot_registerGLbufferWithCuda() {
 }
 
 void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
+	this->displayParams = params;
 	this->setMode(params.displayMode);
 	this->setStepLength(params.rayMarchStepLength);
 	this->setThreshold(params.isosurfaceThreshold);
