@@ -570,7 +570,7 @@ void OCTproZ::slot_record() {
 
 	if (enableRawRecording || enableProcessedRecording) {
 		this->sidebar->enableRecordTab(false);
-		emit this->enableRecording(enableRawRecording, enableProcessedRecording);
+		emit this->enableRecording(enableRawRecording, enableProcessedRecording); //todo: collect al recording parameters in a scruct and emit struckt with enableRecording signal. avoid using settings object
 		if (!this->currSystem->acqusitionRunning) {
 			this->slot_start();
 		}
