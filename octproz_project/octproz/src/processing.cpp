@@ -181,9 +181,12 @@ void Processing::slot_enableRecording(bool enableRawRecording, bool enableProces
 	unsigned int bytesPerSample = ceil((double)(this->octParams->bitDepth) / 8.0); //todo: avoid this calculation here. put bytesPerSample in octsalgorithmparameters.
 	recParams.bufferSizeInBytes = width * height*depth*bytesPerSample;
 	recParams.buffersToRecord = this->octParams->numberOfBuffersToRecord;
-	recParams.buffersToSkip = this->octParams->buffersToSkip;
 	recParams.fileName = Settings::getInstance()->recordSettings.value(REC_NAME).toString();
+	if (recParams.fileName != "") {
+		recParams.fileName = "_" + recParams.fileName;
+	}
 	recParams.savePath = Settings::getInstance()->recordSettings.value(REC_PATH).toString();
+	recParams.startWithFirstBuffer = Settings::getInstance()->recordSettings.value(REC_START_WITH_FIRST_BUFFER).toBool(); //todo: do not use settings object to get recParams. emit recParams from octproz
 	recParams.timeStamp = Settings::getInstance()->getTimestamp();
 	
 	if (enableRawRecording) {
