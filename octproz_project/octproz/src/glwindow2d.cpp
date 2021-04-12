@@ -626,12 +626,12 @@ ControlPanel2D::ControlPanel2D(QWidget *parent) : QWidget(parent) {
 	this->layout->addWidget(this->labelVerticalScaleBarText, 4, 5, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->lineEditVerticalScaleBarText, 4, 6, 1, 1);
 
-	this->doubleSpinBoxStretchX->setMaximum(10.00);
+	this->doubleSpinBoxStretchX->setMaximum(9999);
 	this->doubleSpinBoxStretchX->setMinimum(0.1);
 	this->doubleSpinBoxStretchX->setSingleStep(0.1);
 	this->doubleSpinBoxStretchX->setValue(1.0);
 
-	this->doubleSpinBoxStretchY->setMaximum(10.00);
+	this->doubleSpinBoxStretchY->setMaximum(9999);
 	this->doubleSpinBoxStretchY->setMinimum(0.1);
 	this->doubleSpinBoxStretchY->setSingleStep(0.1);
 	this->doubleSpinBoxStretchY->setValue(1.0);

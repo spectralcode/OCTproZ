@@ -99,17 +99,17 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->checkBoxUpdateContinuously->setChecked(false);
 
 	//todo: refactor this class. avoid repeating code
-	this->doubleSpinBoxStretchX->setMaximum(10.00);
+	this->doubleSpinBoxStretchX->setMaximum(9999);
 	this->doubleSpinBoxStretchX->setMinimum(0.1);
 	this->doubleSpinBoxStretchX->setSingleStep(0.1);
 	this->doubleSpinBoxStretchX->setValue(1.0);
 
-	this->doubleSpinBoxStretchY->setMaximum(10.00);
+	this->doubleSpinBoxStretchY->setMaximum(9999);
 	this->doubleSpinBoxStretchY->setMinimum(0.1);
 	this->doubleSpinBoxStretchY->setSingleStep(0.1);
 	this->doubleSpinBoxStretchY->setValue(1.0);
 
-	this->doubleSpinBoxStretchZ->setMaximum(10.00);
+	this->doubleSpinBoxStretchZ->setMaximum(9999);
 	this->doubleSpinBoxStretchZ->setMinimum(0.1);
 	this->doubleSpinBoxStretchZ->setSingleStep(0.1);
 	this->doubleSpinBoxStretchZ->setValue(1.0);
