@@ -41,7 +41,7 @@ struct RecordingParams {
 	size_t bufferSizeInBytes;
 	unsigned int bufferBitDepth;
 	unsigned int buffersToRecord;
-	unsigned int buffersToSkip;
+	bool startWithFirstBuffer;
 };
 
 class Recorder : public QObject
@@ -54,6 +54,7 @@ public:
 	
 	bool recordingEnabled;
 	bool recordingFinished;
+	bool isRecording;
 
 	void* getRecordBuffer();
 
@@ -63,7 +64,6 @@ private:
 	QString savePath;
 	AcquisitionBuffer* recordBuffer;
 	unsigned int recordedBuffers;
-	unsigned int receivedBuffers;
 	bool initialized;
 	RecordingParams currRecParams;
 

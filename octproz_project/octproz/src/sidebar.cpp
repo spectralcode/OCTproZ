@@ -168,10 +168,10 @@ void Sidebar::loadSettings() {
 		case PROCESSED: this->ui.radioButton_processed->setChecked(true); break;
 		default: this->ui.radioButton_rawAndProcessed->setChecked(true);
 	}
+	this->ui.checkBox_startWithFirstBuffer->setChecked(settings->recordSettings.value(REC_START_WITH_FIRST_BUFFER).toBool());
 	this->ui.checkBox_stopAfterRec->setChecked(settings->recordSettings.value(REC_STOP).toBool());
 	this->ui.checkBox_meta->setChecked(settings->recordSettings.value(REC_META).toBool());
 	this->ui.spinBox_volumes->setValue(settings->recordSettings.value(REC_VOLUMES).toUInt());
-	this->ui.spinBox_buffersToSkip->setValue(settings->recordSettings.value(REC_SKIP).toUInt());
 	this->ui.lineEdit_recName->setText(settings->recordSettings.value(REC_NAME).toString());
 	this->ui.plainTextEdit_description->setPlainText(settings->recordSettings.value(REC_DESCRIPTION).toString());
 
@@ -292,7 +292,6 @@ void Sidebar::updateProcessingParams() {
 	params->signalAddend = this->ui.doubleSpinBox_signalAddend->value();
 	params->stopAfterRecord = this->ui.checkBox_stopAfterRec->isChecked();
 	params->numberOfBuffersToRecord = this->ui.spinBox_volumes->value();
-	params->buffersToSkip = this->ui.spinBox_buffersToSkip->value();
 	params->fixedPatternNoiseRemoval = this->ui.groupBox_fixedPatternNoiseRemoval->isChecked();
 	params->continuousFixedPatternNoiseDetermination = this->ui.radioButton_continuously->isChecked();
 	params->bscansForNoiseDetermination = this->ui.spinBox_bscansFixedNoise->value();
@@ -498,10 +497,10 @@ void Sidebar::updateSettingsMaps() {
 	settings->recordSettings.insert(REC_PATH, this->ui.lineEdit_saveFolder->text());
 	RECORD_MODE currRecMode = this->ui.radioButton_raw->isChecked() ? RAW : this->ui.radioButton_snapshot->isChecked() ? SNAPSHOT : this->ui.radioButton_processed->isChecked() ? PROCESSED : ALL;
 	settings->recordSettings.insert(REC_MODE, currRecMode);
+	settings->recordSettings.insert(REC_START_WITH_FIRST_BUFFER, this->ui.checkBox_startWithFirstBuffer->isChecked());
 	settings->recordSettings.insert(REC_STOP, this->ui.checkBox_stopAfterRec->isChecked());
 	settings->recordSettings.insert(REC_META, this->ui.checkBox_meta->isChecked());
 	settings->recordSettings.insert(REC_VOLUMES, this->ui.spinBox_volumes->value());
-	settings->recordSettings.insert(REC_SKIP, this->ui.spinBox_buffersToSkip->value());
 	settings->recordSettings.insert(REC_NAME, this->ui.lineEdit_recName->text());
 	settings->recordSettings.insert(REC_DESCRIPTION, this->ui.plainTextEdit_description->toPlainText());
 

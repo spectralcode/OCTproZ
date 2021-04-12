@@ -32,12 +32,11 @@ Recorder::Recorder(QString name){
 	this->savePath = "";
 	this->recordingEnabled = false;
 	this->recordingFinished = false;
+	this->isRecording = false;
 	this->recordedBuffers = 0;
-	this->receivedBuffers = 0;
 	this->recordBuffer = new AcquisitionBuffer();
 	this->initialized = false;
 	this->currRecParams.savePath = "";
-	this->currRecParams.buffersToSkip = 0;
 	this->currRecParams.buffersToRecord = 0;
 	this->currRecParams.bufferSizeInBytes = 0;
 }
@@ -71,6 +70,7 @@ void Recorder::slot_init(RecordingParams recParams){
 	this->initialized = true;
 	this->recordingFinished = false;
 	this->recordingEnabled = true;
+	this->isRecording = false;
 	emit info(tr("Recording initialized..."));
 }
 
@@ -79,11 +79,16 @@ void Recorder::uninit(){
 	this->initialized = false;
 	this->recordingFinished = true;
 	this->recordedBuffers = 0;
-	this->receivedBuffers = 0;
 	emit recordingDone();
 }
 
 void Recorder::slot_record(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){
+	Q_UNUSED(bitDepth);
+	Q_UNUSED(samplesPerLine);
+	Q_UNUSED(linesPerFrame);
+	Q_UNUSED(framesPerBuffer);
+	Q_UNUSED(buffersPerVolume);
+
 	if (!this->recordingEnabled) {
 		return;
 	}
@@ -93,25 +98,24 @@ void Recorder::slot_record(void* buffer, unsigned bitDepth, unsigned int samples
 		return;
 	}
 
-	//check if received buffer should be skipped (time lapse recording)
-	if (this->receivedBuffers % (this->currRecParams.buffersToSkip + 1) == 0){
-		this->receivedBuffers = 0; //set to zero to avoid overflow
-		//record/copy buffer to current position in recordBuffer
-		///char* recBufferPointer = (char*)(this->recordBuffer->bufferArray[0]);//this is for the one single big memory approach
-		char* recBufferPointer = (char*)(this->recordBuffer->bufferArray[this->recordedBuffers]); //todo: compare this multi memory block approach with allocation of a single big memory block //todo: check if recordedBuffers > bufferCnt of recordBuffer
-		///void* currPosiotionInRecBuffer = &(recBufferPointer[this->recordedBuffers * this->currRecParams.bufferSizeInBytes]); //this is for the one single big memory block approach
-		///memcpy(currPosiotionInRecBuffer, buffer, this->currRecParams.bufferSizeInBytes); //this is for the one single big memory approach
-		memcpy(recBufferPointer, buffer, this->currRecParams.bufferSizeInBytes); //todo: compare this multi memory block approach with allocation of a single big memory block
-		this->recordedBuffers++;
-
-		//stop recording if enough buffers have been recorded, save recordBuffer to disk and release bufferArray memory
-		if (this->recordedBuffers >= this->currRecParams.buffersToRecord) {
-			this->recordingEnabled = false;
-			this->saveToDisk();
-			this->uninit();
-		}
+	//check if recording should start with first buffer of volume
+	if(this->currRecParams.startWithFirstBuffer && !this->isRecording && currentBufferNr != 0){
+		return;
 	}
-	this->receivedBuffers++;
+	this->isRecording = true;
+
+	//record/copy buffer to current position in recordBuffer
+	char* recBufferPointer = (char*)(this->recordBuffer->bufferArray[this->recordedBuffers]);
+	memcpy(recBufferPointer, buffer, this->currRecParams.bufferSizeInBytes);
+	this->recordedBuffers++;
+
+	//stop recording if enough buffers have been recorded, save recordBuffer to disk and release bufferArray memory
+	if (this->recordedBuffers >= this->currRecParams.buffersToRecord) {
+		this->recordingEnabled = false;
+		this->isRecording = false;
+		this->saveToDisk();
+		this->uninit();
+	}
 }
 
 void Recorder::saveToDisk() {

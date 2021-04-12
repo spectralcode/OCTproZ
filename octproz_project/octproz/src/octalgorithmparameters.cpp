@@ -47,7 +47,6 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	this->recordingProcessedEnabled = false;
 	this->streamingParamsChanged = true;
 	this->streamToHost = false;
-	this->buffersToSkip = 0;
 	this->streamingBuffersToSkip = 0;
 	this->numberOfBuffersToRecord = 0;
 	this->copiedBuffers = 0;

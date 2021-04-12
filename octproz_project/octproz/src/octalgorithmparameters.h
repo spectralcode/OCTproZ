@@ -130,7 +130,6 @@ public:
 	bool stopAfterRecord;
 	unsigned int numberOfBuffersToRecord;
 	unsigned int copiedBuffers;
-	unsigned int buffersToSkip;
 
 	//streaming
 	bool streamingParamsChanged;

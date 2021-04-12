@@ -36,8 +36,8 @@ Settings::Settings() {
 	this->recordSettings.insert(REC_STOP, QVariant(false));
 	this->recordSettings.insert(REC_META, QVariant(true));
 	this->recordSettings.insert(REC_VOLUMES, QVariant(uint(2)));
-	this->recordSettings.insert(REC_SKIP, QVariant(uint(0)));
 	this->recordSettings.insert(REC_NAME, QVariant(QString("")));
+	this->recordSettings.insert(REC_START_WITH_FIRST_BUFFER, QVariant(true));
 	this->recordSettings.insert(REC_DESCRIPTION, QVariant(QString("")));
 	this->processingSettings.insert(PROC_FLIP_BSCANS, QVariant(false));
 	this->processingSettings.insert(PROC_BITSHIFT, QVariant(false));
