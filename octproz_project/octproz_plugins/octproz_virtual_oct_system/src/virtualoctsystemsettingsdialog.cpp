@@ -72,8 +72,12 @@ void VirtualOCTSystemSettingsDialog::initGui(){
 }
 
 void VirtualOCTSystemSettingsDialog::slot_selectFile(){
+	QString currentPath = this->ui->lineEdit->text();
 	QString standardLocation = this->params.filePath.size() == 0 ? QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) : this->params.filePath;
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Raw OCT Volume "), standardLocation, tr("Raw OCT Volume File (*.raw)"));
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Open Raw OCT Volume "), standardLocation, tr("Raw OCT Volume File (*.raw)"));
+	if (fileName == "") {
+		fileName = currentPath;
+	}
 	this->ui->lineEdit->setText(fileName);
 }
 
