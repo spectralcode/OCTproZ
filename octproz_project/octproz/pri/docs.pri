@@ -15,6 +15,7 @@ DOC_FILES_IMAGES += \
 	$$DOCDIR/images/processing_pipeline.png \
 	$$DOCDIR/images/processing_result.png \
 	$$DOCDIR/images/processing_sinusoidalcorrection.png \
+	$$DOCDIR/images/processing_interpolation.png \
 	$$DOCDIR/images/quickstart1.png \
 	$$DOCDIR/images/quickstart2.png \
 	$$DOCDIR/images/quickstart3.png \
