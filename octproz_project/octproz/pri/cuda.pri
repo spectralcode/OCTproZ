@@ -4,17 +4,29 @@
 SOURCEDIR = $$shell_path($$PWD/../src)
 CUDA_SOURCES += $$SOURCEDIR/cuda_code.cu \
 
-#cuda arch flags
-#use sm_30 for max compatibility
-#use sm_50 for Quadro K620, K620M, K1200, K2200, K2200M.
-#use sm_61 for GeForce GTX 1060 ..1080 TI
+#cuda architecture flags
+#change these flags according to your GPU
+#see https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/ for more information
+#use this for maximum compatibility with CUDA 9
 CUDA_ARCH += sm_30 \
 -gencode=arch=compute_30,code=sm_30 \
 -gencode=arch=compute_50,code=sm_50 \
 -gencode=arch=compute_52,code=sm_52 \
 -gencode=arch=compute_60,code=sm_60 \
 -gencode=arch=compute_61,code=sm_61 \
--gencode=arch=compute_70,code=sm_70 \
+-gencode=arch=compute_70,code=sm_70
+
+#use this for maximum compatibility with CUDA 11.0
+#CUDA_ARCH += sm_52 \
+#-gencode=arch=compute_52,code=sm_52 \
+#-gencode=arch=compute_60,code=sm_60 \
+#-gencode=arch=compute_61,code=sm_61 \
+#-gencode=arch=compute_70,code=sm_70 \
+#-gencode=arch=compute_75,code=sm_75 \
+#-gencode=arch=compute_80,code=sm_80 \
+#-gencode=arch=compute_86,code=sm_86 \
+#-gencode=arch=compute_86,code=compute_86
+
 
 #nvcc compiler options
 unix{
