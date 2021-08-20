@@ -15,8 +15,9 @@ How to compile:
 1. Clone/Download the OCTproZ project. The destination path should not contain any spaces!
 2. Start Qt Creator and open [octproz_project.pro](octproz_project/octproz_project.pro)
 3. Configure project by selectig appropriate kit in Qt Creator (on Windows you need the MSVC compiler)
-3. Build _octproz_project_ (_right click on _octproz_project_  -> Build_)
-4. Run OCTproZ (right click on _octproz_project_ __or__ right click on _octproz_ -> Run)
+4. Change the CUDA architecture flags in [cuda.pri](octproz_project/cuda.pri) if necessary for your hardware ([more info](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/))
+5. Build _octproz_project_ (_right click on _octproz_project_  -> Build_)
+6. Run OCTproZ (right click on _octproz_project_ __or__ right click on _octproz_ -> Run)
 
 The project file _octproz_project.pro_ ensures that the devkit is compiled first as it generates a folder with files that are used by OCTproZ and any plug-in at compile time.  </br>
 
@@ -127,23 +128,18 @@ References:
 
 # Troubleshooting
 
-GitHub user Ledinor had problems compiling OCTproZ with the default Qt Creator settings. He described  what steps were necessary for him to successfully compile OCTproZ:
+After installing Qt 5.12.11 with the offline installer, you may get the error message:
 
->QT Version: Desktop Qt 5.12.10 MSVC2017 64bit
->Compiler C/C++: Compiler 14.0 (x86_amd64)
->CUDA: cuda_9.0.176_win10
->
->1. Use jom.exe instead of cmake! Even when I checked "Use jom instead of nmake" (settings > Build & Run), Qt Ctreator did not use it. Therefore, I use it manually. So UNCHECK this jom setting.
->-	Download jom 1.1.0
->-	In Build settings, Build steps > details, instead C:\yourpath\nmake.exe use: select the directory of the jom.exe
->-	No arguments for make (delete "clear" if this is pre-set)
->-	Uncheck “disable in subdirectories” 
->-	Do the same for the "Clean Steps"
->
->2. Qt also seems to miss the location of the rc.exe (I do not know what it does). I add the rc.exe path in "Build Environment" under PATH (for me C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64)
->
->3. After building the release file I had to add multiple QT.dll from the Qt bin folder to the release folder where the OCTproZ.exe is. For me: QT5Gui.dll, QT5Widgets.dll, QT5Core.dll, QT5PrintSupport.dll
->
->4. I had a compile error that virtualoctsystemsettingsdialog.ui could not be found, anyway it was in the correct folder. The problem solves itself when I put everything on the same hard drive as the QT installation folder. (C:/ for me)
->
-> -- <cite>[Ledinor](https://github.com/spectralcode/OCTproZ/issues/12#issue-783140395)</cite>
+```
+NMAKE : fatal error U1077: "C:\Program": Rückgabe-Code "0x1""
+```
+
+One way to solve this issue is to close Qt Creator and (re-)install __Qt Creator 4.14.2__ with the offline installer form here:
+https://download.qt.io/official_releases/qtcreator/4.14/4.14.2/
+
+Then deleted the file _toolchains.xml_. You can find the file here:
+```
+C:\Users\%USERNAME%\AppData\Roaming\QtProject\qtcreator\toolchains.xml
+```
+
+After these steps reopen Qt Creator and everything should work fine.
