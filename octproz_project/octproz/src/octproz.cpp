@@ -845,11 +845,15 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 		curve.append((line.section(";", 1, 1).toFloat()));
 	}
 	file.close();
-	this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
-	this->octParams->acquisitionParamsChanged = true;
-	this->sidebar->slot_updateProcessingParams();
-	this->actionUseCustomKLinCurve->setEnabled(true);
-	this->actionUseCustomKLinCurve->setChecked(true);
+	if(curve.size() > 0){
+		this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
+		this->octParams->acquisitionParamsChanged = true;
+		this->sidebar->slot_updateProcessingParams();
+		this->actionUseCustomKLinCurve->setEnabled(true);
+		this->actionUseCustomKLinCurve->setChecked(true);
+	}else{
+		emit error(tr("Custom resampling curve has a size of 0. Check if .csv file with resampling curve is not empty has right format."));
+	}
 }
 
 void OCTproZ::setSystem(QString systemName) {

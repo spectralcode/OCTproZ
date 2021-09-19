@@ -85,6 +85,8 @@ public:
 	float* customResampleCurve;
 	float* resampleReferenceCurve;
 	float c0, c1, c2, c3;
+	int resampleCurveLength;
+	int curstomResampleCurveLength;
 	bool resampling;
 	bool resamplingUpdated;
 	bool useCustomResampleCurve;
@@ -141,6 +143,8 @@ public:
 private:
 	OctAlgorithmParameters(void);
 	static OctAlgorithmParameters* octAlgorithmParameters;
+
+	float* resizeCurve(float* curve, int currentSize, int newSize);
 
 
 	Polynomial* resamplingCurveCalculator;

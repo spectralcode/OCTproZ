@@ -867,8 +867,9 @@ __global__ void floatToOutput(void *output, const float *input, const int output
 }
 
 extern "C" void cuda_updateResampleCurve(float* h_resampleCurve, int size) {
-	if (d_resampleCurve != NULL && h_resampleCurve != NULL)
+	if (d_resampleCurve != NULL && h_resampleCurve != NULL && size > 0 && size <= (int)signalLength){
 		checkCudaErrors(cudaMemcpyAsync(d_resampleCurve, h_resampleCurve, size * sizeof(float), cudaMemcpyHostToDevice, processStream));
+	}
 }
 
 extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmParameters* parameters) {
@@ -1198,7 +1199,7 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	//update k-linearization-, dispersion- and windowing-curves if necessary
 	cufftComplex* d_fftBuffer2 = d_fftBuffer;
 	if (params->resampling && params->resamplingUpdated) {
-		cuda_updateResampleCurve(params->resampleCurve, signalLength);
+		cuda_updateResampleCurve(params->resampleCurve, params->resampleCurveLength);
 		params->resamplingUpdated = false;
 	}
 	if (params->dispersionCompensation && params->dispersionUpdated) {

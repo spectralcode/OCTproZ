@@ -50,6 +50,8 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	this->streamingBuffersToSkip = 0;
 	this->numberOfBuffersToRecord = 0;
 	this->copiedBuffers = 0;
+	this->resampleCurveLength = 0;
+	this->curstomResampleCurveLength = 0;
 
 	this->resampleCurve = nullptr;
 	this->customResampleCurve = nullptr;
@@ -123,8 +125,12 @@ void OctAlgorithmParameters::updateResampleCurve() {
 			this->resamplingCurveCalculator->setCoeff(c2, 2);
 			this->resamplingCurveCalculator->setCoeff(c3, 3);
 			this->resampleCurve = this->resamplingCurveCalculator->getData();
+			this->resampleCurveLength = size;
 		}else{
-			this->resampleCurve =  this->customResampleCurve;
+			if(this->curstomResampleCurveLength != (int)this->samplesPerLine) {
+				this->customResampleCurve = this->resizeCurve(this->customResampleCurve, this->curstomResampleCurveLength, (int)this->samplesPerLine);
+			}
+			this->resampleCurve = this->customResampleCurve;
 		}
 		Polynomial::clamp(this->resampleCurve, this->samplesPerLine, 0, this->samplesPerLine-3); //resampling curve values shall remain between 0 and number of samples per line - 3 (a line is a raw A-scan). If a value is outside these boundaries the resampling (k-linearization) during processing will fail with a memory access violation //todo: rethink this approach, maybe there is a better way to avoid memeory access violation during interpolation in klinerization kernels
 		this->resamplingUpdated = true;
@@ -145,6 +151,7 @@ void OctAlgorithmParameters::loadCustomResampleCurve(float* externalCurve, int s
 		free(this->customResampleCurve);
 	}
 	this->customResampleCurve = (float*)malloc(size*sizeof(float));
+	this->curstomResampleCurveLength = size;
 	for(int i = 0; i < size; i++){
 		this->customResampleCurve[i] = externalCurve[i];
 	}
@@ -193,4 +200,14 @@ void OctAlgorithmParameters::updateWindowCurve(){
 			this->windowReferenceCurve = this->windowReferenceCurveCalculator->getData();
 		}
 	}
+}
+
+float* OctAlgorithmParameters::resizeCurve(float *curve, int currentSize, int newSize) {
+	float* newCurve = (float*)realloc(curve, sizeof(float)*newSize); //todo: check if realloc failed
+	if(newSize > currentSize){
+		for(int i = currentSize; i < newSize; i++){
+			newCurve[i] = 0;
+		}
+	}
+	return newCurve;
 }
