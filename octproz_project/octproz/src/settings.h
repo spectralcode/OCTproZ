@@ -33,8 +33,9 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#define SETTINGS_DIR QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
 #define SETTINGS_FILE_NAME "settings.ini"
-#define SETTINGS_PATH QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + SETTINGS_FILE_NAME
+#define SETTINGS_PATH  SETTINGS_DIR + "/" + SETTINGS_FILE_NAME
 #define TIMESTAMP "timestamp"
 #define REC "record"
 #define PROC "processing"
@@ -88,6 +89,7 @@
 #include <QMap>
 #include <QFile>
 #include <QFileInfo>
+#include <QDir>
 
 enum SETTINGS_MODE {
 	PROCESSING,

@@ -70,8 +70,10 @@ Settings::Settings() {
 	this->mainWindowSettings.insert(MAIN_GEOMETRY, QVariant(QByteArray()));
 	this->mainWindowSettings.insert(MAIN_STATE, QVariant(QByteArray()));
 
-	//if settings file does not exists, copy default settings file with reasonable inital values
-	if(!QFileInfo::exists(SETTINGS_PATH)){
+	//if settings file does not exists, copy default settings file with reasonable inital values	
+	QDir settingsDir(SETTINGS_DIR);
+	if(!QFileInfo::exists(SETTINGS_PATH) || !settingsDir.exists(SETTINGS_PATH)){
+		settingsDir.mkpath(SETTINGS_DIR);
 		bool success = QFile::copy(":default/settings.ini", SETTINGS_PATH);
 		if(!success){
 			emit error(tr("Could not create settings file in: ") + SETTINGS_PATH);
