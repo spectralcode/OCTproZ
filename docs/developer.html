@@ -30,7 +30,7 @@
 
 <div class="content container">
   <h1 id="octproz-developer-guide"><a name="main"></a>Plugin Developer Guide for OCTproZ</h1>
-  <p><small>Date: October 15, 2020 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@iqo.uni-hannover.de)</small></p>
+  <p><small>Date: November 11, 2021 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@iqo.uni-hannover.de)</small></p>
 
 
   <h1 id="id-about"><a name="about-section"></a>About this Developer Guide</h1>
@@ -143,25 +143,22 @@
   <h5>2. You just need the folders <i>octproz_devkit</i> and <i>octproz_plugins</i>. If you like you can move them to a different location. Each folder contains a .pro file. Open them with the Qt Creator. </h5>
   <img src="images/compileplugin2.png">
 
-  <h5>3. Configure the Qt projects by selecting the MSVC2015 64bit kit (MSVC17 64bit kit should work as well)</h5>
+  <h5>3. Configure the Qt projects by selecting the MSVC2015 64bit kit  (MSVC2017 64bit and MSVC2019 64bit should work as well because libraries compiled by these compilers are binary-compatible) </h5>
   <img src="images/compileplugin3.png">
 
-  <h5>4. If you use OCTproZ v1.2.1 or older: In Qt Creator: <i>Tools</i> &rarr; <i>Options</i> &rarr; <i>Kit</i>. Select <i>Microsoft Visual C++ Compiler 14.0 (x86_amd64)</i> as compiler for C and C++. This is necessary as the precompiled package was compiled with this compiler.</h5>
-  <img src="images/compileplugin4.png">
-
-  <h5>5. Set the build configuration of <i>octproz_devkit</i> and <i>octproz_plugins</i> in Qt Creator to <strong>Release</strong></h5>
+  <h5>4. Set the build configuration of <i>octproz_devkit</i> and <i>octproz_plugins</i> in Qt Creator to <strong>Release</strong></h5>
   <img src="images/compileplugin5.png">
 
-  <h5>6. Build the devkit project first and then build the demo extension plugin or the whole plugins project in Qt Creator.</h5>
+  <h5>5. Build the devkit project first and then build the demo extension plugin or the whole plugins project in Qt Creator.</h5>
   <img src="images/compileplugin6.png">
 
-  <h5>7. The build process should have created a couple of folders by now. Open the build folder of the demo extension project and look for <i>DemoExtension.dll</i>. Copy the dll to the plugins folder of the precompiled OCTproZ package.</h5>
+  <h5>6. The build process should have created a couple of folders by now. Open the build folder of the demo extension project and look for <i>DemoExtension.dll</i>. Copy the dll to the plugins folder of the precompiled OCTproZ package.</h5>
   <img src="images/compileplugin7.png">
 
-  <h5>8. Run OCTproZ and you should be able to start the demo extension.</h5>
+  <h5>7. Run OCTproZ and you should be able to start the demo extension.</h5>
   <img src="images/compileplugin8.png">
 
-  <h5>9. Feel free to modify the demo extension and have fun!</h5>
+  <h5>8. Feel free to modify the demo extension and have fun!</h5>
 
 </div>
 </body></html>
