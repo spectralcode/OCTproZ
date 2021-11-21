@@ -60,11 +60,14 @@ Here are the relevant parameters that were used with Virtual OCT System and OCTp
 
 How to Determine Performance
 --------
- OCTproZ provides live performance information within the sidebar in the "Processing"-tab. Live performance estimation is performed and updated every 5 seconds.
- 
+ OCTproZ provides live performance information within the sidebar in the "Processing"-tab. Live performance estimation is performed and updated every 5 seconds:
+<p align="center">
+  <img src="images/performance_sidebar.png" >
+</p>
+
  It is also possible to use the [NVIDIA Visual Profiler](https://developer.nvidia.com/nvidia-visual-profiler) to analyze performance in more detail.
 
- For example, the following screenshot from the NVIDIA Visual Profiler shows the performance analysis of the above measurement (without 3D live view) with the lab computer:
+ For example, the following screenshot from the NVIDIA Visual Profiler shows the performance analysis of the measurement (without 3D live view) from the table at the beginning of this document with the lab computer:
 
  <p align="center">
   <img src="images/visualprofilerLabPC.png" >
@@ -91,7 +94,7 @@ Additional Information
 - If OCTproZ crashes after setting the parameters in Virtual OCT System and starting the processing, try reducing the buffer size (for example instead of _B-scans per buffer_: 256, _Buffers per volume_: 1, _Buffers to read from file_: 2, you could try: _B-scans per buffer_: 128, _Buffers per volume_: 2, _Buffers to read from file_: 4)
 - In Virtual OCT System a value greater than 2 for _Buffers to read from file_ will result in a slower processing rate displayed by OCTproZ. The reason for that is that Virtual OCT System takes more time to provide the raw data if more than two buffers should be read from a file. The processing itself is not slowed down just the time between two batches is increased. 
 
-For performance  determination, you can use the provided [test data set](https://figshare.com/articles/SSOCT_test_dataset_for_OCTproZ/12356705). To replicate the measurements from above you need to set the value for _Samples per raw A-scan_ to 1024. This will cause the resulting OCT images to look distorted as the test data set was recorded with 1664 samples per raw A-scan. This is expected behavior that does not invalidate the performance measurement.
+For performance measurement, you can use the provided [test data set](https://figshare.com/articles/SSOCT_test_dataset_for_OCTproZ/12356705). To replicate the measurements from above you need to set the value for _Samples per raw A-scan_ to 1024. This will cause the resulting OCT images to look distorted as the test data set was recorded with 1664 samples per raw A-scan. This is expected behavior that does not invalidate the performance measurement.
 
 
 Performance and buffer size
