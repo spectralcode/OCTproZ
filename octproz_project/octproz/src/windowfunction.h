@@ -42,7 +42,8 @@ public:
 		Gauss,
 		Sine,
 		Lanczos,
-		Rectangular
+		Rectangular,
+		FlatTop
 	};
 
 	WindowFunction(WindowType type, float centerPosition, float fillFactor, unsigned int size);
@@ -61,6 +62,7 @@ private:
 	void calculateGauss();
 	void calculateSineWindow();
 	void calculateLanczosWindow();
+	void calculateFlatTopWindow();
 
 	float* data;
 	WindowType type;

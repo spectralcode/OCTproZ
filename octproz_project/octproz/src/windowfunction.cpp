@@ -111,6 +111,9 @@ void WindowFunction::updateData() {
 		case WindowType::Rectangular:
 			this->calculateRectangular();
 			break;
+		case WindowType::FlatTop:
+			this->calculateFlatTopWindow();
+			break;
 		}
 	}
 }
@@ -214,6 +217,34 @@ void WindowFunction::calculateLanczosWindow() {
 			else {
 				data[i] = sin(M_PI * argument) / (M_PI * argument);
 			}
+		}
+	}
+}
+
+
+void WindowFunction::calculateFlatTopWindow(){
+	int width = static_cast<int>(this->fillFactor * this->size);
+	int center = static_cast<int>(this->centerPosition * this->size);
+	int minPos = center - width / 2;
+	int maxPos = minPos + width;
+	if (maxPos < minPos) {
+		int tmp = minPos;
+		minPos = maxPos;
+		maxPos = tmp;
+	}
+	float a0 = 0.215578948;
+	float a1 = 0.416631580;
+	float a2 = 0.277263158;
+	float a3 = 0.083578947;
+	float a4 = 0.006947368;
+	for (int i = 0; i < this->size; i++) {
+		int xi = i - minPos;
+		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
+		if (xiNorm > 0.999f || xiNorm < 0.0001f) {
+			data[i] = 0.0;
+		}
+		else {
+			data[i] = a0 - a1*cos(2*M_PI*xiNorm) + a2*cos(4*M_PI*xiNorm) - a3*cos(6*M_PI*xiNorm) +a4*cos(8*M_PI*xiNorm);
 		}
 	}
 }

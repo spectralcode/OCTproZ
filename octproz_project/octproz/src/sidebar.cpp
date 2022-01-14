@@ -92,7 +92,7 @@ void Sidebar::initGui() {
 	this->ui.comboBox_interpolation->addItems(interpolationOptions);
 
 	//Windownig ComboBox
-	QStringList windowingOptions = { "Hanning", "Gauss", "Sine", "Lanczos", "Rectangular" }; //todo: think of better way to add available windows to gui
+	QStringList windowingOptions = { "Hanning", "Gauss", "Sine", "Lanczos", "Rectangular", "Flat Top" }; //todo: think of better way to add available windows to gui
 	this->ui.comboBox_windowType->addItems(windowingOptions);
 
 	//Gui connects
