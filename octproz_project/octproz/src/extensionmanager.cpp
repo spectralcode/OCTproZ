@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2021 Miroslav Zabic
+**  Copyright (C) 2019-2022 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ ExtensionManager::ExtensionManager(QObject *parent) : QObject(parent)
 
 ExtensionManager::~ExtensionManager()
 {
+	qDeleteAll(this->extensions);
 	this->extensions.clear();
 	this->extensionNames.clear();
 }
@@ -52,4 +53,3 @@ Extension* ExtensionManager::getExtensionByName(QString name) {
 	int index = this->extensionNames.indexOf(name);
 	return index == -1 ? nullptr : this->extensions.at(index);
 }
-
