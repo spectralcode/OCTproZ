@@ -41,6 +41,11 @@ win32{
 unix{
 	CUDA_DIR = /usr/local/cuda
 	QMAKE_LIBDIR += $$CUDA_DIR/lib64
+	exists($$shell_path($$CUDA_DIR/samples)){
+		NVCUDASAMPLES_ROOT = $$shell_path($$CUDA_DIR/samples)
+	} else {
+		NVCUDASAMPLES_ROOT = $$shell_path($$PWD/../../thirdparty/cuda)
+	}
 }
 win32{
 	CUDA_DIR = $$(CUDA_PATH)
@@ -48,27 +53,25 @@ win32{
 	MSVCRT_LINK_FLAG_DEBUG  = "/MDd" # MSVCRT link option (MT: static, MD:dynamic. Must be the same as Qt SDK link option)
 	MSVCRT_LINK_FLAG_RELEASE = "/MD"
 
-	INCLUDEPATH += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \
-		$$shell_path($$(NVCUDASAMPLES_ROOT)/common/lib/x64) \
-		$$shell_path($$(CudaToolkitLibDir)) \
-		$$CUDA_DIR/common/inc \
-		$$CUDA_DIR/../shared/inc
+	isEmpty(NVCUDASAMPLES_ROOT){
+		NVCUDASAMPLES_ROOT = $$shell_path($$PWD/../../thirdparty/cuda) #in older CUDA versions NVCUDASAMPLES_ROOT is defined. it is the location of the CUDA samples folder
+	}
 
-	INCLUDEPATH_CUDA += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc) \
+	INCLUDEPATH += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc)
+
+	INCLUDEPATH_CUDA += $$shell_path($$(NVCUDASAMPLES_ROOT)/common/inc)
 
 	#library directories
 	SYSTEM_NAME = x64
-	QMAKE_LIBDIR += $$CUDA_DIR/lib/$$SYSTEM_NAME \
-		$$CUDA_DIR/common/lib/$$SYSTEM_NAME \
-		$$CUDA_DIR/../shared/lib/$$SYSTEM_NAME
+	QMAKE_LIBDIR += $$CUDA_DIR/lib/$$SYSTEM_NAME
 }
 INCLUDEPATH += $$CUDA_DIR/include \
-	$$CUDA_DIR/samples/common/inc
+	$$NVCUDASAMPLES_ROOT/common/inc
 
 INCLUDEPATH_CUDA += $$[QT_INSTALL_HEADERS] \
 	$$[QT_INSTALL_HEADERS]/QtCore \
 	$$CUDA_DIR/include \
-	$$CUDA_DIR/samples/common/inc
+	$$NVCUDASAMPLES_ROOT/common/inc
 
 #cuda libraries
 unix{
