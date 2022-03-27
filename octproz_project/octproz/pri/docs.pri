@@ -23,6 +23,7 @@ DOC_FILES_IMAGES += \
 	$$DOCDIR/images/quickstart5.png \
 	$$DOCDIR/images/quickstart6.png \
 	$$DOCDIR/images/quickstart6.png \
+	$$DOCDIR/images/quickstart7.png \
 	$$DOCDIR/images/octproz_plugin_uml.png \
 	$$DOCDIR/images/compileplugin1.png \
 	$$DOCDIR/images/compileplugin2.png \
