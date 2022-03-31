@@ -56,13 +56,12 @@ public:
 	bool recordingFinished;
 	bool isRecording;
 
-	void* getRecordBuffer();
 
 
 private:
 	QString name;
 	QString savePath;
-	AcquisitionBuffer* recordBuffer;
+	char* recBuffer;
 	unsigned int recordedBuffers;
 	bool initialized;
 	RecordingParams currRecParams;

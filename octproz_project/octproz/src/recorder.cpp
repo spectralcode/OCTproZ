@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2021 Miroslav Zabic
+**  Copyright (C) 2019-2022 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -34,20 +34,18 @@ Recorder::Recorder(QString name){
 	this->recordingFinished = false;
 	this->isRecording = false;
 	this->recordedBuffers = 0;
-	this->recordBuffer = new AcquisitionBuffer();
+	this->recBuffer = nullptr;
 	this->initialized = false;
 	this->currRecParams.savePath = "";
 	this->currRecParams.buffersToRecord = 0;
-	this->currRecParams.bufferSizeInBytes = 0;
+	this->currRecParams.bufferSizeInBytes = 0;	
 }
 
 Recorder::~Recorder(){
-	delete this->recordBuffer;
+	if(this->recBuffer != nullptr){
+		free(this->recBuffer);
+	}
 	qDebug() << "Recorder destructor. Thread ID: " << QThread::currentThreadId();
-}
-
-void* Recorder::getRecordBuffer(){
-	return this->recordBuffer->bufferArray[0];
 }
 
 void Recorder::slot_abortRecording(){
@@ -64,8 +62,7 @@ void Recorder::slot_abortRecording(){
 
 void Recorder::slot_init(RecordingParams recParams){
 	this->currRecParams = recParams;
-	///this->recordBuffer->allocateMemory(1, this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes); //todo: check if allocation of one big page aligned memory block is better or worse than allocateMemory(currRecParams.buffersToRecord, currRecParams.bufferSizeInBytes)
-	this->recordBuffer->allocateMemory(currRecParams.buffersToRecord, currRecParams.bufferSizeInBytes); //allocate multiple memory blocks
+	this->recBuffer = (char*)malloc(this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes);
 	this->savePath = this->currRecParams.savePath + "/" + this->currRecParams.timeStamp + this->currRecParams.fileName + "_" + this->name + ".raw";
 	this->initialized = true;
 	this->recordingFinished = false;
@@ -75,7 +72,8 @@ void Recorder::slot_init(RecordingParams recParams){
 }
 
 void Recorder::uninit(){
-	this->recordBuffer->releaseMemory();
+	free(this->recBuffer);
+	this->recBuffer = nullptr;
 	this->initialized = false;
 	this->recordingFinished = true;
 	this->recordedBuffers = 0;
@@ -104,12 +102,12 @@ void Recorder::slot_record(void* buffer, unsigned bitDepth, unsigned int samples
 	}
 	this->isRecording = true;
 
-	//record/copy buffer to current position in recordBuffer
-	char* recBufferPointer = (char*)(this->recordBuffer->bufferArray[this->recordedBuffers]);
+	//record/copy buffer to current position in recBuffer
+	void* recBufferPointer = &(this->recBuffer[(this->recordedBuffers)*this->currRecParams.bufferSizeInBytes]);
 	memcpy(recBufferPointer, buffer, this->currRecParams.bufferSizeInBytes);
 	this->recordedBuffers++;
 
-	//stop recording if enough buffers have been recorded, save recordBuffer to disk and release bufferArray memory
+	//stop recording if enough buffers have been recorded, save recBuffer to disk and release reBuffer memory
 	if (this->recordedBuffers >= this->currRecParams.buffersToRecord) {
 		this->recordingEnabled = false;
 		this->isRecording = false;
@@ -124,7 +122,6 @@ void Recorder::saveToDisk() {
 		return;
 	}
 	QString fileName = this->savePath;
-	///char* recBuffer = (char*)(this->recordBuffer->bufferArray[0]);
 	QFile outputFile(fileName);
 	if (!outputFile.open(QIODevice::WriteOnly)) {
 		emit error(tr("Recording failed! Could not write file to disk."));
@@ -133,12 +130,7 @@ void Recorder::saveToDisk() {
 	emit info(tr("Captured buffers: ") + QString::number(this->recordedBuffers) + "/" + QString::number(this->currRecParams.buffersToRecord));
 	emit info(tr("Writing data to disk..."));
 	QCoreApplication::processEvents();
-	//outputFile.write(recBuffer, this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes);
-	///outputFile.write(recBuffer, this->recordedBuffers * this->currRecParams.bufferSizeInBytes);
-	for(int i = 0; i < this->recordedBuffers; i++){
-		char* recBuffer = static_cast<char*>(this->recordBuffer->bufferArray[i]);
-		outputFile.write(recBuffer, this->currRecParams.bufferSizeInBytes); //todo: is it possible to use multiple threads for writing into the output file?
-	}
+	outputFile.write(recBuffer, this->recordedBuffers * this->currRecParams.bufferSizeInBytes);
 	outputFile.close();
 	emit info(tr("Data written to disk! ") + fileName);
 }
