@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2021 Miroslav Zabic
+**  Copyright (C) 2019-2022 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -118,12 +118,13 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	#if defined(Q_OS_WIN) || defined(__aarch64__)
 		this->signalProcessing->moveToThread(&processingThread);
 		this->processingInThread = true;
-		connect(&processingThread, &QThread::finished, this->signalProcessing, &Processing::deleteLater);
 	#elif defined(Q_OS_LINUX)
-		//this->signalProcessing->moveToThread(&processingThread);
-		//todo: fix linux bug: opengl window seems to be laggy on ubuntu test system if signalProcessing is moved to thread -> check visual profiler
-		this->processingInThread = false;
+		this->signalProcessing->moveToThread(&processingThread);
+		this->processingInThread = true;
+		//todo: fix linux bug: opengl window seems to be laggy on ubuntu test system if signalProcessing is moved to thread and Virtual OCT System is used with small wait time (wait time that is set in the gui under "Wait after file read")
+		//this->processingInThread = false;
 	#endif
+	connect(&processingThread, &QThread::finished, this->signalProcessing, &Processing::deleteLater);
 
 	connect(this, &OCTproZ::enableRecording, this->signalProcessing, &Processing::slot_enableRecording);
 	connect(this->signalProcessing, &Processing::info, this->console, &MessageConsole::displayInfo);
@@ -570,7 +571,7 @@ void OCTproZ::slot_record() {
 
 	if (enableRawRecording || enableProcessedRecording) {
 		this->sidebar->enableRecordTab(false);
-		emit this->enableRecording(enableRawRecording, enableProcessedRecording); //todo: collect al recording parameters in a scruct and emit struckt with enableRecording signal. avoid using settings object
+		emit this->enableRecording(enableRawRecording, enableProcessedRecording); //todo: collect all recording parameters in a struct and emit struct with enableRecording signal. avoid using settings object
 		if (!this->currSystem->acqusitionRunning) {
 			this->slot_start();
 		}
@@ -839,7 +840,6 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 	file.open(QIODevice::ReadOnly);
 	QTextStream txtStream(&file);
 	QString line = txtStream.readLine();
-	int i = 0;
 	while (!txtStream.atEnd()){
 		line = txtStream.readLine();
 		curve.append((line.section(";", 1, 1).toFloat()));
@@ -880,7 +880,7 @@ void OCTproZ::setSystem(QString systemName) {
 	this->actionRecord->setEnabled(true);
 }
 
-void OCTproZ::activateSystem(AcquisitionSystem* system){
+void OCTproZ::activateSystem(AcquisitionSystem* system) {
 	if(system != nullptr){
 		if(this->currSystem != system){
 			system->moveToThread(&acquisitionThread);
@@ -905,7 +905,7 @@ void OCTproZ::activateSystem(AcquisitionSystem* system){
 	}
 }
 
-void OCTproZ::deactivateSystem(AcquisitionSystem* system){
+void OCTproZ::deactivateSystem(AcquisitionSystem* system) {
 	this->slot_stop();
 	QCoreApplication::processEvents(); //process events to ensure that acquisition is not running
 	disconnect(this, &OCTproZ::start, system, &AcquisitionSystem::startAcquisition);
