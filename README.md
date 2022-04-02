@@ -30,7 +30,7 @@ It has been successfully tested on Windows 10, Ubuntu 16.04, Ubuntu 18.04 and Je
 Processing Pipeline
 --------
 <p align="center">
-  <img src="images/processing_pipeline_linear_v1_1_0.png" >
+  <img src="images/octproz_processing_compact.png" >
 </p>
 
 A detailed overview of the OCTproZ processing pipeline can be found [here](https://spectralcode.github.io/OCTproZ/#processing-section).
