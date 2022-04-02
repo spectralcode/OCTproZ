@@ -3,7 +3,7 @@
 OCTproZ is an open source software for optical coherence tomography (OCT) processing and visualization. A plug-in system enables the integration of custom OCT systems and software modules.
 
 <p align="center">
-  <img src="images/octproz_screenshot_ubuntu.png" width="640">
+  <img src="images/octproz_screenshot_ubuntu_cropped_shadow.png" width="640">
 </p>
 
 The output windows in the screenshot above show OCT images of a strawberry. 
