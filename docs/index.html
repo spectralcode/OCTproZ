@@ -29,7 +29,7 @@
 
 <div class="content container">
   <h1 id="octproz-user-manual"><a name="main"></a>Welcome to the OCTproZ v1.4.1 User Manual!</h1>
-  <p><small>Date: January 15, 2022 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@iqo.uni-hannover.de)</small></p>
+  <p><small>Date: April 02, 2022 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@iqo.uni-hannover.de)</small></p>
 
 
   <h1 id="id-about"><a name="about-section"></a>About</h1>
@@ -73,7 +73,7 @@
 
   <h1 id="id-processingpipeline"><a name="processing-section"></a>Processing Pipeline</h1>
 
-  <p>This section gives an overview of the OCTproZ processing pipeline. The processing takes place entirely on the GPU. OCT raw data from the OCT system is transferred to RAM until a user-defined amount of B-scans is acquired (B-scans per buffer). Via direct memory access (DMA) this raw data batch is then copied asynchronously to GPU memory where OCT signal processing is performed.<br></p>
+  <p>This section gives an overview of the OCTproZ processing pipeline. The processing takes place entirely on the GPU. OCT raw data from the OCT system is transferred to RAM until a user-defined amount of B-scans is acquired (B-scans per buffer). Via direct memory access (DMA) this raw data batch is then copied asynchronously to GPU memory where OCT signal processing is performed. Some processing steps are combined into a single compute kernel to improve performance. For example, k-linearization, dispersion compensation and windowing take place in the same kernel. This way, all three operations can be performend with just a single iteration through the sample points.<br></p>
     <img src="images/processing_pipeline.png">
 
     <h2>Processing Steps</h2>
