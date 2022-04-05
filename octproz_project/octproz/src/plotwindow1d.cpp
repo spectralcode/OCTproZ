@@ -68,9 +68,11 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	this->legend->setTextColor(Qt::white);
 	this->legend->setBorderPen(QColor(180, 180, 180, 200));
 
-	this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-	this->axisRect()->setRangeZoomAxes(0, this->yAxis);
-	this->axisRect()->setRangeDragAxes(0, this->yAxis);
+	//this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes | QCP::iSelectPlottables); //plot is slow if iSelectPlottable is set
+	this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
+	connect(this, &QCustomPlot::selectionChangedByUser, this, &PlotWindow1D::combineSelections);
+	connect(this, &QCustomPlot::mouseWheel, this, &PlotWindow1D::zoomSelectedAxisWithMouseWheel);
+	connect(this, &QCustomPlot::mousePress, this, &PlotWindow1D::dragSelectedAxes);
 
 	this->isPlottingRaw = false;
 	this->isPlottingProcessed = false;
@@ -146,6 +148,28 @@ void PlotWindow1D::setProcessedPlotVisible(bool visible) {
 	visible ? this->graph(1)->addToLegend() : this->graph(1)->removeFromLegend();
 }
 
+bool PlotWindow1D::saveAllCurvesToFile(QString fileName) {
+	int numberOfRawSamples = this->graph(0)->data()->size();
+	int numberOfProcessedSamples = this->graph(1)->data()->size();
+	bool saved = false;
+	QFile file(fileName);
+	if (file.open(QFile::WriteOnly|QFile::Truncate)) {
+		QTextStream stream(&file);
+		stream << tr("Sample Number") << ";" << tr("Raw Value") << ";" << tr("Processed Value") << "\n";
+		for(int i = 0; i < numberOfRawSamples; i++){
+			stream << QString::number(this->graph(0)->data()->at(i)->key) << ";" << QString::number(graph(0)->data()->at(i)->value);
+			if(i < numberOfProcessedSamples) {
+				stream << ";" << QString::number(graph(1)->data()->at(i)->value) << "\n";
+			} else {
+				stream << "\n";
+			}
+		}
+		file.close();
+		saved = true;
+	}
+	return saved;
+}
+
 void PlotWindow1D::contextMenuEvent(QContextMenuEvent *event) {
 	QMenu menu(this);
 	QAction bitshiftRawValuesAction(tr("Bit shift raw values by 4"), this);
@@ -216,7 +240,7 @@ void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned in
 			if(this->autoscaling){
 				this->graph(0)->rescaleAxes();
 			}
-			this->graph(0)->rescaleKeyAxis(true);
+			//this->graph(0)->rescaleKeyAxis(true);
 			this->replot();
 			QCoreApplication::processEvents();
 		}
@@ -271,7 +295,7 @@ void PlotWindow1D::slot_plotProcessedData(void* buffer, unsigned bitDepth, unsig
 			if(this->autoscaling){
 				this->graph(1)->rescaleAxes();
 			}
-			this->graph(1)->rescaleKeyAxis(true);
+			//this->graph(1)->rescaleKeyAxis(true);
 			this->replot();
 			QCoreApplication::processEvents();
 		}
@@ -307,8 +331,8 @@ void PlotWindow1D::slot_activateAutoscaling(bool activate) {
 }
 
 void PlotWindow1D::slot_saveToDisk() {
-	QString filters("Image (*.png);;Vector graphic (*.pdf)");
-	QString defaultFilter("Image (*.png)");
+	QString filters("Image (*.png);;Vector graphic (*.pdf);;CSV (*.csv)");
+	QString defaultFilter("CSV (*.csv)");
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save 1D Plot"), QDir::currentPath(), filters, &defaultFilter);
 	if(fileName == ""){
 		emit error(tr("Save plot to disk canceled."));
@@ -319,6 +343,8 @@ void PlotWindow1D::slot_saveToDisk() {
 		saved = this->savePng(fileName);
 	}else if(defaultFilter == "Vector graphic (*.pdf)"){
 		saved = this->savePdf(fileName);
+	}else if(defaultFilter == "CSV (*.csv)"){
+		saved = this->saveAllCurvesToFile(fileName);
 	}
 	if(saved){
 		emit info(tr("Plot saved to ") + fileName);
@@ -326,6 +352,7 @@ void PlotWindow1D::slot_saveToDisk() {
 		emit error(tr("Could not save plot to disk."));
 	}
 }
+
 
 void PlotWindow1D::slot_enableRawGrabbing(bool enable) {
 	this->rawGrabbingAllowed = enable;
@@ -339,7 +366,71 @@ void PlotWindow1D::slot_enableBitshift(bool enable) {
 	this->bitshift = enable;
 }
 
+void PlotWindow1D::zoomSelectedAxisWithMouseWheel() {
+	QList<QCPAxis*> selectedAxes;
+	if (this->xAxis->selectedParts().testFlag(QCPAxis::spAxis)) {
+		selectedAxes.append(this->xAxis);
+	}
+	else if (this->yAxis->selectedParts().testFlag(QCPAxis::spAxis)) {
+		selectedAxes.append(this->yAxis);
+	}
+	else if (this->xAxis2->selectedParts().testFlag(QCPAxis::spAxis)) {
+		selectedAxes.append(this->xAxis2);
+	}
+	else if (this->yAxis2->selectedParts().testFlag(QCPAxis::spAxis)) {
+		selectedAxes.append(this->yAxis2);
+	}
+	else {
+		//no axis is selected --> enable zooming for all axes
+		selectedAxes.append(this->xAxis);
+		selectedAxes.append(this->yAxis);
+		selectedAxes.append(this->xAxis2);
+		selectedAxes.append(this->yAxis2);
+	}
 
+	this->axisRect()->setRangeZoomAxes(selectedAxes);
+}
+
+void PlotWindow1D::dragSelectedAxes() {
+	QList<QCPAxis*> selectedAxes;
+	if (this->xAxis->selectedParts().testFlag(QCPAxis::spAxis)) {
+		selectedAxes.append(this->xAxis);
+	}
+	else if (this->yAxis->selectedParts().testFlag(QCPAxis::spAxis)) {
+		selectedAxes.append(this->yAxis);
+	}
+	else if (this->xAxis2->selectedParts().testFlag(QCPAxis::spAxis)) {
+		selectedAxes.append(this->xAxis2);
+	}
+	else if (this->yAxis2->selectedParts().testFlag(QCPAxis::spAxis)) {
+		selectedAxes.append(this->yAxis2);
+	}
+	else {
+		//no axis is selected --> enable dragging for all axes
+		selectedAxes.append(this->xAxis);
+		selectedAxes.append(this->yAxis);
+		selectedAxes.append(this->xAxis2);
+		selectedAxes.append(this->yAxis2);
+	}
+
+	this->axisRect()->setRangeDragAxes(selectedAxes);
+}
+
+void PlotWindow1D::combineSelections() {
+	// axis label, axis and tick labels should act as a s single selectable item
+	if (this->xAxis->selectedParts().testFlag(QCPAxis::spAxisLabel) || this->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || this->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels)) {
+		this->xAxis->setSelectedParts(QCPAxis::spAxis | QCPAxis::spTickLabels | QCPAxis::spAxisLabel);
+	}
+	if (this->xAxis2->selectedParts().testFlag(QCPAxis::spAxisLabel) || this->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || this->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels)) {
+		this->xAxis2->setSelectedParts(QCPAxis::spAxis | QCPAxis::spTickLabels | QCPAxis::spAxisLabel);
+	}
+	if (this->yAxis->selectedParts().testFlag(QCPAxis::spAxisLabel) || this->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || this->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels)) {
+		this->yAxis->setSelectedParts(QCPAxis::spAxis | QCPAxis::spTickLabels | QCPAxis::spAxisLabel);
+	}
+	if (this->yAxis2->selectedParts().testFlag(QCPAxis::spAxisLabel) || this->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || this->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels)) {
+		this->yAxis2->setSelectedParts(QCPAxis::spAxis | QCPAxis::spTickLabels | QCPAxis::spAxisLabel);
+	}
+}
 
 
 

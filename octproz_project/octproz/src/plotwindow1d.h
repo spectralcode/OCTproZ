@@ -52,6 +52,7 @@ private:
 	void setProcessedAxisColor(QColor color);
 	void setRawPlotVisible(bool visible);
 	void setProcessedPlotVisible(bool visible);
+	bool saveAllCurvesToFile(QString fileName);
 
 	int line;
 	int linesPerBuffer;
@@ -94,6 +95,9 @@ public slots:
 	void slot_enableRawGrabbing(bool enable);
 	void slot_enableProcessedGrabbing(bool enable);
 	void slot_enableBitshift(bool enable);
+	void zoomSelectedAxisWithMouseWheel();
+	void dragSelectedAxes();
+	void combineSelections();
 };
 
 
