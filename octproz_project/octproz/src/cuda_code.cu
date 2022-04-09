@@ -747,37 +747,41 @@ __global__ void cuda_bscanFlip(float *output, float *input, const int samplesPer
 	}
 }
 
+//todo: avoid duplicate code: updateDisplayedBscanFrame and updateDisplayedEnFaceViewFrame only differ in the way how (or in what order) processedVolume[], displayBuffer[] is accessed and what the maximum number of available frames is ("bscansPerVolume" for updateDisplayedBscanFrame and "frameWidth" for updateDisplayedEnFaceViewFrame), the rest of the code is identical --> there should be a way to avoid duplicate code
 __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* processedVolume, const unsigned int bscansPerVolume, const unsigned int samplesInSingleFrame, const unsigned int frameNr, const unsigned int displayFunctionFrames, const int displayFunction) {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if (i < samplesInSingleFrame) {
 		displayBuffer[i] = processedVolume[frameNr*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
 
-		//todo: optimize averaging and MIP! Use Parallel Reduction for averaging! Use enum instead of int
+		//todo: optimize averaging and MIP! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
 		if(displayFunctionFrames > 1){
 			switch(displayFunction){
 			case 0: //Averaging
 				int frameCount = 1;
+				float sum = 0;
 				for (int j = 1; j <= displayFunctionFrames; j++){
 					int frameForAveraging = frameNr+j;
 					if(frameForAveraging < bscansPerVolume){
-						displayBuffer[i] += processedVolume[frameForAveraging*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
+						sum += processedVolume[frameForAveraging*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
 						frameCount++;
 					}
 				}
-				displayBuffer[i] = displayBuffer[i]/frameCount;
+				displayBuffer[i] = sum/frameCount;
 				break;
 			case 1: //MIP
-				float tmp = 0;
+				float maxValue = 0;
+				float currentValue = 0;
 				if(displayFunctionFrames > 1){
 					for (int j = 1; j <= displayFunctionFrames; j++){
 						int frameForMIP = frameNr+j;
 						if(frameForMIP < bscansPerVolume){
-							if(tmp<processedVolume[frameForMIP*samplesInSingleFrame + (samplesInSingleFrame-1) - i]){
-								tmp = processedVolume[frameForMIP*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
+							currentValue = processedVolume[frameForMIP*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
+							if(maxValue < currentValue){
+								maxValue = currentValue;
 							}
 						}
 					}
-					displayBuffer[i] = tmp;
+					displayBuffer[i] = maxValue;
 				}
 				break;
 			default:
@@ -792,32 +796,35 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 	if (i < samplesInSingleFrame) {
 		displayBuffer[(samplesInSingleFrame-1)-i] = processedVolume[frameNr+i*frameWidth];
 
-		//todo: optimize averaging and MIP! Use Parallel Reduction for averaging! Use enum instead of int
+		//todo: optimize averaging and MIP! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
 		if(displayFunctionFrames > 1){
 			switch(displayFunction){
 			case 0: //Averaging
 				int frameCount = 1;
+				float sum = 0;
 				for (int j = 1; j <= displayFunctionFrames; j++){
 					int frameForAveraging = frameNr+j;
 					if(frameForAveraging < frameWidth){
-						displayBuffer[(samplesInSingleFrame-1)-i] += processedVolume[frameForAveraging+i*frameWidth];
+						sum += processedVolume[frameForAveraging+i*frameWidth];
 						frameCount++;
 					}
 				}
-				displayBuffer[(samplesInSingleFrame-1)-i] = displayBuffer[(samplesInSingleFrame-1)-i]/frameCount;
+				displayBuffer[(samplesInSingleFrame-1)-i] = sum/frameCount;
 				break;
 			case 1: //MIP
-				float tmp = 0;
+				float maxValue = 0;
+				float currentValue = 0;
 				if(displayFunctionFrames > 1){
 					for (int j = 1; j <= displayFunctionFrames; j++){
 						int frameForMIP = frameNr+j;
 						if(frameForMIP < frameWidth){
-							if(tmp<processedVolume[frameForMIP+i*frameWidth]){
-								tmp = processedVolume[frameForMIP+i*frameWidth];
+						currentValue = processedVolume[frameForMIP+i*frameWidth];
+							if(maxValue < currentValue){
+								maxValue = currentValue;
 							}
 						}
 					}
-					displayBuffer[(samplesInSingleFrame-1)-i] = tmp;
+					displayBuffer[(samplesInSingleFrame-1)-i] = maxValue;
 				}
 				break;
 			default:
@@ -1069,7 +1076,7 @@ extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int di
 	unsigned int samplesPerFrame = width * height;
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<gridSize, blockSize, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedEnFaceViewFrame<<<width, height, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
 		cuda_unmap(cuBufHandleEnFaceView, userRequestStream);
@@ -1106,7 +1113,7 @@ extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned 
 	unsigned int samplesPerFrame = width * height;
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<gridSize/2, blockSize, 0, displayStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedEnFaceViewFrame<<<width, height, 0, displayStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
 		cuda_unmap(cuBufHandleEnFaceView, displayStream);
