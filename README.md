@@ -10,7 +10,7 @@ The output windows in the screenshot above show OCT images of a strawberry.
 
 Video
 --------
-[Live OCT visualization with OCTproZ: Laser cutting a spring onion](https://www.youtube.com/watch?v=tFb7pbKzw40)
+[Live OCT visualization with OCTproZ: Laser cutting a spring onion](https://www.youtube.com/watch?v=3zHdpnR9zSM)
 
 
 Features
