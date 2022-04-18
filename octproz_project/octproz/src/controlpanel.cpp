@@ -37,11 +37,13 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->widgetLayout = new QHBoxLayout(this);
 	this->widgetLayout->addWidget(this->panel);
 
-	this->doubleSpinBoxIsosurfaceThreshold = new QDoubleSpinBox(this->panel);
+	this->doubleSpinBoxDepthWeight = new QDoubleSpinBox(this->panel);
+	this->doubleSpinBoxThreshold = new QDoubleSpinBox(this->panel);
 	this->doubleSpinBoxStepLength = new QDoubleSpinBox(this->panel);
 	this->stringBoxModes = new StringSpinBox(this->panel);
 	this->checkBoxUpdateContinuously = new QCheckBox(this->panel);
-	this->labelIsosurfaceThreshold = new QLabel(tr("Threshold:"), this->panel);
+	this->labelDepthWeight = new QLabel(tr("Depth Weight:"), this->panel);
+	this->labelThreshold = new QLabel(tr("Threshold:"), this->panel);
 	this->labelStepLength = new QLabel(tr("Ray Step:"), this->panel);
 	this->labelMode = new QLabel(tr("Mode:"), this->panel);
 	this->checkBoxUpdateContinuously->setText(tr("Update Continuously"));
@@ -66,10 +68,15 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->layout->setVerticalSpacing(1);
 	this->layout->addWidget(this->labelMode, 0, 0, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->stringBoxModes, 0, 1, 1, 1);
-	this->layout->addWidget(this->labelStepLength, 1, 0, 1, 1, Qt::AlignRight);
-	this->layout->addWidget(this->doubleSpinBoxStepLength, 1, 1, 1, 1);
-	this->layout->addWidget(this->labelIsosurfaceThreshold, 0, 2, 1, 1, Qt::AlignRight);
-	this->layout->addWidget(this->doubleSpinBoxIsosurfaceThreshold, 0, 3, 1, 1);
+	this->layout->addWidget(this->labelThreshold, 1, 0, 1, 1, Qt::AlignRight);
+	this->layout->addWidget(this->doubleSpinBoxThreshold, 1, 1, 1, 1);
+
+
+
+//	this->layout->addWidget(this->labeThreshold, 0, 2, 1, 1, Qt::AlignRight);
+//	this->layout->addWidget(this->doubleSpinBoxThreshold, 0, 3, 1, 1);
+	this->layout->addWidget(this->labelDepthWeight, 0, 2, 1, 1, Qt::AlignRight);
+	this->layout->addWidget(this->doubleSpinBoxDepthWeight, 0, 3, 1, 1);
 	this->layout->setColumnStretch(2, 10);
 	this->layout->addWidget(this->toolButtonMore, 1, 2, 1, 1, Qt::AlignCenter);
 	this->layout->addWidget(this->checkBoxUpdateContinuously, 1, 3, 1, 1, Qt::AlignLeft);
@@ -81,6 +88,10 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->layout->addWidget(this->labelStretchZ, 5, 0, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->doubleSpinBoxStretchZ, 5, 1, 1, 1);
 
+
+	this->layout->addWidget(this->labelStepLength, 4, 2, 1, 1, Qt::AlignRight);
+	this->layout->addWidget(this->doubleSpinBoxStepLength, 4, 3, 1, 1);
+
 	this->layout->addWidget(this->labelGamma, 5, 2, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->doubleSpinBoxGamma,5, 3, 1, 1);
 
@@ -90,11 +101,17 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->doubleSpinBoxStepLength->setValue(0.01);
 	this->doubleSpinBoxStepLength->setDecimals(3);
 
-	this->doubleSpinBoxIsosurfaceThreshold->setMinimum(0.0);
-	this->doubleSpinBoxIsosurfaceThreshold->setMaximum(1);
-	this->doubleSpinBoxIsosurfaceThreshold->setSingleStep(0.01);
-	this->doubleSpinBoxIsosurfaceThreshold->setValue(0.5);
-	this->doubleSpinBoxIsosurfaceThreshold->setDecimals(2);
+	this->doubleSpinBoxThreshold->setMinimum(0.0);
+	this->doubleSpinBoxThreshold->setMaximum(1);
+	this->doubleSpinBoxThreshold->setSingleStep(0.01);
+	this->doubleSpinBoxThreshold->setValue(0.5);
+	this->doubleSpinBoxThreshold->setDecimals(2);
+
+	this->doubleSpinBoxDepthWeight->setMinimum(-1);
+	this->doubleSpinBoxDepthWeight->setMaximum(1);
+	this->doubleSpinBoxDepthWeight->setSingleStep(0.01);
+	this->doubleSpinBoxDepthWeight->setValue(0.5);
+	this->doubleSpinBoxDepthWeight->setDecimals(2);
 
 	this->checkBoxUpdateContinuously->setChecked(false);
 
@@ -146,7 +163,8 @@ GLWindow3DParams ControlPanel3D::getParams() {
 	this->params.extendedViewEnabled = this->extendedView;
 	this->params.displayMode = this->stringBoxModes->getText();
 	this->params.displayModeIndex = this->stringBoxModes->getIndex();
-	this->params.isosurfaceThreshold = this->doubleSpinBoxIsosurfaceThreshold->value();
+	this->params.depthWeight = this->doubleSpinBoxDepthWeight->value();
+	this->params.threshold = this->doubleSpinBoxThreshold->value();
 	this->params.rayMarchStepLength = this->doubleSpinBoxStepLength->value();
 	this->params.updateContinuously = this->checkBoxUpdateContinuously->isChecked();
 	this->params.stretchX = this->doubleSpinBoxStretchX->value();
@@ -160,12 +178,20 @@ GLWindow3DParams ControlPanel3D::getParams() {
 void ControlPanel3D::updateDisplayParameters() {
 	emit displayParametersChanged(this->getParams());
 
-	if(this->params.displayMode == "Isosurface"){
-		this->labelIsosurfaceThreshold->setVisible(true);
-		this->doubleSpinBoxIsosurfaceThreshold->setVisible(true);
+//	if(this->params.displayMode == "Isosurface"){
+//		this->labelIsosurfaceThreshold->setVisible(true);
+//		this->doubleSpinBoxIsosurfaceThreshold->setVisible(true);
+//	}else{
+//		this->labelIsosurfaceThreshold->setVisible(false);
+//		this->doubleSpinBoxIsosurfaceThreshold->setVisible(false);
+//	}
+
+	if(this->params.displayMode == "DMIP"){
+		this->labelDepthWeight->setVisible(true);
+		this->doubleSpinBoxDepthWeight->setVisible(true);
 	}else{
-		this->labelIsosurfaceThreshold->setVisible(false);
-		this->doubleSpinBoxIsosurfaceThreshold->setVisible(false);
+		this->labelDepthWeight->setVisible(false);
+		this->doubleSpinBoxDepthWeight->setVisible(false);
 	}
 }
 
@@ -214,7 +240,8 @@ void ControlPanel3D::setParams(GLWindow3DParams params) {
 	this->params = params;
 	this->enableExtendedView(params.extendedViewEnabled);
 	this->stringBoxModes->setIndex(params.displayModeIndex);
-	this->doubleSpinBoxIsosurfaceThreshold->setValue(params.isosurfaceThreshold);
+	this->doubleSpinBoxDepthWeight->setValue(params.depthWeight);
+	this->doubleSpinBoxThreshold->setValue(params.threshold);
 	this->doubleSpinBoxStepLength->setValue(params.rayMarchStepLength);
 	this->checkBoxUpdateContinuously->setChecked(params.updateContinuously);
 	this->doubleSpinBoxStretchX->setValue(params.stretchX);
@@ -234,6 +261,8 @@ void ControlPanel3D::enableExtendedView(bool enable) {
 	this->labelStretchX->setVisible(enable);
 	this->labelStretchY->setVisible(enable);
 	this->labelStretchZ->setVisible(enable);
+	this->labelStepLength->setVisible(enable);
+	this->doubleSpinBoxStepLength->setVisible(enable);
 	this->labelGamma->setVisible(enable);
 	this->doubleSpinBoxGamma->setVisible(enable);
 }

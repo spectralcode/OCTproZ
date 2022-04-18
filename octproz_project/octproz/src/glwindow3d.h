@@ -92,8 +92,13 @@ public:
 		update();
 	}
 
-	void setThreshold(const double threshold) {
+	void setThreshold(const GLfloat threshold) {
 		m_threshold = threshold;
+		update();
+	}
+
+	void setDepthWeight(const GLfloat depth_weight) {
+		m_depth_weight = depth_weight;
 		update();
 	}
 
@@ -212,6 +217,7 @@ private:
 	QColor m_background;						  /*!< Viewport background colour. */
 
 	GLfloat m_gamma = 2.2f; /*!< Gamma correction parameter. */
+	GLfloat m_depth_weight;
 
 	RayCastVolume *raycastingVolume;
 

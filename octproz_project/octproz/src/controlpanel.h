@@ -31,13 +31,14 @@
 #define EXTENDED_PANEL "extended_panel"
 #define DISPLAY_MODE "display_mode"
 #define DISPLAY_MODE_INDEX "display_mode_index"
-#define ISO_SURFACE_THRESHOLD "iso_surface_threshold"
+#define THRESHOLD "threshold"
 #define RAY_STEP_LENGTH "ray_step_length"
 #define STRETCH_X "strecth_x"
 #define STRETCH_Y "strecth_y"
 #define STRETCH_Z "strecth_z"
 #define CONTINUOUS_UPDATE_ENABLED "continuous_update_enabled"
 #define GAMMA "gamma"
+#define DEPTH_WEIGHT "depth_weight"
 
 #include <QSpinBox>
 #include <QLabel>
@@ -61,7 +62,7 @@
 struct GLWindow3DParams {
 	bool extendedViewEnabled;
 	qreal rayMarchStepLength;
-	qreal isosurfaceThreshold;
+	qreal threshold;
 	bool updateContinuously;
 	QString displayMode;
 	int displayModeIndex;
@@ -69,6 +70,7 @@ struct GLWindow3DParams {
 	qreal stretchY;
 	qreal stretchZ;
 	qreal gamma;
+	qreal depthWeight;
 };
 
 class ControlPanel3D : public QWidget
@@ -93,9 +95,11 @@ private:
 	bool extendedView;
 	QWidget* panel;
 	QDoubleSpinBox* doubleSpinBoxStepLength;
-	QDoubleSpinBox* doubleSpinBoxIsosurfaceThreshold;
+	QDoubleSpinBox* doubleSpinBoxThreshold;
+	QDoubleSpinBox* doubleSpinBoxDepthWeight;
+	QLabel* labelDepthWeight;
 	QLabel* labelStepLength;
-	QLabel* labelIsosurfaceThreshold;
+	QLabel* labelThreshold;
 	QLabel* labelMode;
 	StringSpinBox* stringBoxModes;
 	QCheckBox* checkBoxUpdateContinuously;

@@ -81,10 +81,12 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 
 
 	// Register available rendering modes here
-	QStringList modes = { "MIP", "Alpha blending", "Isosurface"};
+	QStringList modes = { "MIP", "DMIP", "Alpha blending", "Isosurface"};
 	m_modes["MIP"] = [&]() { GLWindow3D::raycasting("MIP"); };
+	m_modes["DMIP"] = [&]() { GLWindow3D::raycasting("DMIP"); };
 	m_modes["Isosurface"] = [&]() { GLWindow3D::raycasting("Isosurface"); };
 	m_modes["Alpha blending"] = [&]() { GLWindow3D::raycasting("Alpha blending"); };
+
 	this->panel->setModes(modes);
 
 	this->initialized = false;
@@ -125,13 +127,14 @@ void GLWindow3D::setSettings(QVariantMap settings) {
 	params.extendedViewEnabled = settings.value(EXTENDED_PANEL).toBool();
 	params.displayMode = settings.value(DISPLAY_MODE).toString();
 	params.displayModeIndex = settings.value(DISPLAY_MODE_INDEX).toInt();
-	params.isosurfaceThreshold = settings.value(ISO_SURFACE_THRESHOLD).toReal();
+	params.threshold = settings.value(THRESHOLD).toReal();
 	params.rayMarchStepLength = settings.value(RAY_STEP_LENGTH).toReal();
 	params.stretchX = settings.value(STRETCH_X).toReal();
 	params.stretchY= settings.value(STRETCH_Y).toReal();
 	params.stretchZ = settings.value(STRETCH_Z).toReal();
 	params.updateContinuously = settings.value(CONTINUOUS_UPDATE_ENABLED).toBool();
 	params.gamma = settings.value(GAMMA).toReal();
+	params.depthWeight = settings.value(DEPTH_WEIGHT).toReal();
 	this->panel->setParams(params);
 }
 
@@ -141,13 +144,14 @@ QVariantMap GLWindow3D::getSettings() {
 	settings.insert(EXTENDED_PANEL, params.extendedViewEnabled);
 	settings.insert(DISPLAY_MODE, params.displayMode);
 	settings.insert(DISPLAY_MODE_INDEX, params.displayModeIndex);
-	settings.insert(ISO_SURFACE_THRESHOLD, params.isosurfaceThreshold);
+	settings.insert(THRESHOLD, params.threshold);
 	settings.insert(RAY_STEP_LENGTH, params.rayMarchStepLength);
 	settings.insert(STRETCH_X, params.stretchX);
 	settings.insert(STRETCH_Y, params.stretchY);
 	settings.insert(STRETCH_Z, params.stretchZ);
 	settings.insert(CONTINUOUS_UPDATE_ENABLED, params.updateContinuously);
 	settings.insert(GAMMA, params.gamma);
+	settings.insert(DEPTH_WEIGHT, params.depthWeight);
 	return settings;
 }
 
@@ -180,6 +184,7 @@ void GLWindow3D::initializeGL() {
 		this->addShader("Isosurface", ":/shaders/isosurface.vert", ":/shaders/isosurface.frag");
 		this->addShader("Alpha blending", ":/shaders/alpha_blending.vert", ":/shaders/alpha_blending.frag");
 		this->addShader("MIP", ":/shaders/maximum_intensity_projection.vert", ":/shaders/maximum_intensity_projection.frag");
+		this->addShader("DMIP", ":/shaders/depth_mip.vert", ":/shaders/depth_mip.frag");
 	}
 
 
@@ -261,6 +266,7 @@ void GLWindow3D::raycasting(const QString& shader) {
 		m_shaders[shader]->setUniformValue("gamma", m_gamma);
 		m_shaders[shader]->setUniformValue("volume", 0);
 		m_shaders[shader]->setUniformValue("jitter", 1);
+		m_shaders[shader]->setUniformValue("depth_weight", m_depth_weight);
 
 		glClearColor(m_background.redF(), m_background.greenF(), m_background.blueF(), m_background.alphaF());
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -404,10 +410,11 @@ void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
 	this->displayParams = params;
 	this->setMode(params.displayMode);
 	this->setStepLength(params.rayMarchStepLength);
-	this->setThreshold(params.isosurfaceThreshold);
+	this->setThreshold(params.threshold);
 	this->updateContinuously = params.updateContinuously;
 	this->setStretch(params.stretchX, params.stretchY, params.stretchZ);
 	this->m_gamma = params.gamma;
+	this->m_depth_weight = params.depthWeight;
 }
 
 void GLWindow3D::saveSettings() {

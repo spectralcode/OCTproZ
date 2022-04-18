@@ -121,6 +121,9 @@ void main()
 	while (ray_length > 0 && colour.a < 1.0) {
 
 		float intensity = texture(volume, position).r;
+		if(intensity <= threshold){
+			intensity = 0;
+		}
 
 		vec4 c = colour_transfer(intensity);
 

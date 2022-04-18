@@ -1,3 +1,32 @@
+//This file is a modified version of code originally created by Martino Pilia, please see: https://github.com/m-pilia/volume-raycasting
+
+/**
+**  This file is part of OCTproZ.
+**  OCTproZ is an open source software for processig of optical
+**  coherence tomography (OCT) raw data.
+**  Copyright (C) 2019-2022 Miroslav Zabic
+**
+**  OCTproZ is free software: you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation, either version 3 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program. If not, see http://www.gnu.org/licenses/.
+**
+****
+** Author:	Miroslav Zabic
+** Contact:	zabic
+**			at
+**			iqo.uni-hannover.de
+****
+**/
+
 /*
  * Copyright © 2018 Martino Pilia <martino.pilia@gmail.com>
  *
@@ -40,6 +69,7 @@ uniform vec3 light_position;
 
 uniform float step_length;
 uniform float threshold;
+uniform float depth_weight;
 
 uniform sampler3D volume;
 uniform sampler2D jitter;
@@ -86,7 +116,7 @@ void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 vec4 colour_transfer(float intensity)
 {
 	vec3 high = vec3(1.0, 1.0, 1.0);
-	vec3 low = vec3(0.0, 0.0, 0.0);
+	vec3 low = vec3(0.1, 0.0, 0.2);
 	float alpha = (exp(intensity) - 1.0) / (exp(1.0) - 1.0);
 	return vec4(intensity * high + (1.0 - intensity) * low, alpha);
 }
@@ -111,12 +141,11 @@ void main()
 	float ray_length = length(ray);
 	vec3 step_vector = step_length * ray / ray_length;
 
-	// Random jitter
-	//ray_start += step_vector * texture(jitter, gl_FragCoord.xy / viewport_size).r;
-
 	vec3 position = ray_start;
 
 	float maximum_intensity = 0.0;
+	float ray_length_at_max = 0;
+	float initial_ray_lenght = ray_length;
 
 	// Ray march until reaching the end of the volume
 	while (ray_length > 0) {
@@ -125,12 +154,14 @@ void main()
 
 		if (intensity > maximum_intensity && intensity > threshold) {
 			maximum_intensity = intensity;
+			ray_length_at_max = ray_length;
 		}
 
 		ray_length -= step_length;
 		position += step_vector;
 	}
-
+	// Multiply MIP with depth component (inspired by Díaz Iriberri, José, and Pere Pau Vázquez Alcocer. "Depth-enhanced maximum intensity projection." 8th IEEE/EG International Symposium on Volume Graphics. 2010.)
+	maximum_intensity = maximum_intensity *  (1.0-depth_weight)+2.0*depth_weight*(0.5*ray_length_at_max/initial_ray_lenght);
 	vec4 colour = colour_transfer(maximum_intensity);
 
 	// Blend background
