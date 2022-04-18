@@ -112,7 +112,7 @@ void main()
 	vec3 step_vector = step_length * ray / ray_length;
 
 	// Random jitter
-	//ray_start += step_vector * texture(jitter, gl_FragCoord.xy / viewport_size).r;
+	ray_start += step_vector * texture(jitter, gl_FragCoord.xy / viewport_size).r;
 
 	vec3 position = ray_start;
 
