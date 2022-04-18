@@ -689,9 +689,10 @@ __global__ void postProcessTruncateLog(float *output, const cufftComplex *input,
 
 		//Note: log(sqrt(x*x+y*y)) == 0.5*log(x*x+y*y) --> the result here is 20*log(magnitude) and not 10*log...
 		//amplitude:
-		output[index] = coeff*((((10.0f*log10f((input[inputArrayIndex].x*input[inputArrayIndex].x) + (input[inputArrayIndex].y*input[inputArrayIndex].y))) - min) / (max - min)) + addend);
-		//phase:
-		//output[index] = coeff*((((10.0f*log10f(atan(input[inputArrayIndex].y/input[inputArrayIndex].x))) - min) / (max - min)) + addend);
+		float realComponent = input[inputArrayIndex].x;
+		float imaginaryComponent = input[inputArrayIndex].y;
+		output[index] = coeff*((((10.0f*log10f((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))) - min) / (max - min)) + addend);
+
 		output[index] = __saturatef(output[index]); //Clamp values to be within the interval [+0.0, 1.0].
 	}
 }
@@ -704,9 +705,10 @@ __global__ void postProcessTruncateLin(float *output, const cufftComplex *input,
 		int inputArrayIndex = lineIndex * outputAscanLength + index;
 
 		//amplitude:
-		output[index] = coeff * ((((sqrt((input[inputArrayIndex].x*input[inputArrayIndex].x) + (input[inputArrayIndex].y*input[inputArrayIndex].y))) - min) / (max - min)) + addend);
-		//phase:
-		//output[index] = coeff*(((((atan(input[inputArrayIndex].y/input[inputArrayIndex].x))) - min) / (max - min)) + addend);
+		float realComponent = input[inputArrayIndex].x;
+		float imaginaryComponent = input[inputArrayIndex].y;
+		output[index] = coeff * ((((sqrt((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))) - min) / (max - min)) + addend);
+
 		output[index] = __saturatef(output[index]);//Clamp values to be within the interval [+0.0, 1.0].
 	}
 }
@@ -751,9 +753,7 @@ __global__ void cuda_bscanFlip(float *output, float *input, const int samplesPer
 __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* processedVolume, const unsigned int bscansPerVolume, const unsigned int samplesInSingleFrame, const unsigned int frameNr, const unsigned int displayFunctionFrames, const int displayFunction) {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if (i < samplesInSingleFrame) {
-		displayBuffer[i] = processedVolume[frameNr*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
-
-		//todo: optimize averaging and MIP! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
+		//todo: optimize averaging and MIP for very large number of displayFunctionFrames! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
 		if(displayFunctionFrames > 1){
 			switch(displayFunction){
 			case 0: //Averaging
@@ -788,15 +788,16 @@ __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* pro
 				break;
 			}
 		}
+		else {
+			displayBuffer[i] = processedVolume[frameNr*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
+		}
 	}
 }
 
 __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float* processedVolume, const unsigned int frameWidth, const unsigned int samplesInSingleFrame, const unsigned int frameNr, const unsigned int displayFunctionFrames, const int displayFunction) {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if (i < samplesInSingleFrame) {
-		displayBuffer[(samplesInSingleFrame-1)-i] = processedVolume[frameNr+i*frameWidth];
-
-		//todo: optimize averaging and MIP! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
+		//todo: optimize averaging and MIP for very large number of displayFunctionFrames! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
 		if(displayFunctionFrames > 1){
 			switch(displayFunction){
 			case 0: //Averaging
@@ -830,6 +831,9 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 			default:
 				break;
 			}
+		}
+		else {
+			displayBuffer[(samplesInSingleFrame-1)-i] = processedVolume[frameNr+i*frameWidth];
 		}
 	}
 }
