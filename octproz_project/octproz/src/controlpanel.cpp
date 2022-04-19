@@ -107,7 +107,7 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->doubleSpinBoxThreshold->setValue(0.5);
 	this->doubleSpinBoxThreshold->setDecimals(2);
 
-	this->doubleSpinBoxDepthWeight->setMinimum(-1);
+	this->doubleSpinBoxDepthWeight->setMinimum(0);
 	this->doubleSpinBoxDepthWeight->setMaximum(1);
 	this->doubleSpinBoxDepthWeight->setSingleStep(0.01);
 	this->doubleSpinBoxDepthWeight->setValue(0.5);
