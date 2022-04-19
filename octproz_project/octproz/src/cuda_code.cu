@@ -757,9 +757,9 @@ __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* pro
 		if(displayFunctionFrames > 1){
 			switch(displayFunction){
 			case 0: //Averaging
-				int frameCount = 1;
+				int frameCount = 0;
 				float sum = 0;
-				for (int j = 1; j <= displayFunctionFrames; j++){
+				for (int j = 0; j < displayFunctionFrames; j++){
 					int frameForAveraging = frameNr+j;
 					if(frameForAveraging < bscansPerVolume){
 						sum += processedVolume[frameForAveraging*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
@@ -772,7 +772,7 @@ __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* pro
 				float maxValue = 0;
 				float currentValue = 0;
 				if(displayFunctionFrames > 1){
-					for (int j = 1; j <= displayFunctionFrames; j++){
+					for (int j = 0; j < displayFunctionFrames; j++){
 						int frameForMIP = frameNr+j;
 						if(frameForMIP < bscansPerVolume){
 							currentValue = processedVolume[frameForMIP*samplesInSingleFrame + (samplesInSingleFrame-1) - i];
@@ -801,9 +801,9 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 		if(displayFunctionFrames > 1){
 			switch(displayFunction){
 			case 0: //Averaging
-				int frameCount = 1;
+				int frameCount = 0;
 				float sum = 0;
-				for (int j = 1; j <= displayFunctionFrames; j++){
+				for (int j = 0; j < displayFunctionFrames; j++){
 					int frameForAveraging = frameNr+j;
 					if(frameForAveraging < frameWidth){
 						sum += processedVolume[frameForAveraging+i*frameWidth];
@@ -816,7 +816,7 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 				float maxValue = 0;
 				float currentValue = 0;
 				if(displayFunctionFrames > 1){
-					for (int j = 1; j <= displayFunctionFrames; j++){
+					for (int j = 0; j < displayFunctionFrames; j++){
 						int frameForMIP = frameNr+j;
 						if(frameForMIP < frameWidth){
 						currentValue = processedVolume[frameForMIP+i*frameWidth];
