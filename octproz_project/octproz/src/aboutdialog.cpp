@@ -21,7 +21,7 @@
 ** Author:	Miroslav Zabic
 ** Contact:	zabic
 **			at
-**			iqo.uni-hannover.de
+**			spectralcode.de
 ****
 **/
 
@@ -56,7 +56,7 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	labelWithAuthorInfo->setText("Author: Miroslav Zabic\n" \
 				  "Contact: zabic" \
 				  "@" \
-				  "iqo.uni-hannover.de\n\n" \
+				  "spectralcode.de\n\n" \
 				  "Version: " + qApp->applicationVersion());
 	labelWithAuthorInfo->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 	vLayoutLeft->addWidget(labelWithAuthorInfo);
