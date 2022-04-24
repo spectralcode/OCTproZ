@@ -149,8 +149,8 @@ void main()
 	float ray_length_at_max = 0;
 	float initial_ray_lenght = ray_length;
 
-	// Ray march until reaching the end of the volume
-	while (ray_length > 0) {
+	// Ray march until reaching the end of the volume until max possible intensity encountered (early ray termination)
+	while (ray_length > 0 && maximum_intensity < 0.99) {
 
 		float intensity = texture(volume, position).r;
 
