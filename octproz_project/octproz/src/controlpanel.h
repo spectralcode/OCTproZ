@@ -39,6 +39,7 @@
 #define CONTINUOUS_UPDATE_ENABLED "continuous_update_enabled"
 #define GAMMA "gamma"
 #define DEPTH_WEIGHT "depth_weight"
+#define SMOOTH_FACTOR "smooth_factor"
 
 #include <QSpinBox>
 #include <QLabel>
@@ -71,6 +72,7 @@ struct GLWindow3DParams {
 	qreal stretchZ;
 	qreal gamma;
 	qreal depthWeight;
+	int smoothFactor;
 };
 
 class ControlPanel3D : public QWidget
@@ -97,6 +99,8 @@ private:
 	QDoubleSpinBox* doubleSpinBoxStepLength;
 	QDoubleSpinBox* doubleSpinBoxThreshold;
 	QDoubleSpinBox* doubleSpinBoxDepthWeight;
+	QSpinBox* spinBoxSmoothFactor;
+	QLabel* labelSmoothFactor;
 	QLabel* labelDepthWeight;
 	QLabel* labelStepLength;
 	QLabel* labelThreshold;

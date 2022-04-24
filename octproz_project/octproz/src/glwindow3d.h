@@ -102,6 +102,11 @@ public:
 		update();
 	}
 
+	void setSmoothFactor(const GLint smooth_factor) {
+		m_smooth_factor = smooth_factor;
+		update();
+	}
+
 	void setMode(const QString& mode) {
 		m_active_mode = mode;
 		update();
@@ -210,7 +215,7 @@ private:
 	QVector2D m_viewportSize;
 	QVector3D m_rayOrigin; /*!< Camera position in model space coordinates. */
 
-	QVector3D m_lightPosition {3.0, 0.0, 3.0};	/*!< In camera coordinates. */
+	QVector3D m_lightPosition {5.0, 1.0, 3.0};	/*!< In camera coordinates. */
 	QVector3D m_diffuseMaterial {1.0, 1.0, 1.0};  /*!< Material colour. */
 	GLfloat m_stepLength;						 /*!< Step length for ray march. */
 	GLfloat m_threshold;						  /*!< Isosurface intensity threshold. */
@@ -218,6 +223,7 @@ private:
 
 	GLfloat m_gamma = 2.2f; /*!< Gamma correction parameter. */
 	GLfloat m_depth_weight;
+	GLint m_smooth_factor;
 
 	RayCastVolume *raycastingVolume;
 

@@ -37,11 +37,13 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->widgetLayout = new QHBoxLayout(this);
 	this->widgetLayout->addWidget(this->panel);
 
+	this->spinBoxSmoothFactor = new QSpinBox(this->panel);
 	this->doubleSpinBoxDepthWeight = new QDoubleSpinBox(this->panel);
 	this->doubleSpinBoxThreshold = new QDoubleSpinBox(this->panel);
 	this->doubleSpinBoxStepLength = new QDoubleSpinBox(this->panel);
 	this->stringBoxModes = new StringSpinBox(this->panel);
 	this->checkBoxUpdateContinuously = new QCheckBox(this->panel);
+	this->labelSmoothFactor = new QLabel(tr("Smooth Factor:"), this->panel);
 	this->labelDepthWeight = new QLabel(tr("Depth Weight:"), this->panel);
 	this->labelThreshold = new QLabel(tr("Threshold:"), this->panel);
 	this->labelStepLength = new QLabel(tr("Ray Step:"), this->panel);
@@ -75,6 +77,8 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 
 //	this->layout->addWidget(this->labeThreshold, 0, 2, 1, 1, Qt::AlignRight);
 //	this->layout->addWidget(this->doubleSpinBoxThreshold, 0, 3, 1, 1);
+	this->layout->addWidget(this->labelSmoothFactor, 0, 2, 1, 1, Qt::AlignRight);
+	this->layout->addWidget(this->spinBoxSmoothFactor, 0, 3, 1, 1);
 	this->layout->addWidget(this->labelDepthWeight, 0, 2, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->doubleSpinBoxDepthWeight, 0, 3, 1, 1);
 	this->layout->setColumnStretch(2, 10);
@@ -112,6 +116,12 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->doubleSpinBoxDepthWeight->setSingleStep(0.01);
 	this->doubleSpinBoxDepthWeight->setValue(0.5);
 	this->doubleSpinBoxDepthWeight->setDecimals(2);
+
+	this->spinBoxSmoothFactor->setMinimum(0);
+	this->spinBoxSmoothFactor->setMaximum(3);
+	this->spinBoxSmoothFactor->setValue(0);
+
+
 
 	this->checkBoxUpdateContinuously->setChecked(false);
 
@@ -163,6 +173,7 @@ GLWindow3DParams ControlPanel3D::getParams() {
 	this->params.extendedViewEnabled = this->extendedView;
 	this->params.displayMode = this->stringBoxModes->getText();
 	this->params.displayModeIndex = this->stringBoxModes->getIndex();
+	this->params.smoothFactor = this->spinBoxSmoothFactor->value();
 	this->params.depthWeight = this->doubleSpinBoxDepthWeight->value();
 	this->params.threshold = this->doubleSpinBoxThreshold->value();
 	this->params.rayMarchStepLength = this->doubleSpinBoxStepLength->value();
@@ -189,9 +200,19 @@ void ControlPanel3D::updateDisplayParameters() {
 	if(this->params.displayMode == "DMIP"){
 		this->labelDepthWeight->setVisible(true);
 		this->doubleSpinBoxDepthWeight->setVisible(true);
+		this->labelSmoothFactor->setVisible(false);
+		this->spinBoxSmoothFactor->setVisible(false);
+
+	} else if(this->params.displayMode == "Isosurface"){
+		this->labelDepthWeight->setVisible(false);
+		this->doubleSpinBoxDepthWeight->setVisible(false);
+		this->labelSmoothFactor->setVisible(true);
+		this->spinBoxSmoothFactor->setVisible(true);
 	}else{
 		this->labelDepthWeight->setVisible(false);
 		this->doubleSpinBoxDepthWeight->setVisible(false);
+		this->labelSmoothFactor->setVisible(false);
+		this->spinBoxSmoothFactor->setVisible(false);
 	}
 }
 
@@ -240,6 +261,7 @@ void ControlPanel3D::setParams(GLWindow3DParams params) {
 	this->params = params;
 	this->enableExtendedView(params.extendedViewEnabled);
 	this->stringBoxModes->setIndex(params.displayModeIndex);
+	this->spinBoxSmoothFactor->setValue(params.smoothFactor);
 	this->doubleSpinBoxDepthWeight->setValue(params.depthWeight);
 	this->doubleSpinBoxThreshold->setValue(params.threshold);
 	this->doubleSpinBoxStepLength->setValue(params.rayMarchStepLength);

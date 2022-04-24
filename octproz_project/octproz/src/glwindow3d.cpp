@@ -135,6 +135,7 @@ void GLWindow3D::setSettings(QVariantMap settings) {
 	params.updateContinuously = settings.value(CONTINUOUS_UPDATE_ENABLED).toBool();
 	params.gamma = settings.value(GAMMA).toReal();
 	params.depthWeight = settings.value(DEPTH_WEIGHT).toReal();
+	params.smoothFactor = settings.value(SMOOTH_FACTOR).toInt();
 	this->panel->setParams(params);
 }
 
@@ -152,6 +153,7 @@ QVariantMap GLWindow3D::getSettings() {
 	settings.insert(CONTINUOUS_UPDATE_ENABLED, params.updateContinuously);
 	settings.insert(GAMMA, params.gamma);
 	settings.insert(DEPTH_WEIGHT, params.depthWeight);
+	settings.insert(SMOOTH_FACTOR, params.smoothFactor);
 	return settings;
 }
 
@@ -267,6 +269,7 @@ void GLWindow3D::raycasting(const QString& shader) {
 		m_shaders[shader]->setUniformValue("volume", 0);
 		m_shaders[shader]->setUniformValue("jitter", 1);
 		m_shaders[shader]->setUniformValue("depth_weight", m_depth_weight);
+		m_shaders[shader]->setUniformValue("smooth_factor", m_smooth_factor);
 
 		glClearColor(m_background.redF(), m_background.greenF(), m_background.blueF(), m_background.alphaF());
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -415,6 +418,7 @@ void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
 	this->setStretch(params.stretchX, params.stretchY, params.stretchZ);
 	this->m_gamma = params.gamma;
 	this->m_depth_weight = params.depthWeight;
+	this->setSmoothFactor(params.smoothFactor);
 }
 
 void GLWindow3D::saveSettings() {
