@@ -1,3 +1,32 @@
+//This file is a modified version of code originally created by Martino Pilia, please see: https://github.com/m-pilia/volume-raycasting
+
+/**
+**  This file is part of OCTproZ.
+**  OCTproZ is an open source software for processig of optical
+**  coherence tomography (OCT) raw data.
+**  Copyright (C) 2019-2022 Miroslav Zabic
+**
+**  OCTproZ is free software: you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation, either version 3 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program. If not, see http://www.gnu.org/licenses/.
+**
+****
+** Author:	Miroslav Zabic
+** Contact:	zabic
+**			at
+**			spectralcode.de
+****
+**/
+
 /*
  * Copyright © 2018 Martino Pilia <martino.pilia@gmail.com>
  *
@@ -118,20 +147,22 @@ void main()
 	vec3 position = ray_start;
 	vec4 colour = vec4(0.0);
 
+	float maxIntensity = 0.0;
+	float weighting = 0;
+
 	// Ray march until reaching the end of the volume, or colour saturation
 	while (ray_length > 0 && colour.a < 0.9) {
-
 		float intensity = texture(volume, position).r;
-		if(intensity <= threshold){
-			intensity = 0;
+
+		if(intensity > threshold && intensity > maxIntensity){
+			//Maximum Intensity Difference Accumulation (MIDA). Inspired by: Bruckner, Stefan, and M. Eduard Gröller. "Instant volume visualization using maximum intensity difference accumulation." Computer Graphics Forum. Vol. 28. No. 3. Oxford, UK: Blackwell Publishing Ltd, 2009.
+			weighting = 1.0 - (intensity - maxIntensity);
+			maxIntensity = intensity;
+			vec4 c = colour_transfer(intensity);
+			float tmp = (1.0-weighting*colour.a)*c.a;
+			colour.rgb = weighting*colour.rgb+tmp*c.rgb;
+			colour.a = weighting*colour.a+tmp;
 		}
-
-		vec4 c = colour_transfer(intensity);
-
-		// Alpha-blending
-		colour.rgb = c.a * c.rgb + (1 - c.a) * colour.a * colour.rgb;
-		colour.a = c.a + (1 - c.a) * colour.a;
-
 		ray_length -= step_length;
 		position += step_vector;
 	}

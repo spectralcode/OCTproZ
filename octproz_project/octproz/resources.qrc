@@ -8,6 +8,8 @@
 		<file>shaders/maximum_intensity_projection.frag</file>
 		<file>shaders/depth_mip.frag</file>
 		<file>shaders/depth_mip.vert</file>
+		<file>shaders/mida.frag</file>
+		<file>shaders/mida.vert</file>
 		<file>aboutdata/credits.txt</file>
 		<file>aboutdata/LICENSE</file>
 		<file>aboutdata/octproz_logo.png</file>

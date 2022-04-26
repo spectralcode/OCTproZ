@@ -81,9 +81,10 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 
 
 	// Register available rendering modes here
-	QStringList modes = { "MIP", "DMIP", "Alpha blending", "Isosurface"};
+	QStringList modes = { "MIP", "DMIP", "MIDA", "Alpha blending", "Isosurface"};
 	m_modes["MIP"] = [&]() { GLWindow3D::raycasting("MIP"); };
 	m_modes["DMIP"] = [&]() { GLWindow3D::raycasting("DMIP"); };
+	m_modes["MIDA"] = [&]() { GLWindow3D::raycasting("MIDA"); };
 	m_modes["Isosurface"] = [&]() { GLWindow3D::raycasting("Isosurface"); };
 	m_modes["Alpha blending"] = [&]() { GLWindow3D::raycasting("Alpha blending"); };
 
@@ -136,6 +137,7 @@ void GLWindow3D::setSettings(QVariantMap settings) {
 	params.gamma = settings.value(GAMMA).toReal();
 	params.depthWeight = settings.value(DEPTH_WEIGHT).toReal();
 	params.smoothFactor = settings.value(SMOOTH_FACTOR).toInt();
+	params.alphaExponent = settings.value(ALPHA_EXPONENT).toReal();
 	this->panel->setParams(params);
 }
 
@@ -154,6 +156,7 @@ QVariantMap GLWindow3D::getSettings() {
 	settings.insert(GAMMA, params.gamma);
 	settings.insert(DEPTH_WEIGHT, params.depthWeight);
 	settings.insert(SMOOTH_FACTOR, params.smoothFactor);
+	settings.insert(ALPHA_EXPONENT, params.alphaExponent);
 	return settings;
 }
 
@@ -187,6 +190,7 @@ void GLWindow3D::initializeGL() {
 		this->addShader("Alpha blending", ":/shaders/alpha_blending.vert", ":/shaders/alpha_blending.frag");
 		this->addShader("MIP", ":/shaders/maximum_intensity_projection.vert", ":/shaders/maximum_intensity_projection.frag");
 		this->addShader("DMIP", ":/shaders/depth_mip.vert", ":/shaders/depth_mip.frag");
+		this->addShader("MIDA", ":/shaders/mida.vert", ":/shaders/mida.frag");
 	}
 
 
@@ -270,6 +274,7 @@ void GLWindow3D::raycasting(const QString& shader) {
 		m_shaders[shader]->setUniformValue("jitter", 1);
 		m_shaders[shader]->setUniformValue("depth_weight", m_depth_weight);
 		m_shaders[shader]->setUniformValue("smooth_factor", m_smooth_factor);
+		m_shaders[shader]->setUniformValue("alpha_exponent", m_alpha_exponent);
 
 		glClearColor(m_background.redF(), m_background.greenF(), m_background.blueF(), m_background.alphaF());
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -419,6 +424,7 @@ void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
 	this->m_gamma = params.gamma;
 	this->m_depth_weight = params.depthWeight;
 	this->setSmoothFactor(params.smoothFactor);
+	this->setAlphaExponent(params.alphaExponent);
 }
 
 void GLWindow3D::saveSettings() {

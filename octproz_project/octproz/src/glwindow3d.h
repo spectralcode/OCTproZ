@@ -107,6 +107,11 @@ public:
 		update();
 	}
 
+	void setAlphaExponent(const GLfloat alpha_exponent) {
+		m_alpha_exponent = alpha_exponent;
+		update();
+	}
+
 	void setMode(const QString& mode) {
 		m_active_mode = mode;
 		update();
@@ -223,6 +228,7 @@ private:
 
 	GLfloat m_gamma = 2.2f; /*!< Gamma correction parameter. */
 	GLfloat m_depth_weight;
+	GLfloat m_alpha_exponent;
 	GLint m_smooth_factor;
 
 	RayCastVolume *raycastingVolume;

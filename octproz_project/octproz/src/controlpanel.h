@@ -40,6 +40,7 @@
 #define GAMMA "gamma"
 #define DEPTH_WEIGHT "depth_weight"
 #define SMOOTH_FACTOR "smooth_factor"
+#define ALPHA_EXPONENT "alpha_exponent"
 
 #include <QSpinBox>
 #include <QLabel>
@@ -73,6 +74,7 @@ struct GLWindow3DParams {
 	qreal gamma;
 	qreal depthWeight;
 	int smoothFactor;
+	qreal alphaExponent;
 };
 
 class ControlPanel3D : public QWidget
@@ -99,7 +101,9 @@ private:
 	QDoubleSpinBox* doubleSpinBoxStepLength;
 	QDoubleSpinBox* doubleSpinBoxThreshold;
 	QDoubleSpinBox* doubleSpinBoxDepthWeight;
+	QDoubleSpinBox* doubleSpinBoxAlphaExponent;
 	QSpinBox* spinBoxSmoothFactor;
+	QLabel* labelAlphaExponent;
 	QLabel* labelSmoothFactor;
 	QLabel* labelDepthWeight;
 	QLabel* labelStepLength;
