@@ -88,19 +88,33 @@ struct AABB {
 	vec3 bottom;
 };
 
-// Estimate normal from a finite difference approximation of the gradient
-vec3 normal(vec3 position, float intensity)
+
+//from https://iquilezles.org/articles/normalsSDF/
+vec3 normal(vec3 position)
 {
-	float d = step_length;
-	float dx = texture(volume, position + vec3(d,0,0)).r - intensity;
-	float dy = texture(volume, position + vec3(0,d,0)).r - intensity;
-	float dz = texture(volume, position + vec3(0,0,d)).r - intensity;
-	return -normalize(NormalMatrix * vec3(dx, dy, dz));
+	float h = 0.001;
+	vec3 n = vec3(0.0, 0.0, 0.0);
+	for( int i=0; i<4; i++) {
+		vec3 e =0.5773*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
+		 n += e*texture(volume, position+e*h).r;
+	}
+	return -normalize(n);
 }
+
+//from https://iquilezles.org/articles/normalsSDF/
+//vec3 normal(vec3 p)
+//{
+//	float h = 0.001;
+//	vec2 k = vec2(1,-1);
+//	return -normalize( k.xyy*texture(volume, p + k.xyy*h ).r +
+//			k.yyx*texture(volume, p + k.yyx*h ).r +
+//			k.yxy*texture(volume, p + k.yxy*h ).r +
+//			k.xxx*texture(volume, p + k.xxx*h ).r);
+//}
 
 vec3 normal_smooth(vec3 position, const int smoothing_factor)
 {
-	float delta = step_length;
+	float delta = 0.001;
 	int counter = 0;
 	vec3 averaged_normal;
 	const int n = smoothing_factor;
@@ -110,7 +124,7 @@ vec3 normal_smooth(vec3 position, const int smoothing_factor)
 			for(int z = -1*n; z <= n; z++) {
 				vec3 deltaPos = position + vec3(x*delta, y*delta, z*delta);
 				float intensity = texture(volume, deltaPos).r;
-				averaged_normal += normal(deltaPos, intensity);
+				averaged_normal += normal(deltaPos);
 				counter++;
 			}
 		}
@@ -175,7 +189,7 @@ void main()
 			// Blinn-Phong shading
 			vec3 L = normalize(light_position - position);
 			vec3 V = -normalize(ray);
-			vec3 N = smooth_factor > 0 ? normal_smooth(position, smooth_factor) : normal(position, intensity);
+			vec3 N = smooth_factor > 0 ? normal_smooth(position, smooth_factor) : normal(position);
 			vec3 H = normalize(L + V);
 
 			float Ia = 0.1;
