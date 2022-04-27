@@ -220,7 +220,7 @@ private:
 	QVector2D m_viewportSize;
 	QVector3D m_rayOrigin; /*!< Camera position in model space coordinates. */
 
-	QVector3D m_lightPosition {5.0, 1.0, 3.0};	/*!< In camera coordinates. */
+	QVector3D m_lightPosition {1.0, 3.0, 3.0};	/*!< In camera coordinates. */
 	QVector3D m_diffuseMaterial {1.0, 1.0, 1.0};  /*!< Material colour. */
 	GLfloat m_stepLength;						 /*!< Step length for ray march. */
 	GLfloat m_threshold;						  /*!< Isosurface intensity threshold. */
