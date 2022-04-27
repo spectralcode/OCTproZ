@@ -94,9 +94,9 @@ vec3 normal(vec3 position)
 {
 	float h = 0.001;
 	vec3 n = vec3(0.0, 0.0, 0.0);
-	for( int i=0; i<4; i++) {
-		vec3 e =0.5773*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
-		 n += e*texture(volume, position+e*h).r;
+	for(int i=0; i<4; i++) {
+		vec3 e =0.577350269*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
+		n += e*texture(volume, position+e*h).r;
 	}
 	return -normalize(n);
 }
