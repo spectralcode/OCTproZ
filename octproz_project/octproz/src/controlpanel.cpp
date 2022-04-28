@@ -44,6 +44,7 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->doubleSpinBoxStepLength = new QDoubleSpinBox(this->panel);
 	this->stringBoxModes = new StringSpinBox(this->panel);
 	this->checkBoxUpdateContinuously = new QCheckBox(this->panel);
+	this->checkBoxShading = new QCheckBox(this->panel);
 	this->labelSmoothFactor = new QLabel(tr("Smooth Factor:"), this->panel);
 	this->labelAlphaExponent = new QLabel(tr("Alpha Exponent:"), this->panel);
 	this->labelDepthWeight = new QLabel(tr("Depth Weight:"), this->panel);
@@ -51,6 +52,7 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->labelStepLength = new QLabel(tr("Ray Step:"), this->panel);
 	this->labelMode = new QLabel(tr("Mode:"), this->panel);
 	this->checkBoxUpdateContinuously->setText(tr("Update Continuously"));
+	this->checkBoxShading->setText(tr("Shading"));
 
 	this->doubleSpinBoxStretchX = new QDoubleSpinBox(this->panel);
 	this->labelStretchX = new QLabel(tr("Stretch X:"), this->panel);
@@ -88,6 +90,7 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->layout->setColumnStretch(2, 10);
 	this->layout->addWidget(this->toolButtonMore, 1, 2, 1, 1, Qt::AlignCenter);
 	this->layout->addWidget(this->checkBoxUpdateContinuously, 1, 3, 1, 1, Qt::AlignLeft);
+	this->layout->addWidget(this->checkBoxShading, 3, 3, 1, 1, Qt::AlignLeft);
 
 	this->layout->addWidget(this->labelStretchX, 3, 0, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->doubleSpinBoxStretchX,3, 1, 1, 1);
@@ -134,6 +137,7 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 
 
 	this->checkBoxUpdateContinuously->setChecked(false);
+	this->checkBoxShading->setChecked(false);
 
 	//todo: refactor this class. avoid repeating code
 	this->doubleSpinBoxStretchX->setMaximum(9999);
@@ -193,6 +197,7 @@ GLWindow3DParams ControlPanel3D::getParams() {
 	this->params.stretchZ = this->doubleSpinBoxStretchZ->value();
 	this->params.gamma = this->doubleSpinBoxGamma->value();
 	this->params.alphaExponent = this->doubleSpinBoxAlphaExponent->value();
+	this->params.shading = this->checkBoxShading->isChecked();
 
 	return this->params;
 }
@@ -208,6 +213,7 @@ void ControlPanel3D::updateDisplayParameters() {
 		this->spinBoxSmoothFactor->setVisible(false);
 		this->labelAlphaExponent->setVisible(false);
 		this->doubleSpinBoxAlphaExponent->setVisible(false);
+		this->checkBoxShading->setVisible(false);
 
 	} else if(this->params.displayMode == "Isosurface"){
 		this->labelDepthWeight->setVisible(false);
@@ -216,6 +222,7 @@ void ControlPanel3D::updateDisplayParameters() {
 		this->spinBoxSmoothFactor->setVisible(true);
 		this->labelAlphaExponent->setVisible(false);
 		this->doubleSpinBoxAlphaExponent->setVisible(false);
+		this->checkBoxShading->setVisible(false);
 
 	} else if(this->params.displayMode == "MIDA" || this->params.displayMode == "Alpha blending"){
 		this->labelDepthWeight->setVisible(false);
@@ -224,6 +231,7 @@ void ControlPanel3D::updateDisplayParameters() {
 		this->spinBoxSmoothFactor->setVisible(false);
 		this->labelAlphaExponent->setVisible(true);
 		this->doubleSpinBoxAlphaExponent->setVisible(true);
+		this->checkBoxShading->setVisible(true && this->extendedView);
 
 	}else{
 		this->labelDepthWeight->setVisible(false);
@@ -232,6 +240,7 @@ void ControlPanel3D::updateDisplayParameters() {
 		this->spinBoxSmoothFactor->setVisible(false);
 		this->labelAlphaExponent->setVisible(false);
 		this->doubleSpinBoxAlphaExponent->setVisible(false);
+		this->checkBoxShading->setVisible(false);
 	}
 }
 
@@ -290,6 +299,7 @@ void ControlPanel3D::setParams(GLWindow3DParams params) {
 	this->doubleSpinBoxStretchZ->setValue(params.stretchZ);
 	this->doubleSpinBoxGamma->setValue(params.gamma);
 	this->doubleSpinBoxAlphaExponent->setValue(params.alphaExponent);
+	this->checkBoxShading->setChecked(params.shading);
 	this->updateDisplayParameters();
 	this->connectGuiToSettingsChangedSignal();
 }
@@ -307,6 +317,7 @@ void ControlPanel3D::enableExtendedView(bool enable) {
 	this->doubleSpinBoxStepLength->setVisible(enable);
 	this->labelGamma->setVisible(enable);
 	this->doubleSpinBoxGamma->setVisible(enable);
+	this->checkBoxShading->setVisible(enable && (this->params.displayMode == "MIDA" || this->params.displayMode == "Alpha blending"));
 }
 
 void ControlPanel3D::findGuiElements() {

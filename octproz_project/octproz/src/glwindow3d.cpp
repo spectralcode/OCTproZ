@@ -138,6 +138,7 @@ void GLWindow3D::setSettings(QVariantMap settings) {
 	params.depthWeight = settings.value(DEPTH_WEIGHT).toReal();
 	params.smoothFactor = settings.value(SMOOTH_FACTOR).toInt();
 	params.alphaExponent = settings.value(ALPHA_EXPONENT).toReal();
+	params.shading = settings.value(SHADING_ENABLED).toBool();
 	this->panel->setParams(params);
 }
 
@@ -157,6 +158,7 @@ QVariantMap GLWindow3D::getSettings() {
 	settings.insert(DEPTH_WEIGHT, params.depthWeight);
 	settings.insert(SMOOTH_FACTOR, params.smoothFactor);
 	settings.insert(ALPHA_EXPONENT, params.alphaExponent);
+	settings.insert(SHADING_ENABLED, params.shading);
 	return settings;
 }
 
@@ -275,6 +277,7 @@ void GLWindow3D::raycasting(const QString& shader) {
 		m_shaders[shader]->setUniformValue("depth_weight", m_depth_weight);
 		m_shaders[shader]->setUniformValue("smooth_factor", m_smooth_factor);
 		m_shaders[shader]->setUniformValue("alpha_exponent", m_alpha_exponent);
+		m_shaders[shader]->setUniformValue("shading_enabled", m_shading_enabled);
 
 		glClearColor(m_background.redF(), m_background.greenF(), m_background.blueF(), m_background.alphaF());
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -425,6 +428,7 @@ void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
 	this->m_depth_weight = params.depthWeight;
 	this->setSmoothFactor(params.smoothFactor);
 	this->setAlphaExponent(params.alphaExponent);
+	this->enableShading(params.shading);
 }
 
 void GLWindow3D::saveSettings() {

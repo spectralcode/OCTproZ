@@ -46,6 +46,7 @@ uniform sampler2D jitter;
 
 uniform float gamma;
 uniform float alpha_exponent;
+uniform bool shading_enabled;
 
 // Ray
 struct Ray {
@@ -59,14 +60,36 @@ struct AABB {
 	vec3 bottom;
 };
 
-// Estimate normal from a finite difference approximation of the gradient
-vec3 normal(vec3 position, float intensity)
+vec3 normal(vec3 position)
 {
-	float d = step_length;
-	float dx = texture(volume, position + vec3(d,0,0)).r - intensity;
-	float dy = texture(volume, position + vec3(0,d,0)).r - intensity;
-	float dz = texture(volume, position + vec3(0,0,d)).r - intensity;
-	return -normalize(NormalMatrix * vec3(dx, dy, dz));
+	float h = 0.001;
+	vec3 n = vec3(0.0, 0.0, 0.0);
+	for(int i=0; i<4; i++) {
+		vec3 e =0.577350269*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
+		n += e*texture(volume, position+e*h).r;
+	}
+	return -normalize(n);
+}
+
+vec3 normal_smooth(vec3 position, const int smoothing_factor)
+{
+	float delta = 0.001;
+	int counter = 0;
+	vec3 averaged_normal;
+	const int n = smoothing_factor;
+
+	for(int x = -1*n; x <= n; x++) {
+		for(int y = -1*n; y <= n; y++) {
+			for(int z = -1*n; z <= n; z++) {
+				vec3 deltaPos = position + vec3(x*delta, y*delta, z*delta);
+				float intensity = texture(volume, deltaPos).r;
+				averaged_normal += normal(deltaPos);
+				counter++;
+			}
+		}
+	}
+
+	return averaged_normal /= counter;
 }
 
 // Slab method for ray-box intersection
@@ -90,6 +113,21 @@ vec4 colour_transfer(float intensity)
 	vec3 low = vec3(0.0, 0.0, 0.0);
 	float alpha = pow(intensity, alpha_exponent);
 	return vec4(intensity * high + (1.0 - intensity) * low, alpha);
+}
+
+// Blinn-Phong shading
+vec3 shading(vec3 colour, vec3 position, vec3 ray)
+{
+	vec3 L = normalize(light_position - position);
+	vec3 V = -normalize(ray);
+	vec3 N = normal(position);
+	vec3 H = normalize(L + V);
+
+	float Ia = 0.75;
+	float Id = 0.5 * max(0, dot(N, L));
+	float Is = 1.0 * pow(max(0, dot(N, H)), 600);
+
+	return (Ia + Id) * colour.rgb + Is * vec3(1.0);
 }
 
 void main()
@@ -131,6 +169,10 @@ void main()
 		// Alpha-blending
 		colour.rgb = c.a * c.rgb + (1 - c.a) * colour.a * colour.rgb;
 		colour.a = c.a + (1 - c.a) * colour.a;
+
+		if(shading_enabled){
+			colour.rgb = shading(colour.rgb, position, ray);
+		}
 
 		ray_length -= step_length;
 		position += step_vector;

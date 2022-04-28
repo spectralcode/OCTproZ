@@ -41,6 +41,7 @@
 #define DEPTH_WEIGHT "depth_weight"
 #define SMOOTH_FACTOR "smooth_factor"
 #define ALPHA_EXPONENT "alpha_exponent"
+#define SHADING_ENABLED "shading_enabled"
 
 #include <QSpinBox>
 #include <QLabel>
@@ -75,6 +76,7 @@ struct GLWindow3DParams {
 	qreal depthWeight;
 	int smoothFactor;
 	qreal alphaExponent;
+	bool shading;
 };
 
 class ControlPanel3D : public QWidget
@@ -111,6 +113,7 @@ private:
 	QLabel* labelMode;
 	StringSpinBox* stringBoxModes;
 	QCheckBox* checkBoxUpdateContinuously;
+	QCheckBox* checkBoxShading;
 	QHBoxLayout* widgetLayout;
 	QGridLayout* layout;
 

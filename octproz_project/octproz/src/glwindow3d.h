@@ -112,6 +112,11 @@ public:
 		update();
 	}
 
+	void enableShading(const GLboolean shading_enabled) {
+		m_shading_enabled = shading_enabled;
+		update();
+	}
+
 	void setMode(const QString& mode) {
 		m_active_mode = mode;
 		update();
@@ -230,6 +235,7 @@ private:
 	GLfloat m_depth_weight;
 	GLfloat m_alpha_exponent;
 	GLint m_smooth_factor;
+	GLboolean m_shading_enabled;
 
 	RayCastVolume *raycastingVolume;
 
