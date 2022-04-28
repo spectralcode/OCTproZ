@@ -75,6 +75,7 @@ uniform sampler3D volume;
 uniform sampler2D jitter;
 
 uniform float gamma;
+uniform bool shading_enabled;
 
 // Ray
 struct Ray {
@@ -147,6 +148,21 @@ void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 	t_1 = min(t.x, t.y);
 }
 
+// Blinn-Phong shading
+vec3 shading(vec3 colour, vec3 position, vec3 ray)
+{
+	vec3 L = normalize(light_position - position);
+	vec3 V = -normalize(ray);
+	vec3 N = smooth_factor > 0 ? normal_smooth(position, smooth_factor) : normal(position);
+	vec3 H = normalize(L + V);
+
+	float Ia = 0.2;
+	float Id = 0.7 * max(0, dot(N, L));
+	float Is = 1.5 * pow(max(0, dot(N, H)), 600);
+
+	return (Ia + Id) * colour + Is * vec3(1.0);
+}
+
 void main()
 {
 	vec3 ray_direction;
@@ -187,15 +203,8 @@ void main()
 			intensity = texture(volume, position).r;
 
 			// Blinn-Phong shading
-			vec3 L = normalize(light_position - position);
-			vec3 V = -normalize(ray);
-			vec3 N = smooth_factor > 0 ? normal_smooth(position, smooth_factor) : normal(position);
-			vec3 H = normalize(L + V);
+			colour = shading(material_colour, position, ray);
 
-			float Ia = 0.1;
-			float Id = 1.0 * max(0, dot(N, L));
-			float Is = 8.0 * pow(max(0, dot(N, H)), 600);
-			colour = (Ia + Id) * material_colour + Is * vec3(1.0);
 
 			break;
 		}
