@@ -119,13 +119,12 @@ vec3 normal_smooth(vec3 position, const int smoothing_factor)
 	int counter = 0;
 	vec3 averaged_normal;
 	const int n = smoothing_factor;
-
+	float weight = 0.0225*smoothing_factor*smoothing_factor-0.0525*smoothing_factor+1.045; //weight function determined by trial and error such that specular reflections look good for any smoothing factor
 	for(int x = -1*n; x <= n; x++) {
 		for(int y = -1*n; y <= n; y++) {
 			for(int z = -1*n; z <= n; z++) {
 				vec3 deltaPos = position + vec3(x*delta, y*delta, z*delta);
-				float intensity = texture(volume, deltaPos).r;
-				averaged_normal += normal(deltaPos);
+				averaged_normal += weight*normal(deltaPos);
 				counter++;
 			}
 		}
