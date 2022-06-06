@@ -73,6 +73,8 @@
 #include "controlpanel.h"
 #include "settings.h"
 
+#define DELAY_TIME_IN_ms 80
+
 
 /*!
  * \brief Class for a raycasting canvas widget.
@@ -197,6 +199,7 @@ protected:
 	void leaveEvent(QEvent* event) override;
 
 private:
+	bool delayedUpdatingRunning;
 	bool initialized;
 	bool changeTextureSizeFlag;
 	bool updateContinuously;
@@ -205,6 +208,9 @@ private:
 	unsigned int volumeWidth;
 	unsigned int volumeHeight;
 	unsigned int volumeDepth;
+	qreal fps;
+	QElapsedTimer timer;
+	int counter;
 
 	QMenu* contextMenu;
 	QAction* screenshotAction;
@@ -279,6 +285,8 @@ private:
 	void addShader(const QString& name, const QString& vector, const QString& fragment);
 
 	void initContextMenu();
+	void delayedUpdate();
+	void countFPS();
 };
 
 

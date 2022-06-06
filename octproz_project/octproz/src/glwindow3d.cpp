@@ -90,6 +90,7 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 
 	this->panel->setModes(modes);
 
+	this->delayedUpdatingRunning = false;
 	this->initialized = false;
 	this->changeTextureSizeFlag = false;
 	this->updateContinuously = true;
@@ -109,6 +110,10 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 	this->setMode("MIP");
 	this->setThreshold(0.5);
 	this->setStepLength(0.01f);
+
+	this->fps = 0.0;
+	//this->timer.start();
+	this->counter = 0;
 
 	connect(this->panel, &ControlPanel3D::displayParametersChanged, this, &GLWindow3D::slot_updateDisplayParams);
 }
@@ -221,6 +226,8 @@ void GLWindow3D::resizeGL(int w, int h) {
 
 
 void GLWindow3D::paintGL() {
+	//this->countFPS();
+
 	// Compute geometry
 	m_viewMatrix.setToIdentity();
 	m_viewMatrix.translate(0, 0, -4.0f * std::exp(m_distExp / 600.0f));
@@ -239,6 +246,11 @@ void GLWindow3D::paintGL() {
 
 	if(this->updateContinuously){
 		update();
+	}else{
+		if(!this->delayedUpdatingRunning){
+			this->delayedUpdatingRunning = true;
+			QTimer::singleShot(DELAY_TIME_IN_ms, this, QOverload<>::of(&GLWindow3D::delayedUpdate)); //todo: consider using Gpu2HostNotifier to notify GLWindow3D when new volume data is available
+		}
 	}
 }
 
@@ -429,6 +441,27 @@ void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
 	this->setSmoothFactor(params.smoothFactor);
 	this->setAlphaExponent(params.alphaExponent);
 	this->enableShading(params.shading);
+}
+
+void GLWindow3D::delayedUpdate() {
+	this->update();
+	this->delayedUpdatingRunning = false;
+}
+
+void GLWindow3D::countFPS() {
+	if(!this->timer.isValid()) {
+		this->timer.start();
+	}
+	qreal elapsedTime = timer.elapsed();
+	qreal captureInfoTime = 5000;
+	this->counter++;
+	if (elapsedTime >= captureInfoTime) {
+		this->fps  = (qreal)counter / (elapsedTime / 1000.0);
+		emit info(QString::number(fps));
+
+	timer.restart();
+	this->counter = 0;
+	}
 }
 
 void GLWindow3D::saveSettings() {
