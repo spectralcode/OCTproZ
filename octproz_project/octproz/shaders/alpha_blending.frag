@@ -60,9 +60,10 @@ struct AABB {
 	vec3 bottom;
 };
 
+//from https://iquilezles.org/articles/normalsSDF/
 vec3 normal(vec3 position)
 {
-	float h = 0.001;
+	float h = 0.005;
 	vec3 n = vec3(0.0, 0.0, 0.0);
 	for(int i=0; i<4; i++) {
 		vec3 e =0.577350269*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
@@ -77,19 +78,16 @@ vec3 normal_smooth(vec3 position, const int smoothing_factor)
 	int counter = 0;
 	vec3 averaged_normal;
 	const int n = smoothing_factor;
-
 	for(int x = -1*n; x <= n; x++) {
 		for(int y = -1*n; y <= n; y++) {
 			for(int z = -1*n; z <= n; z++) {
 				vec3 deltaPos = position + vec3(x*delta, y*delta, z*delta);
-				float intensity = texture(volume, deltaPos).r;
 				averaged_normal += normal(deltaPos);
 				counter++;
 			}
 		}
 	}
-
-	return averaged_normal /= counter;
+	return normalize(averaged_normal /= counter);
 }
 
 // Slab method for ray-box intersection
@@ -169,6 +167,9 @@ void main()
 		// Alpha-blending
 		colour.rgb = c.a * c.rgb + (1 - c.a) * colour.a * colour.rgb;
 		colour.a = c.a + (1 - c.a) * colour.a;
+
+		//depth cue
+		//colour.rgb = colour.rgb*(pow(1.75, (ray_length/length(ray)))/(1.75));
 
 		if(shading_enabled){
 			colour.rgb = shading(colour.rgb, position, ray);

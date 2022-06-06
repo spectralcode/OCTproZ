@@ -45,6 +45,7 @@ uniform sampler3D volume;
 uniform sampler2D jitter;
 
 uniform float gamma;
+uniform bool shading_enabled;
 
 // Ray
 struct Ray {
@@ -58,14 +59,16 @@ struct AABB {
 	vec3 bottom;
 };
 
-// Estimate normal from a finite difference approximation of the gradient
-vec3 normal(vec3 position, float intensity)
+//from https://iquilezles.org/articles/normalsSDF/
+vec3 normal(vec3 position)
 {
-	float d = step_length;
-	float dx = texture(volume, position + vec3(d,0,0)).r - intensity;
-	float dy = texture(volume, position + vec3(0,d,0)).r - intensity;
-	float dz = texture(volume, position + vec3(0,0,d)).r - intensity;
-	return -normalize(NormalMatrix * vec3(dx, dy, dz));
+	float h = 0.005;
+	vec3 n = vec3(0.0, 0.0, 0.0);
+	for(int i=0; i<4; i++) {
+		vec3 e =0.577350269*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
+		n += e*texture(volume, position+e*h).r;
+	}
+	return -normalize(n);
 }
 
 // Slab method for ray-box intersection
@@ -89,6 +92,20 @@ vec4 colour_transfer(float intensity)
 	vec3 low = vec3(0.0, 0.0, 0.0);
 	float alpha = (exp(intensity) - 1.0) / (exp(1.0) - 1.0);
 	return vec4(intensity * high + (1.0 - intensity) * low, alpha);
+}
+
+vec3 shading(vec3 colour, vec3 position, vec3 ray)
+{
+	vec3 L = normalize(light_position - position);
+	vec3 V = -normalize(ray);
+	vec3 N = normal(position);
+	vec3 H = normalize(L + V);
+
+	float Ia = 0.75;
+	float Id = 0.5 * max(0, dot(N, L));
+	float Is = 1.0 * pow(max(0, dot(N, H)), 600);
+
+	return (Ia + Id) * colour.rgb + Is * vec3(1.0);
 }
 
 void main()

@@ -89,9 +89,10 @@ struct AABB {
 	vec3 bottom;
 };
 
+//from https://iquilezles.org/articles/normalsSDF/
 vec3 normal(vec3 position)
 {
-	float h = 0.001;
+	float h = 0.005;
 	vec3 n = vec3(0.0, 0.0, 0.0);
 	for(int i=0; i<4; i++) {
 		vec3 e =0.577350269*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
@@ -99,7 +100,6 @@ vec3 normal(vec3 position)
 	}
 	return -normalize(n);
 }
-
 
 // Slab method for ray-box intersection
 void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
@@ -180,6 +180,9 @@ void main()
 			float tmp = (1.0-weighting*colour.a)*c.a;
 			colour.rgb = weighting*colour.rgb+tmp*c.rgb;
 			colour.a = weighting*colour.a+tmp;
+
+			//depth cue
+			//colour.rgb = colour.rgb*(pow(1.75, (ray_length/length(ray)))/(1.75));
 
 			if(shading_enabled){
 				colour.rgb = shading(colour.rgb, position, ray);
