@@ -202,7 +202,6 @@ void main()
 			// Blinn-Phong shading
 			colour = shading(material_colour, position, ray);
 
-
 			break;
 		}
 
