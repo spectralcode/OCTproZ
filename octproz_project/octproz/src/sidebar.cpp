@@ -290,8 +290,6 @@ void Sidebar::updateProcessingParams() {
 	params->signalGrayscaleMin = this->ui.doubleSpinBox_signalMin->value();
 	params->signalMultiplicator = this->ui.doubleSpinBox_signalMultiplicator->value();
 	params->signalAddend = this->ui.doubleSpinBox_signalAddend->value();
-	params->stopAfterRecord = this->ui.checkBox_stopAfterRec->isChecked();
-	params->numberOfBuffersToRecord = this->ui.spinBox_volumes->value();
 	params->fixedPatternNoiseRemoval = this->ui.groupBox_fixedPatternNoiseRemoval->isChecked();
 	params->continuousFixedPatternNoiseDetermination = this->ui.radioButton_continuously->isChecked();
 	params->bscansForNoiseDetermination = this->ui.spinBox_bscansFixedNoise->value();
@@ -303,6 +301,16 @@ void Sidebar::updateStreamingParams() {
 	params->streamingParamsChanged = params->streamToHost == this->ui.groupBox_streaming->isChecked() ? false : true;
 	params->streamToHost = this->ui.groupBox_streaming->isChecked();
 	params->streamingBuffersToSkip = this->ui.spinBox_streamingBuffersToSkip->value();
+}
+
+void Sidebar::updateRecordingParams() {
+	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
+	params->updateBufferSizeInBytes();
+	params->recParams.fileName = this->ui.lineEdit_recName->text();
+	params->recParams.savePath = this->ui.lineEdit_saveFolder->text();
+	params->recParams.stopAfterRecord = this->ui.checkBox_stopAfterRec->isChecked();
+	params->recParams.buffersToRecord = this->ui.spinBox_volumes->value();
+	params->recParams.startWithFirstBuffer = this->ui.checkBox_startWithFirstBuffer->isChecked();
 }
 
 void Sidebar::enableRecordTab(bool enable) {
@@ -401,6 +409,7 @@ void Sidebar::slot_updateProcessingParams() {
 	this->updateWindowingParams();
 	this->updateStreamingParams();
 	this->updateProcessingParams();
+	this->updateRecordingParams();
 	params->acquisitionParamsChanged = false;
 }
 

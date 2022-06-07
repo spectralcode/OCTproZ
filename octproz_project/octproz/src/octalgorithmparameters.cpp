@@ -43,16 +43,11 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	this->useCustomResampleCurve = false;
 	this->dispersionUpdated = false;
 	this->windowUpdated = false;
-	this->stopAfterRecord = false;
-	this->recordingProcessedEnabled = false;
 	this->streamingParamsChanged = true;
 	this->streamToHost = false;
 	this->streamingBuffersToSkip = 0;
-	this->numberOfBuffersToRecord = 0;
-	this->copiedBuffers = 0;
 	this->resampleCurveLength = 0;
 	this->curstomResampleCurveLength = 0;
-
 	this->resampleCurve = nullptr;
 	this->customResampleCurve = nullptr;
 	this->resampleReferenceCurve = nullptr;
@@ -86,6 +81,9 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	this->volumeViewEnabled = false;
 
 	this->samplesPerLine = 100;
+
+	this->recParams.stopAfterRecord = false;
+	this->recParams.buffersToRecord = 1;
 }
 
 OctAlgorithmParameters* OctAlgorithmParameters::getInstance() {
@@ -105,6 +103,11 @@ OctAlgorithmParameters::~OctAlgorithmParameters()
 	if(this->customResampleCurve != nullptr){
 		free(this->customResampleCurve);
 	}
+}
+
+void OctAlgorithmParameters::updateBufferSizeInBytes() {
+	unsigned int bytesPerSample = ceil((double)(this->bitDepth) / 8.0);
+	recParams.bufferSizeInBytes = bytesPerSample * this->samplesPerLine * this->ascansPerBscan * this->bscansPerBuffer;
 }
 
 void OctAlgorithmParameters::updateResampleCurve() {

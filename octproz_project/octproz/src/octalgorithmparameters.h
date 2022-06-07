@@ -30,6 +30,7 @@
 
 #include "polynomial.h"
 #include "windowfunction.h"
+#include <QString>
 
 #define FIXED_PATTERN_NOISE_REMOVAL_SEGMENTS 9
 
@@ -38,6 +39,17 @@ enum INTERPOLATION {
 	LINEAR,
 	CUBIC,
 	LANCZOS
+};
+
+struct RecordingParams {
+	QString timeStamp;
+	QString fileName;
+	QString savePath;
+	size_t bufferSizeInBytes;
+	unsigned int buffersToRecord;
+	bool startWithFirstBuffer;
+
+	bool stopAfterRecord;
 };
 
 
@@ -58,6 +70,7 @@ public:
 	**/
 	~OctAlgorithmParameters();
 
+	void updateBufferSizeInBytes();
 	void updateResampleCurve();
 	void updateDispersionCurve();
 	void updateWindowCurve();
@@ -127,11 +140,8 @@ public:
 	bool volumeViewEnabled;
 
 	//recording
-	bool recordingProcessedEnabled;
-	bool recordingBufferRegistered;
-	bool stopAfterRecord;
-	unsigned int numberOfBuffersToRecord;
-	unsigned int copiedBuffers;
+	RecordingParams recParams;
+
 
 	//streaming
 	bool streamingParamsChanged;

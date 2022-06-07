@@ -58,6 +58,7 @@ public:
 	void connectUpdateProcessingParams();
 	void updateProcessingParams();
 	void updateStreamingParams(); //todo: find a nice way to enable/disable streaming (allocate/release memory for streaming buffers)
+	void updateRecordingParams();
 	void enableRecordTab(bool enable);
 	void addActionsForKlinGroupBoxMenu(QList<QAction*> actions);
 
