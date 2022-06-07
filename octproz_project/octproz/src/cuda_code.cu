@@ -642,19 +642,6 @@ extern "C" void cuda_updateWindowCurve(float* h_windowCurve, int size) {
 
 
 
-extern "C" void cuda_registerProcessedRecordBuffer(void* h_recBuffer, size_t size) {
-#ifdef __aarch64__
-	checkCudaErrors(cudaHostAlloc((void**)&h_recBuffer, size, cudaHostAllocPortable)); //todo: check if memory is allocated twice and adjust host code such that memory allocation just happens once (cudaHostAlloc will allocate memory but the host already allocated memory)
-#else
-	checkCudaErrors(cudaHostRegister(h_recBuffer, size, cudaHostRegisterPortable));
-#endif
-	host_RecordBuffer = h_recBuffer;
-}
-
-extern "C" void cuda_unregisterProcessedRecordBuffer(void* h_recBuffer) {
-	checkCudaErrors(cudaHostUnregister(h_recBuffer));
-	host_RecordBuffer = NULL;
-}
 
 extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer) {
 #ifdef __aarch64__
@@ -1352,8 +1339,8 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		printf("Cuda error: %s\n", cudaGetErrorString(err));
 	}
 
-	//Copy/Stream processed data to Host continuously
-	if (params->streamToHost && !params->recordingProcessedEnabled && !params->streamingParamsChanged) {
+	//Copy/Stream processed data to host continuously
+	if (params->streamToHost && !params->streamingParamsChanged) {
 		params->currentBufferNr = bufferNumberInVolume;
 		streamProcessedData(d_currBuffer);
 	}

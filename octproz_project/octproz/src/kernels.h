@@ -64,8 +64,6 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 extern "C" void octCudaPipeline(void* h_inputSignal);
 extern "C" void cleanupCuda();
 extern "C" void freeCudaMem(void* data);
-extern "C" void cuda_registerProcessedRecordBuffer(void* h_recBuffer, size_t size);
-extern "C" void cuda_unregisterProcessedRecordBuffer(void* h_recBuffer);
 extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
 extern "C" void cuda_unregisterStreamingBuffers();
 extern "C" void cuda_registerGlBufferBscan(GLuint buf);

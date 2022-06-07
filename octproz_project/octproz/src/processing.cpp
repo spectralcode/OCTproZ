@@ -174,19 +174,10 @@ void Processing::slot_start(AcquisitionSystem* system){
 }
 
 void Processing::slot_enableRecording(bool enableRawRecording, bool enableProcessedRecording) {
-	RecordingParams recParams;
-	unsigned int width = this->octParams->samplesPerLine;
-	unsigned int height = this->octParams->ascansPerBscan;
-	unsigned int depth = this->octParams->bscansPerBuffer;
-	unsigned int bytesPerSample = ceil((double)(this->octParams->bitDepth) / 8.0); //todo: avoid this calculation here. put bytesPerSample in octsalgorithmparameters.
-	recParams.bufferSizeInBytes = width * height*depth*bytesPerSample;
-	recParams.buffersToRecord = this->octParams->numberOfBuffersToRecord;
-	recParams.fileName = Settings::getInstance()->recordSettings.value(REC_NAME).toString();
-	if (recParams.fileName != "") {
-		recParams.fileName = "_" + recParams.fileName;
-	}
-	recParams.savePath = Settings::getInstance()->recordSettings.value(REC_PATH).toString();
-	recParams.startWithFirstBuffer = Settings::getInstance()->recordSettings.value(REC_START_WITH_FIRST_BUFFER).toBool(); //todo: do not use settings object to get recParams. emit recParams from octproz
+	//get recording params
+	RecordingParams recParams = this->octParams->recParams;
+
+	//set time stamp so it can be used for all file names of same recording session
 	recParams.timeStamp = Settings::getInstance()->getTimestamp();
 	
 	if (enableRawRecording) {
@@ -277,18 +268,6 @@ void Processing::enableGpu2HostStreaming(bool enableStreaming) {
 		this->streamingBuffer->releaseMemory();
 		emit info(tr("GPU to Host-Ram Streaming disabled."));
 	}
-}
-
-void Processing::registerRecordHostBuffer(void* buffer, size_t size){
-	cuda_registerProcessedRecordBuffer(buffer, size);
-	octParams->recordingProcessedEnabled = true;
-	octParams->copiedBuffers = 0;
-}
-
-void Processing::unregisterRecordHostBuffer(void* buffer) {
-	cuda_unregisterProcessedRecordBuffer(buffer);
-	octParams->recordingProcessedEnabled = false;
-	octParams->copiedBuffers = 0;
 }
 
 void Processing::registerStreamingHostBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer) {

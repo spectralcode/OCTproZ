@@ -45,15 +45,12 @@ public:
 	~Gpu2HostNotifier();
 
 	static void CUDART_CB dh2StreamingCallback(cudaStream_t event, cudaError_t status, void* currStreamingBuffer);
-	static void CUDART_CB d2hCopyProcessedDoneCallback(cudaStream_t event, cudaError_t status, void* recordBuffer);
-
 
 private:
 	Gpu2HostNotifier(QObject *parent);
 	static Gpu2HostNotifier* gpu2hostNotifier;
 
 public slots:
-	void emitProcessedRecordDone(void* recordBuffer);
 	void emitCurrentStreamingBuffer(void* currStreamingBuffer);
 
 signals:

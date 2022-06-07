@@ -78,8 +78,6 @@ public slots :
 	void slot_registerEnFaceViewOpenGLbufferWithCuda(unsigned int openGLbufferId);
 	void slot_registerVolumeViewOpenGLbufferWithCuda(unsigned int openGLbufferId);
 	void enableGpu2HostStreaming(bool enableStreaming);
-	void registerRecordHostBuffer(void* buffer, size_t size);
-	void unregisterRecordHostBuffer(void* buffer);
 	void registerStreamingHostBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
 	void unregisterStreamingdHostBuffers();
 

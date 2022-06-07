@@ -42,10 +42,6 @@ Gpu2HostNotifier::~Gpu2HostNotifier()
 {
 }
 
-void Gpu2HostNotifier::emitProcessedRecordDone(void* recordBuffer) {
-	emit processedRecordDone(recordBuffer);
-}
-
 void Gpu2HostNotifier::emitCurrentStreamingBuffer(void* streamingBuffer) {
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
 	emit newGpuDataAvailible(streamingBuffer, params->bitDepth, params->samplesPerLine / 2, params->ascansPerBscan, params->bscansPerBuffer, params->buffersPerVolume, params->currentBufferNr);
@@ -56,9 +52,3 @@ void CUDART_CB Gpu2HostNotifier::dh2StreamingCallback(cudaStream_t event, cudaEr
 	Gpu2HostNotifier::getInstance()->emitCurrentStreamingBuffer(currStreamingBuffer);
 }
 
-void CUDART_CB Gpu2HostNotifier::d2hCopyProcessedDoneCallback(cudaStream_t event, cudaError_t status, void *recordBuffer) {
-	//check status of GPU after copyStreamD2H operations are done
-	checkCudaErrors(status);
-	//emit processedRecordDone signal to indicate that D2H copy is done. This will trigger the save to disc procedure and unregisterRecordHostBuffer
-	Gpu2HostNotifier::getInstance()->emitProcessedRecordDone(recordBuffer);
-}
