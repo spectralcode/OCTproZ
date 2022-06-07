@@ -177,9 +177,9 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->streamingBuffersToSkipMemorized = octParams->streamingBuffersToSkip;
 
 	//restore B-scan window and EnFaceView window settings
-	this->bscanWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->bscanWindow->getName()));
-	this->enFaceViewWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->enFaceViewWindow->getName()));
-	this->volumeWindow->setSettings(Settings::getInstance()->getStoredSystemSettings(this->volumeWindow->getName()));
+	this->bscanWindow->setSettings(Settings::getInstance()->getStoredSettings(this->bscanWindow->getName()));
+	this->enFaceViewWindow->setSettings(Settings::getInstance()->getStoredSettings(this->enFaceViewWindow->getName()));
+	this->volumeWindow->setSettings(Settings::getInstance()->getStoredSettings(this->volumeWindow->getName()));
 
 	//connect(qApp, &QCoreApplication::aboutToQuit, this, &OCTproZ::saveSettings); //todo: check if there is any difference between calling saveSettings via aboutToQuit signal and via the OCTproZ destructor
 }
@@ -632,7 +632,7 @@ void OCTproZ::slot_menuExtensions() {
 	if(currAction == 0){return;}
 	QString extensionName = currAction->text();
 	Extension* extension = this->extManager->getExtensionByName(extensionName); //this just works if extension names are unique
-	extension->settingsLoaded(Settings::getInstance()->getStoredSystemSettings(extensionName)); //todo: use only signal slot to interact with extension (do not call methods directly like in this line) and move extensions to threads. Similar to AcquisitionSystems, see: implementation of activateSystem(AcquisitionSystem* system)
+	extension->settingsLoaded(Settings::getInstance()->getStoredSettings(extensionName)); //todo: use only signal slot to interact with extension (do not call methods directly like in this line) and move extensions to threads. Similar to AcquisitionSystems, see: implementation of activateSystem(AcquisitionSystem* system)
 	if(extension == nullptr){
 		emit error(tr("No Extension with name ") + extensionName + tr(" exists."));
 		return;
@@ -788,7 +788,7 @@ void OCTproZ::slot_resetGpu2HostSettings() {
 
 void OCTproZ::slot_recordingDone() {
 	this->sidebar->enableRecordTab(true);
-	if(this->octParams->stopAfterRecord && this->currSystem->acqusitionRunning){
+	if(this->octParams->recParams.stopAfterRecord && this->currSystem->acqusitionRunning){
 		this->slot_stop();
 	}
 }
@@ -875,7 +875,7 @@ void OCTproZ::setSystem(QString systemName) {
 	this->currSystem = system;
 	this->currSystemName = systemName;
 	this->setWindowTitle("OCTproZ - " + systemName);
-	emit loadPluginSettings(Settings::getInstance()->getStoredSystemSettings(systemName));
+	emit loadPluginSettings(Settings::getInstance()->getStoredSettings(systemName));
 	this->actionStart->setEnabled(true);
 	this->actionRecord->setEnabled(true);
 }

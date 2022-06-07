@@ -169,13 +169,13 @@ public:
 	void storeSystemSettings(QString sysName, QVariantMap settingsMap);
 
 	/**
-	* Loads previously stored settings from settings group defined by "sysName". This method is typically used to load arbitrary system settings.
+	* Loads previously stored settings from settings group defined by "settingsGroupName". This method is typically used to load arbitrary system settings.
 	*
 	* @see storeSystemSettings(QString sysName, QVariantMap settings)
-	* @param sysName is the group name that will be used in the settings file. To load the saved settings, the identical group name needs to be used.
+	* @param settingsGroupName is the group name that will be used in the settings file. To load the saved settings, the identical group name needs to be used.
 	* @return QVariantMap that contains previously saved settings.
 	**/
-	QVariantMap getStoredSystemSettings(QString sysName);
+	QVariantMap getStoredSettings(QString settingsGroupName);
 
 	/**
 	* Copies current settings file to path

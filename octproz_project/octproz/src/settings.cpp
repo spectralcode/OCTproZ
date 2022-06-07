@@ -123,18 +123,11 @@ void Settings::storeSystemSettings(QString sysName, QVariantMap settingsMap) {
 	this->storeValues(&settings, sysName, &this->systemSettings);
 }
 
-QVariantMap Settings::getStoredSystemSettings(QString sysName) {
-	//load keys from settings file
+QVariantMap Settings::getStoredSettings(QString settingsGroupName) {
+	QVariantMap settingsMap;
 	QSettings settings(SETTINGS_PATH, QSettings::IniFormat);
-	settings.beginGroup(sysName);
-	QStringList keys = settings.allKeys();
-	settings.endGroup();
-	for (int i = 0; i < keys.size(); i++) {
-		this->systemSettings.insert(keys.at(i), 0);
-	}
-	//load values from settings file
-	this->loadValues(&settings, sysName, &this->systemSettings);
-	return this->systemSettings;
+	this->loadValues(&settings, settingsGroupName, &settingsMap); //todo: loadValues should return a QVariantMap instead of passing a QVariantMap by pointer
+	return settingsMap;
 }
 
 void Settings::copySettingsFile(QString path) {
@@ -157,11 +150,10 @@ void Settings::storeValues(QSettings* settings, QString groupName, QVariantMap* 
 }
 
 void Settings::loadValues(QSettings* settings, QString groupName, QVariantMap* settingsMap) {
-	QMapIterator<QString, QVariant> i(*settingsMap);
 	settings->beginGroup(groupName);
-	while (i.hasNext()) {
-		i.next();
-		settingsMap->insert(i.key(), settings->value(i.key()));
+	QStringList keys = settings->allKeys();
+	for (int i = 0; i < keys.size(); i++) {
+		settingsMap->insert(keys.at(i), settings->value(keys.at(i)));
 	}
 	settings->endGroup();
 }
