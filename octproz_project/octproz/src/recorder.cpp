@@ -63,7 +63,11 @@ void Recorder::slot_abortRecording(){
 void Recorder::slot_init(RecordingParams recParams){
 	this->currRecParams = recParams;
 	this->recBuffer = (char*)malloc(this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes);
-	this->savePath = this->currRecParams.savePath + "/" + this->currRecParams.timeStamp + this->currRecParams.fileName + "_" + this->name + ".raw";
+	QString userSetFileName = this->currRecParams.fileName;
+		if (userSetFileName != "") {
+		userSetFileName = "_" + userSetFileName;
+	}
+	this->savePath = this->currRecParams.savePath + "/" + this->currRecParams.timeStamp + userSetFileName + "_" + this->name + ".raw";
 	this->initialized = true;
 	this->recordingFinished = false;
 	this->recordingEnabled = true;
