@@ -33,16 +33,8 @@
 #include "octproz_devkit.h"
 #include <QCoreApplication>
 #include <QDateTime>
+#include "octalgorithmparameters.h"
 
-struct RecordingParams {
-	QString timeStamp;
-	QString fileName;
-	QString savePath;
-	size_t bufferSizeInBytes;
-	unsigned int bufferBitDepth;
-	unsigned int buffersToRecord;
-	bool startWithFirstBuffer;
-};
 
 class Recorder : public QObject
 {
