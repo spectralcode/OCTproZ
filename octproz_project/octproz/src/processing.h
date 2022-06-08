@@ -71,7 +71,7 @@ private:
 public slots :
 	//todo: decide if prefix "slot_" should be used or not and change naming of slots accordingly
 	void slot_start(AcquisitionSystem* system);
-	void slot_enableRecording(bool enableRawRecording, bool enableProcessedRecording);
+	void slot_enableRecording(RecordingParams recParams);
 	void slot_updateDisplayedBscanFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
 	void slot_updateDisplayedEnFaceFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
 	void slot_registerBscanOpenGLbufferWithCuda(unsigned int openGLbufferId);

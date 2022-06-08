@@ -47,12 +47,6 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent) {
 		connect(widget, &MiniCurvePlot::error, this, &Sidebar::error);
 	}
 
-	//Add record mode radiobuttons to QButtonGroup
-	this->recModeGroup.addButton(this->ui.radioButton_snapshot);
-	this->recModeGroup.addButton(this->ui.radioButton_raw);
-	this->recModeGroup.addButton(this->ui.radioButton_processed);
-	this->recModeGroup.addButton(this->ui.radioButton_rawAndProcessed);
-
 	this->defaultWidth = static_cast<unsigned int>(this->dock->width());
 	this->spacer = nullptr;
 	this->initGui();
@@ -104,6 +98,9 @@ void Sidebar::initGui() {
 	this->copyInfoAction = new QAction(tr("Copy info to clipboard"), this);
 	connect(copyInfoAction, &QAction::triggered, this, &Sidebar::copyInfoToClipboard);
 	this->ui.groupBox_info->addAction(copyInfoAction);
+
+	//Tool tips
+	this->ui.groupBox_streaming->setToolTip(tr("This setting enables continuous transfer of processed OCT data to memory. This allows all plugins to access the processed OCT data. This setting must be activated if you want to display processed A-scans in the 1D plot."));
 }
 
 void Sidebar::findGuiElements() {
@@ -161,13 +158,9 @@ void Sidebar::loadSettings() {
 
 	//Recording
 	this->ui.lineEdit_saveFolder->setText(settings->recordSettings.value(REC_PATH).toString());
-	RECORD_MODE currRecMode = (RECORD_MODE)settings->recordSettings.value(REC_MODE).toInt();
-	switch (currRecMode) {
-		case SNAPSHOT: this->ui.radioButton_snapshot->setChecked(true); break;
-		case RAW: this->ui.radioButton_raw->setChecked(true); break;
-		case PROCESSED: this->ui.radioButton_processed->setChecked(true); break;
-		default: this->ui.radioButton_rawAndProcessed->setChecked(true);
-	}
+	this->ui.checkBox_recordScreenshots->setChecked(settings->recordSettings.value(REC_SCREENSHOTS).toBool());
+	this->ui.checkBox_recordRawBuffers->setChecked(settings->recordSettings.value(REC_RAW).toBool());
+	this->ui.checkBox_recordProcessedBuffers->setChecked(settings->recordSettings.value(REC_PROCESSED).toBool());
 	this->ui.checkBox_startWithFirstBuffer->setChecked(settings->recordSettings.value(REC_START_WITH_FIRST_BUFFER).toBool());
 	this->ui.checkBox_stopAfterRec->setChecked(settings->recordSettings.value(REC_STOP).toBool());
 	this->ui.checkBox_meta->setChecked(settings->recordSettings.value(REC_META).toBool());
@@ -199,7 +192,7 @@ void Sidebar::loadSettings() {
 	this->ui.doubleSpinBox_windowFillFactor->setValue(settings->processingSettings.value(PROC_WINDOWING_FILL_FACTOR).toDouble());
 	this->ui.doubleSpinBox_windowCenterPosition->setValue(settings->processingSettings.value(PROC_WINDOWING_CENTER_POSITION).toDouble());
 	this->ui.groupBox_fixedPatternNoiseRemoval->setChecked(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL).toBool());
-	this->ui.radioButton_continuously->setChecked(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_Continuously).toBool());
+	this->ui.radioButton_continuously->setChecked(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY).toBool());
 	this->ui.spinBox_bscansFixedNoise->setValue(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_BSCANS).toUInt());
 	this->ui.checkBox_sinusoidalScanCorrection->setChecked(settings->processingSettings.value(PROC_SINUSOIDAL_SCAN_CORRECTION).toBool());
 
@@ -231,7 +224,6 @@ void Sidebar::connectGuiElementsToUpdateSettingsMaps() {
 	foreach(auto element,this->groupBoxes) {
 		connect(element, &QGroupBox::clicked, this, &Sidebar::updateSettingsMaps);
 	}
-	connect(&(this->recModeGroup), static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, &Sidebar::updateSettingsMaps);
 	connect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::updateSettingsMaps);
 }
 
@@ -252,7 +244,6 @@ void Sidebar::disconnectGuiElementsFromUpdateSettingsMaps() {
 	foreach(auto element,this->groupBoxes) {
 		disconnect(element, &QGroupBox::clicked, this, &Sidebar::updateSettingsMaps);
 	}
-	disconnect(&(this->recModeGroup), static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, &Sidebar::updateSettingsMaps);
 	disconnect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::updateSettingsMaps);
 }
 
@@ -311,6 +302,10 @@ void Sidebar::updateRecordingParams() {
 	params->recParams.stopAfterRecord = this->ui.checkBox_stopAfterRec->isChecked();
 	params->recParams.buffersToRecord = this->ui.spinBox_volumes->value();
 	params->recParams.startWithFirstBuffer = this->ui.checkBox_startWithFirstBuffer->isChecked();
+	params->recParams.recordProcessed = this->ui.checkBox_recordProcessedBuffers->isChecked();
+	params->recParams.recordRaw = this->ui.checkBox_recordRawBuffers->isChecked();
+	params->recParams.recordScreenshot = this->ui.checkBox_recordScreenshots->isChecked();
+	params->recParams.saveMetaData = this->ui.checkBox_meta->isChecked();
 }
 
 void Sidebar::enableRecordTab(bool enable) {
@@ -504,8 +499,9 @@ void Sidebar::updateSettingsMaps() {
 
 	//Recording
 	settings->recordSettings.insert(REC_PATH, this->ui.lineEdit_saveFolder->text());
-	RECORD_MODE currRecMode = this->ui.radioButton_raw->isChecked() ? RAW : this->ui.radioButton_snapshot->isChecked() ? SNAPSHOT : this->ui.radioButton_processed->isChecked() ? PROCESSED : ALL;
-	settings->recordSettings.insert(REC_MODE, currRecMode);
+	settings->recordSettings.insert(REC_SCREENSHOTS, this->ui.checkBox_recordScreenshots->isChecked());
+	settings->recordSettings.insert(REC_RAW, this->ui.checkBox_recordRawBuffers->isChecked());
+	settings->recordSettings.insert(REC_PROCESSED, this->ui.checkBox_recordProcessedBuffers->isChecked());
 	settings->recordSettings.insert(REC_START_WITH_FIRST_BUFFER, this->ui.checkBox_startWithFirstBuffer->isChecked());
 	settings->recordSettings.insert(REC_STOP, this->ui.checkBox_stopAfterRec->isChecked());
 	settings->recordSettings.insert(REC_META, this->ui.checkBox_meta->isChecked());
@@ -537,7 +533,7 @@ void Sidebar::updateSettingsMaps() {
 	settings->processingSettings.insert(PROC_WINDOWING_FILL_FACTOR, this->ui.doubleSpinBox_windowFillFactor->value());
 	settings->processingSettings.insert(PROC_WINDOWING_CENTER_POSITION, this->ui.doubleSpinBox_windowCenterPosition->value());
 	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL, this->ui.groupBox_fixedPatternNoiseRemoval->isChecked());
-	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_Continuously, this->ui.radioButton_continuously->isChecked());
+	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY, this->ui.radioButton_continuously->isChecked());
 	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, this->ui.spinBox_bscansFixedNoise->value());
 	settings->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, this->ui.checkBox_sinusoidalScanCorrection->isChecked());
 

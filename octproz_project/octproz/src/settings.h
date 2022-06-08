@@ -45,7 +45,9 @@
 #define MAIN_GEOMETRY "main_geometry"
 #define MAIN_STATE "main_state"
 #define REC_PATH "path"
-#define REC_MODE "record_mode"
+#define REC_RAW "record_raw"
+#define REC_PROCESSED "record_processed"
+#define REC_SCREENSHOTS "record_screenshots"
 #define REC_STOP "stop_after_record"
 #define REC_META "save_meta_info"
 #define REC_VOLUMES "volumes"
@@ -75,7 +77,7 @@
 #define PROC_WINDOWING_FILL_FACTOR "window_fill_factor"
 #define PROC_WINDOWING_CENTER_POSITION "window_center_position"
 #define PROC_FIXED_PATTERN_REMOVAL "fixed_pattern_removal"
-#define PROC_FIXED_PATTERN_REMOVAL_Continuously "fixed_pattern_removal_Continuously"
+#define PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY "fixed_pattern_removal_continuously"
 #define PROC_FIXED_PATTERN_REMOVAL_BSCANS "fixed_pattern_removal_bscans"
 #define PROC_SINUSOIDAL_SCAN_CORRECTION "sinusoidal_scan_correction"
 #define STREAM_STREAMING "streaming_enabled"
@@ -96,13 +98,6 @@ enum SETTINGS_MODE {
 	VISUALIZATION,
 	RECORD,
 	MAIN_WINDOW
-};
-
-enum RECORD_MODE {
-	SNAPSHOT,
-	RAW,
-	PROCESSED,
-	ALL
 };
 
 class Settings : public QObject

@@ -181,7 +181,7 @@ signals:
 	void stop();
 	void allowRawGrabbing(bool allowed);
 	void record();
-	void enableRecording(bool enableRawRecording, bool enableProcessedRecording);
+	void enableRecording(RecordingParams recParams);
 	void pluginSettingsRequest();
 	void newSystemSelected();
 	void newSystem(AcquisitionSystem*);

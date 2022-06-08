@@ -32,7 +32,10 @@ Settings* Settings::settings = nullptr;
 
 Settings::Settings() {
 	this->recordSettings.insert(REC_PATH, QVariant(QString("")));
-	this->recordSettings.insert(REC_MODE, QVariant((uint)RECORD_MODE::RAW));
+	this->recordSettings.insert(REC_RAW, QVariant(false));
+	this->recordSettings.insert(REC_PROCESSED, QVariant(true));
+	this->recordSettings.insert(REC_SCREENSHOTS, QVariant(true));
+	this->recordSettings.insert(REC_RAW, QVariant(true));
 	this->recordSettings.insert(REC_STOP, QVariant(false));
 	this->recordSettings.insert(REC_META, QVariant(true));
 	this->recordSettings.insert(REC_VOLUMES, QVariant(uint(2)));
@@ -62,7 +65,7 @@ Settings::Settings() {
 	this->processingSettings.insert(PROC_WINDOWING_FILL_FACTOR, QVariant(0.9));
 	this->processingSettings.insert(PROC_WINDOWING_CENTER_POSITION, QVariant(0.5));
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL, QVariant(false));
-	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_Continuously, QVariant(false));
+	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY, QVariant(false));
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, QVariant(uint(1)));
 	this->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, QVariant(false));
 	this->streamingSettings.insert(STREAM_STREAMING, QVariant(false));

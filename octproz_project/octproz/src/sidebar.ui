@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>340</width>
-    <height>624</height>
+    <height>650</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <property name="minimumSize">
    <size>
     <width>340</width>
-    <height>624</height>
+    <height>650</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -339,7 +339,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>307</width>
-                <height>874</height>
+                <height>871</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -361,7 +361,7 @@
                <item>
                 <widget class="QGroupBox" name="groupBox_rawSignalCorrection">
                  <property name="title">
-                  <string>Raw-Signal Correction</string>
+                  <string>Acquisition adjustments</string>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_9">
                   <property name="spacing">
@@ -382,7 +382,7 @@
                   <item>
                    <widget class="QCheckBox" name="checkBox_bitshift">
                     <property name="text">
-                     <string>Bit shift sample values by 4</string>
+                     <string>Bit shift raw sample values by 4</string>
                     </property>
                    </widget>
                   </item>
@@ -690,7 +690,7 @@
                   <bool>true</bool>
                  </property>
                  <property name="title">
-                  <string>Dispersion Compensation</string>
+                  <string>Dispersion compensation</string>
                  </property>
                  <property name="flat">
                   <bool>false</bool>
@@ -1065,7 +1065,7 @@
                   <bool>true</bool>
                  </property>
                  <property name="title">
-                  <string>Fixed-Pattern Noise Removal</string>
+                  <string>Fixed-pattern noise removal</string>
                  </property>
                  <property name="flat">
                   <bool>false</bool>
@@ -1216,7 +1216,7 @@
                <item>
                 <widget class="QGroupBox" name="groupBox_3">
                  <property name="title">
-                  <string>Grayscale Conversion</string>
+                  <string>Grayscale conversion</string>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_6">
                   <property name="spacing">
@@ -1370,7 +1370,7 @@
                <item>
                 <widget class="QGroupBox" name="groupBox_streaming">
                  <property name="title">
-                  <string>Stream Processed Data to Ram</string>
+                  <string>Stream processed data to RAM</string>
                  </property>
                  <property name="checkable">
                   <bool>true</bool>
@@ -1824,7 +1824,7 @@
            <item>
             <widget class="QGroupBox" name="groupBox">
              <property name="title">
-              <string>Mode</string>
+              <string>What to record</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_3">
               <property name="spacing">
@@ -1843,30 +1843,23 @@
                <number>6</number>
               </property>
               <item>
-               <widget class="QRadioButton" name="radioButton_snapshot">
+               <widget class="QCheckBox" name="checkBox_recordScreenshots">
                 <property name="text">
-                 <string>Single Snapshot</string>
+                 <string>Screenshots</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QRadioButton" name="radioButton_raw">
+               <widget class="QCheckBox" name="checkBox_recordRawBuffers">
                 <property name="text">
-                 <string>Raw Buffers</string>
+                 <string>Raw buffers</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QRadioButton" name="radioButton_processed">
+               <widget class="QCheckBox" name="checkBox_recordProcessedBuffers">
                 <property name="text">
-                 <string>Processed Buffers</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="radioButton_rawAndProcessed">
-                <property name="text">
-                 <string>Raw and Processed Buffers</string>
+                 <string>Processed buffers</string>
                 </property>
                </widget>
               </item>
@@ -1876,7 +1869,7 @@
            <item>
             <widget class="QGroupBox" name="groupBox_2">
              <property name="title">
-              <string>Record Settings</string>
+              <string>Record settings</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4">
               <property name="spacing">

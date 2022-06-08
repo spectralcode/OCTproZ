@@ -173,26 +173,20 @@ void Processing::slot_start(AcquisitionSystem* system){
 	}
 }
 
-void Processing::slot_enableRecording(bool enableRawRecording, bool enableProcessedRecording) {
-	//get recording params
-	RecordingParams recParams = this->octParams->recParams;
-
-	//set time stamp so it can be used for all file names of same recording session
-	recParams.timeStamp = Settings::getInstance()->getTimestamp();
-	
-	if (enableRawRecording) {
+void Processing::slot_enableRecording(RecordingParams recParams) {
+	if (recParams.recordRaw) {
 		if(this->rawRecorder->recordingEnabled) {
 			emit error(tr("Recording of raw data is already running."));
 		}else{
 			emit initRawRecorder(recParams);
 		}
 	}
-	if (enableProcessedRecording) {
+	if (recParams.recordProcessed) {
 		if(this->processedRecorder->recordingEnabled) {
 			emit error(tr("Recording of processed data is already running."));
 		}else{
 			RecordingParams recProcessedParams = recParams;
-			recProcessedParams.bufferSizeInBytes = recProcessedParams.bufferSizeInBytes /2; //todo: add option to change bitdepth of processed recording
+			recProcessedParams.bufferSizeInBytes = recProcessedParams.bufferSizeInBytes/2; //todo: add option to change bitdepth of processed recording
 			emit initProcessedRecorder(recProcessedParams);
 		}
 	}

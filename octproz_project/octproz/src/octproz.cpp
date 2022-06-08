@@ -33,8 +33,9 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	ui(new Ui::OCTproZ)
 {
 	///qRegisterMetaType is needed to enabel Qt::QueuedConnection for signal slot communication with "AcquisitionParams"
-	qRegisterMetaType<AcquisitionParams >("AcquisitionParams");
-	qRegisterMetaType<size_t >("size_t");
+	qRegisterMetaType<AcquisitionParams>("AcquisitionParams");
+	qRegisterMetaType<RecordingParams>("RecordingParams");
+	qRegisterMetaType<size_t>("size_t");
 
 	qApp->setApplicationVersion(APP_VERSION);
 	qApp->setApplicationName(APP_NAME);
@@ -542,45 +543,41 @@ void OCTproZ::slot_record() {
 		return;
 	}
 
+	//check if the user selected anything to record
+	RecordingParams recParams = this->octParams->recParams;
+	if (!recParams.recordScreenshot && !recParams.recordRaw && !recParams.recordProcessed) {
+		emit error(tr("Nothing to record! Please select what to record in the recording settings!"));
+		return;
+	}
+
 	//save current parameters to hdd
 	this->saveSettings();
 
-	//get timestamp for file name of recording and if needed for the file name of the corresponding meta info
-	QString timestamp = Settings::getInstance()->getTimestamp();
-
-	bool enableRawRecording = false;
-	bool enableProcessedRecording = false;
+	//set time stamp so it can be used in all file names of the same recording session
+	recParams.timestamp = Settings::getInstance()->getTimestamp();
 
 	//get user defined rec name
-	QString recName = Settings::getInstance()->recordSettings.value(REC_NAME).toString();
+	QString recName = recParams.fileName;
 	if (recName != "") {
 		recName = "_" + recName;
 	}
 
-	RECORD_MODE recMode = (RECORD_MODE)Settings::getInstance()->recordSettings.value(REC_MODE).toUInt();
-	//check if record mode "raw" is activated and start processing if necessary
-	if (recMode == RECORD_MODE::RAW || recMode == RECORD_MODE::ALL) {
-		enableRawRecording = true;
-	}
-
-	//check if record mode "processed" is activated and start processing if necessary
-	if (recMode == RECORD_MODE::PROCESSED || recMode == RECORD_MODE::ALL) {
-		enableProcessedRecording = true;
+	//enable raw and processed recording
+	if (recParams.recordProcessed) {
 		this->slot_prepareGpu2HostForProcessedRecording();
 	}
-
-	if (enableRawRecording || enableProcessedRecording) {
+	if (recParams.recordRaw || recParams.recordProcessed) {
 		this->sidebar->enableRecordTab(false);
-		emit this->enableRecording(enableRawRecording, enableProcessedRecording); //todo: collect all recording parameters in a struct and emit struct with enableRecording signal. avoid using settings object
+		emit this->enableRecording(recParams);
 		if (!this->currSystem->acqusitionRunning) {
 			this->slot_start();
 		}
 	}
 
-	//if record mode "snaptshot" is activated save snapshot ind record directory
-	if (Settings::getInstance()->recordSettings.value(REC_MODE).toUInt() == RECORD_MODE::SNAPSHOT) {
-		QString savePath = Settings::getInstance()->recordSettings.value(REC_PATH).toString();
-		QString fileName = timestamp + recName + "_";
+	//record screenshots
+	if (recParams.recordScreenshot) {
+		QString savePath = recParams.savePath;
+		QString fileName = recParams.timestamp + recName + "_";
 		if(this->bscanWindow->isVisible()) {
 			this->bscanWindow->slot_saveScreenshot(savePath, fileName + "bscan_snapshot.png");
 		}
@@ -593,8 +590,8 @@ void OCTproZ::slot_record() {
 	}
 
 	//check if meta information should be saved
-	if (Settings::getInstance()->recordSettings.value(REC_META).toBool() == true) {
-		QString metaFileName = Settings::getInstance()->recordSettings.value(REC_PATH).toString() + "/" + Settings::getInstance()->getTimestamp() + recName + "_meta.txt";
+	if (recParams.saveMetaData) {
+		QString metaFileName = recParams.savePath + "/" + recParams.timestamp + recName + "_meta.txt";
 		Settings::getInstance()->copySettingsFile(metaFileName);
 	}
 

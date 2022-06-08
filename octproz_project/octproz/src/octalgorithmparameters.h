@@ -42,12 +42,16 @@ enum INTERPOLATION {
 };
 
 struct RecordingParams {
-	QString timeStamp;
+	QString timestamp;
 	QString fileName;
 	QString savePath;
 	size_t bufferSizeInBytes;
 	unsigned int buffersToRecord;
 	bool startWithFirstBuffer;
+	bool recordRaw;
+	bool recordProcessed;
+	bool recordScreenshot;
+	bool saveMetaData;
 
 	bool stopAfterRecord;
 };

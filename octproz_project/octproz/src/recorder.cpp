@@ -67,7 +67,7 @@ void Recorder::slot_init(RecordingParams recParams){
 		if (userSetFileName != "") {
 		userSetFileName = "_" + userSetFileName;
 	}
-	this->savePath = this->currRecParams.savePath + "/" + this->currRecParams.timeStamp + userSetFileName + "_" + this->name + ".raw";
+	this->savePath = this->currRecParams.savePath + "/" + this->currRecParams.timestamp + userSetFileName + "_" + this->name + ".raw";
 	this->initialized = true;
 	this->recordingFinished = false;
 	this->recordingEnabled = true;

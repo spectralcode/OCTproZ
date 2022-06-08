@@ -65,7 +65,6 @@ public:
 private:
 	Ui::Sidebar 			ui;
 	QDockWidget*			dock;
-	QButtonGroup			recModeGroup;
 	QWidget*				spacer;
 	QList<QLineEdit*>		lineEdits;
 	QList<QCheckBox*>		checkBoxes;
