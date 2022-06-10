@@ -1,3 +1,32 @@
+//This file is a modified version of code originally created by Martino Pilia, please see: https://github.com/m-pilia/volume-raycasting
+
+/**
+**  This file is part of OCTproZ.
+**  OCTproZ is an open source software for processig of optical
+**  coherence tomography (OCT) raw data.
+**  Copyright (C) 2019-2022 Miroslav Zabic
+**
+**  OCTproZ is free software: you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation, either version 3 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program. If not, see http://www.gnu.org/licenses/.
+**
+****
+** Author:	Miroslav Zabic
+** Contact:	zabic
+**			at
+**			spectralcode.de
+****
+**/
+
 /*
  * Copyright © 2018 Martino Pilia <martino.pilia@gmail.com>
  *
@@ -46,6 +75,7 @@ uniform sampler2D jitter;
 
 uniform float gamma;
 uniform bool shading_enabled;
+uniform float alpha_exponent;
 
 // Ray
 struct Ray {
@@ -86,11 +116,11 @@ void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 }
 
 // A very simple colour transfer function
-vec4 colour_transfer(float intensity)
+vec4 colour_transfer(float intensity, float exponent)
 {
 	vec3 high = vec3(1.0, 1.0, 1.0);
 	vec3 low = vec3(0.0, 0.0, 0.0);
-	float alpha = (exp(intensity) - 1.0) / (exp(1.0) - 1.0);
+	float alpha = pow(intensity, exponent);
 	return vec4(intensity * high + (1.0 - intensity) * low, alpha);
 }
 
@@ -148,7 +178,7 @@ void main()
 		position += step_vector;
 	}
 
-	vec4 colour = colour_transfer(maximum_intensity);
+	vec4 colour = colour_transfer(maximum_intensity, alpha_exponent);
 
 	// Blend background
 	colour.rgb = colour.a * colour.rgb + (1 - colour.a) * pow(background_colour, vec3(gamma)).rgb;

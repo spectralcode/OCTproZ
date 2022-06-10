@@ -76,6 +76,7 @@ uniform sampler2D jitter;
 
 uniform float gamma;
 uniform bool shading_enabled;
+uniform float alpha_exponent;
 
 // Ray
 struct Ray {
@@ -116,11 +117,11 @@ void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 }
 
 // A very simple colour transfer function
-vec4 colour_transfer(float intensity)
+vec4 colour_transfer(float intensity, float exponent)
 {
 	vec3 high = vec3(1.0, 1.0, 1.0);
 	vec3 low = vec3(0.1, 0.0, 0.2);
-	float alpha = (exp(intensity) - 1.0) / (exp(1.0) - 1.0);
+	float alpha = pow(intensity, exponent);
 	return vec4(intensity * high + (1.0 - intensity) * low, alpha);
 }
 
@@ -183,7 +184,7 @@ void main()
 	}
 	// Multiply MIP with depth component (inspired by Díaz Iriberri, José, and Pere Pau Vázquez Alcocer. "Depth-enhanced maximum intensity projection." 8th IEEE/EG International Symposium on Volume Graphics. 2010.)
 	maximum_intensity = maximum_intensity *  (1.0-depth_weight)+2.0*depth_weight*(0.5*ray_length_at_max/initial_ray_lenght);
-	vec4 colour = colour_transfer(maximum_intensity);
+	vec4 colour = colour_transfer(maximum_intensity, alpha_exponent);
 
 	// Blend background
 	colour.rgb = colour.a * colour.rgb + (1 - colour.a) * pow(background_colour, vec3(gamma)).rgb;

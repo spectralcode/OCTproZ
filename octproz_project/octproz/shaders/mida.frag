@@ -116,11 +116,11 @@ void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 }
 
 // A very simple colour transfer function
-vec4 colour_transfer(float intensity)
+vec4 colour_transfer(float intensity, float exponent)
 {
 	vec3 high = vec3(1.0, 1.0, 1.0);
 	vec3 low = vec3(0.0, 0.0, 0.0);
-	float alpha = pow(intensity, alpha_exponent);
+	float alpha = pow(intensity, exponent);
 	return vec4(intensity * high + (1.0 - intensity) * low, alpha);
 }
 
@@ -176,7 +176,7 @@ void main()
 			//Maximum Intensity Difference Accumulation (MIDA). Inspired by: Bruckner, Stefan, and M. Eduard Gröller. "Instant volume visualization using maximum intensity difference accumulation." Computer Graphics Forum. Vol. 28. No. 3. Oxford, UK: Blackwell Publishing Ltd, 2009.
 			weighting = 1.0 - (intensity - maxIntensity);
 			maxIntensity = intensity;
-			vec4 c = colour_transfer(intensity);
+			vec4 c = colour_transfer(intensity, alpha_exponent);
 			float tmp = (1.0-weighting*colour.a)*c.a;
 			colour.rgb = weighting*colour.rgb+tmp*c.rgb;
 			colour.a = weighting*colour.a+tmp;
