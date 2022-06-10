@@ -10,6 +10,8 @@
 		<file>shaders/depth_mip.vert</file>
 		<file>shaders/mida.frag</file>
 		<file>shaders/mida.vert</file>
+		<file>shaders/xray.frag</file>
+		<file>shaders/xray.vert</file>
 		<file>aboutdata/credits.txt</file>
 		<file>aboutdata/LICENSE</file>
 		<file>aboutdata/octproz_logo.png</file>
