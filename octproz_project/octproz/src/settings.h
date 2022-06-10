@@ -39,7 +39,6 @@
 #define TIMESTAMP "timestamp"
 #define REC "record"
 #define PROC "processing"
-#define VIZ "visualization"
 #define STREAM "streaming"
 #define MAIN "main_window_settings"
 #define MAIN_GEOMETRY "main_geometry"
@@ -93,19 +92,12 @@
 #include <QFileInfo>
 #include <QDir>
 
-enum SETTINGS_MODE {
-	PROCESSING,
-	VISUALIZATION,
-	RECORD,
-	MAIN_WINDOW
-};
 
 class Settings : public QObject
 {
 	Q_OBJECT
 public:
 	QMap<QString, QVariant> processingSettings;
-	QMap<QString, QVariant> visualizationSettings;
 	QMap<QString, QVariant> recordSettings;
 	QMap<QString, QVariant> streamingSettings;
 	QMap<QString, QVariant> mainWindowSettings;

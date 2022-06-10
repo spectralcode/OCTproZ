@@ -98,7 +98,6 @@ void Settings::storeSettings(QString path) {
 	settings.setValue(TIMESTAMP, this->timestamp);
 	this->storeValues(&settings, REC, &this->recordSettings);
 	this->storeValues(&settings, PROC, &this->processingSettings); 
-	this->storeValues(&settings, VIZ, &this->visualizationSettings); 
 	this->storeValues(&settings, STREAM, &this->streamingSettings);
 	this->storeValues(&settings, MAIN, &this->mainWindowSettings);
 }
@@ -108,7 +107,6 @@ void Settings::loadSettings(QString path) {
 	this->timestamp = settings.value(TIMESTAMP, "").toString();
 	this->loadValues(&settings, REC, &this->recordSettings);
 	this->loadValues(&settings, PROC, &this->processingSettings);
-	this->loadValues(&settings, VIZ, &this->visualizationSettings);
 	this->loadValues(&settings, STREAM, &this->streamingSettings);
 	this->loadValues(&settings, MAIN, &this->mainWindowSettings);
 }
