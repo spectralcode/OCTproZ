@@ -81,12 +81,17 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 
 
 	// Register available rendering modes here
-	QStringList modes = { "MIP", "DMIP", "MIDA", "Alpha blending", "Isosurface"};
+	QStringList modes = { "Isosurface", "MIDA", "Alpha blending", "X-ray", "DMIP", "MIP"};
+//	foreach(auto mode, modes2){
+//		m_modes[mode] = [&]() { GLWindow3D::raycasting(mode); };
+//	}
 	m_modes["MIP"] = [&]() { GLWindow3D::raycasting("MIP"); };
 	m_modes["DMIP"] = [&]() { GLWindow3D::raycasting("DMIP"); };
 	m_modes["MIDA"] = [&]() { GLWindow3D::raycasting("MIDA"); };
 	m_modes["Isosurface"] = [&]() { GLWindow3D::raycasting("Isosurface"); };
 	m_modes["Alpha blending"] = [&]() { GLWindow3D::raycasting("Alpha blending"); };
+	m_modes["X-ray"] = [&]() { GLWindow3D::raycasting("X-ray"); };
+
 
 	this->panel->setModes(modes);
 
@@ -198,6 +203,7 @@ void GLWindow3D::initializeGL() {
 		this->addShader("MIP", ":/shaders/maximum_intensity_projection.vert", ":/shaders/maximum_intensity_projection.frag");
 		this->addShader("DMIP", ":/shaders/depth_mip.vert", ":/shaders/depth_mip.frag");
 		this->addShader("MIDA", ":/shaders/mida.vert", ":/shaders/mida.frag");
+		this->addShader("X-ray", ":/shaders/xray.vert", ":/shaders/xray.frag");
 	}
 
 
