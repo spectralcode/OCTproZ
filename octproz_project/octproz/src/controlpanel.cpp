@@ -233,13 +233,22 @@ void ControlPanel3D::updateDisplayParameters() {
 		this->doubleSpinBoxAlphaExponent->setVisible(true);
 		this->checkBoxShading->setVisible(true && this->extendedView);
 
+	} else if(this->params.displayMode == "X-ray"){
+		this->labelDepthWeight->setVisible(false);
+		this->doubleSpinBoxDepthWeight->setVisible(false);
+		this->labelSmoothFactor->setVisible(false);
+		this->spinBoxSmoothFactor->setVisible(false);
+		this->labelAlphaExponent->setVisible(true);
+		this->doubleSpinBoxAlphaExponent->setVisible(true);
+		this->checkBoxShading->setVisible(false);
+
 	}else{
 		this->labelDepthWeight->setVisible(false);
 		this->doubleSpinBoxDepthWeight->setVisible(false);
 		this->labelSmoothFactor->setVisible(false);
 		this->spinBoxSmoothFactor->setVisible(false);
-		this->labelAlphaExponent->setVisible(false);
-		this->doubleSpinBoxAlphaExponent->setVisible(false);
+		this->labelAlphaExponent->setVisible(true);
+		this->doubleSpinBoxAlphaExponent->setVisible(true);
 		this->checkBoxShading->setVisible(false);
 	}
 }
