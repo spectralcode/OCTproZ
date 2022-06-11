@@ -182,13 +182,13 @@ void main()
 			colour.a = weighting*colour.a+tmp;
 
 			//depth cue
-			//colour.rgb = colour.rgb*(pow(1.75, (ray_length/length(ray)))/(1.75));
+			//colour.rgb = colour.a*colour.rgb*(pow(2.25, (ray_length/length(ray)))/(1.75));
 
 			if(shading_enabled){
 				colour.rgb = shading(colour.rgb, position, ray);
 			}
-
 		}
+
 		ray_length -= step_length;
 		position += step_vector;
 	}
