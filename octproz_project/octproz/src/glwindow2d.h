@@ -84,6 +84,8 @@
 #define DEFAULT_WIDTH  2048
 #define DEFAULT_HEIGHT 512
 
+#define DELAY_TIME_IN_ms 40
+
 
 struct LineCoordinates{
 	float x1;
@@ -147,6 +149,7 @@ private:
 	bool initialized;
 	bool changeBufferSizeFlag;
 	bool keepAspectRatio;
+	bool delayedUpdatingRunning;
 	float stretchX;
 	float stretchY;
 	float rotationAngle;
@@ -179,6 +182,7 @@ private:
 	void displayScalebars();
 	void displayMarker();
 	void displayOrientationLine(int x, int y, int length);
+	void delayedUpdate();
 
 
 protected:

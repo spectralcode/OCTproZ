@@ -27,6 +27,7 @@
 
 #include "glwindow2d.h"
 #include "settings.h"
+#include <QTimer>
 
 
 GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
@@ -43,6 +44,7 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	this->initialized = false;
 	this->changeBufferSizeFlag = false;
 	this->keepAspectRatio = true;
+	this->delayedUpdatingRunning = false;
 	this->frameNr = 0;
 	this->rotationAngle = 0.0;
 	this->stretchX = 1.0;
@@ -182,7 +184,12 @@ void GLWindow2D::displayOrientationLine(int x, int y, int length) {
 		glColor4f(0.8f, 0.8f, 0.8f, 0.8f); //hint: to use alpha channel blending needs to be enabeled in initializeGL
 		glVertex3f(-this->screenWidthScaled+distanceFromEdgeX, (this->screenHeightScaled-distanceFromEdgeY), 0.0);
 		glVertex3f(-this->screenWidthScaled+distanceFromEdgeX+normalizedLength,(this->screenHeightScaled-distanceFromEdgeY), 0.0);
-	glEnd();
+		glEnd();
+}
+
+void GLWindow2D::delayedUpdate() {
+	this->update();
+	this->delayedUpdatingRunning = false;
 }
 
 void GLWindow2D::slot_changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth) {
@@ -407,8 +414,10 @@ void GLWindow2D::paintGL() {
 	this->displayScalebars();
 	//this->displayOrientationLine(0, 250, 256); //todo: implement orientation line feature (Line that can be placed by the user at a desired position over the b-scan / en face view)
 
-	//request next frame
-	update();
+	if(!this->delayedUpdatingRunning){
+		this->delayedUpdatingRunning = true;
+		QTimer::singleShot(DELAY_TIME_IN_ms, this, QOverload<>::of(&GLWindow2D::delayedUpdate));
+	}
 }
 
 void GLWindow2D::resizeGL(int w, int h) {
