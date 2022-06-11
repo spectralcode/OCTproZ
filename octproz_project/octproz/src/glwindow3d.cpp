@@ -82,8 +82,8 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 
 	// Register available rendering modes here
 	QStringList modes = { "Isosurface", "MIDA", "Alpha blending", "X-ray", "DMIP", "MIP"};
-//	foreach(auto mode, modes2){
-//		m_modes[mode] = [&]() { GLWindow3D::raycasting(mode); };
+//	foreach(auto mode, modes){
+//		m_modes[mode] = [&]() { GLWindow3D::raycasting(mode); };  //todo: figure out why this does not work
 //	}
 	m_modes["MIP"] = [&]() { GLWindow3D::raycasting("MIP"); };
 	m_modes["DMIP"] = [&]() { GLWindow3D::raycasting("DMIP"); };
