@@ -187,21 +187,20 @@ void main()
 	while (ray_length > 0 && colour.a < 0.9) {
 
 		float intensity = texture(volume, position).r;
-		if(intensity <= threshold){
-			intensity = 0;
-		}
 
-		vec4 c = colour_transfer(intensity, alpha_exponent);
+		if(intensity > threshold){
+			vec4 c = colour_transfer(intensity, alpha_exponent);
 
-		// Alpha-blending
-		colour.rgb = c.a * c.rgb + (1 - c.a) * colour.a * colour.rgb;
-		colour.a = c.a + (1 - c.a) * colour.a;
+			// Alpha-blending
+			colour.rgb = c.a * c.rgb + (1 - c.a) * colour.a * colour.rgb;
+			colour.a = c.a + (1 - c.a) * colour.a;
 
-		//depth cue
-		//colour.rgb = colour.rgb*(pow(2.25, (ray_length/length(ray)))/(1.75));
+			//depth cue
+			//colour.rgb = colour.a*colour.rgb*(pow(2.25, (ray_length/length(ray)))/(1.75));
 
-		if(shading_enabled){
-			colour.rgb = shading(colour.rgb, position, ray);
+			if(shading_enabled){
+				colour.rgb = shading(colour.rgb, position, ray);
+			}
 		}
 
 		ray_length -= step_length;
