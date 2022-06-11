@@ -168,7 +168,6 @@ void main()
 
 	// Ray march until reaching the end of the volume or until max possible intensity encountered (early ray termination)
 	while (ray_length > 0) {
-
 		float intensity = texture(volume, position).r;
 
 		if (intensity > threshold) {
@@ -179,6 +178,7 @@ void main()
 		ray_length -= step_length;
 		position += step_vector;
 	}
+
 	float average = 0;
 	if(sample_count > 0){
 		average = sqrt(sum/sample_count);
