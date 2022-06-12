@@ -46,6 +46,7 @@ public:
 
 	virtual void stepBy(int steps) override;
 	int getIndex(){return this->currentIndex;}
+	int getIndexOf(QString text);
 	void setIndex(int index);
 	QString getText(){return this->strings.size() == 0 ? "" : this->strings.at(this->currentIndex);}
 

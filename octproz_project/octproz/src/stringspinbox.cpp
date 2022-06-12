@@ -39,7 +39,7 @@ StringSpinBox::~StringSpinBox() {
 }
 
 void StringSpinBox::setStrings(QStringList strings) {
-	this->strings 	  = strings;
+	this->strings = strings;
 	this->currentIndex  = 0;
 	this->lineEdit()->setText(this->strings.at(this->currentIndex));
 	this->adjustWidth();
@@ -50,6 +50,10 @@ void StringSpinBox::stepBy(int steps) {
 	this->currentIndex = qBound(0, this->currentIndex, this->strings.size() - 1);
 	lineEdit()->setText(this->strings.at(this->currentIndex));
 	emit indexChanged();
+}
+
+int StringSpinBox::getIndexOf(QString text) {
+	return this->strings.indexOf(text);
 }
 
 void StringSpinBox::setIndex(int index) {
