@@ -43,5 +43,10 @@ void SystemManager::addSystem(AcquisitionSystem* system){
 }
 
 AcquisitionSystem* SystemManager::getSystemByName(QString name){
-	return this->systems.at(this->systemNames.indexOf(name));
+	int index = this->systemNames.indexOf(name);
+	if(index < 0){
+		return nullptr;
+	} else {
+		return this->systems.at(index);
+	}
 }
