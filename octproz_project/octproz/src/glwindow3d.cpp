@@ -98,8 +98,7 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 	this->delayedUpdatingRunning = false;
 	this->initialized = false;
 	this->changeTextureSizeFlag = false;
-	this->updateContinuously = true;
-	this->panel->enableContinuousUpdate(this->updateContinuously);
+	this->updateContinuously = false;
 	this->raycastingVolume = nullptr;
 
 	//init panel
@@ -143,7 +142,6 @@ void GLWindow3D::setSettings(QVariantMap settings) {
 	params.stretchX = settings.value(STRETCH_X).toReal();
 	params.stretchY= settings.value(STRETCH_Y).toReal();
 	params.stretchZ = settings.value(STRETCH_Z).toReal();
-	params.updateContinuously = settings.value(CONTINUOUS_UPDATE_ENABLED).toBool();
 	params.gamma = settings.value(GAMMA).toReal();
 	params.depthWeight = settings.value(DEPTH_WEIGHT).toReal();
 	params.smoothFactor = settings.value(SMOOTH_FACTOR).toInt();
@@ -163,7 +161,6 @@ QVariantMap GLWindow3D::getSettings() {
 	settings.insert(STRETCH_X, params.stretchX);
 	settings.insert(STRETCH_Y, params.stretchY);
 	settings.insert(STRETCH_Z, params.stretchZ);
-	settings.insert(CONTINUOUS_UPDATE_ENABLED, params.updateContinuously);
 	settings.insert(GAMMA, params.gamma);
 	settings.insert(DEPTH_WEIGHT, params.depthWeight);
 	settings.insert(SMOOTH_FACTOR, params.smoothFactor);
@@ -440,7 +437,6 @@ void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
 	this->setMode(params.displayMode);
 	this->setStepLength(params.rayMarchStepLength);
 	this->setThreshold(params.threshold);
-	this->updateContinuously = params.updateContinuously;
 	this->setStretch(params.stretchX, params.stretchY, params.stretchZ);
 	this->m_gamma = params.gamma;
 	this->m_depth_weight = params.depthWeight;
@@ -471,7 +467,7 @@ void GLWindow3D::countFPS() {
 }
 
 void GLWindow3D::saveSettings() {
-	Settings::getInstance()->storeSystemSettings(this->getName(), this->getSettings());
+	Settings::getInstance()->storeSettings(this->getName(), this->getSettings());
 }
 
 void GLWindow3D::slot_saveScreenshot(QString savePath, QString fileName) {
