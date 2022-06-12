@@ -63,6 +63,7 @@
 #define MAIN_WINDOW_SETTINGS_GROUP "main_window_settings"
 #define MAIN_GEOMETRY "main_geometry"
 #define MAIN_STATE "main_state"
+#define MAIN_ACTIVE_SYSTEM "main_active_system"
 
 
 namespace Ui {
@@ -126,6 +127,7 @@ private:
 	void saveMainWindowSettings();
 	void loadSettings();
 	void saveSettings();
+	void updateSettingsMap();
 
 	Ui::OCTproZ *ui;
 	QVariantMap mainWindowSettings;

@@ -181,7 +181,6 @@ OCTproZ::OCTproZ(QWidget *parent) :
 
 OCTproZ::~OCTproZ(){
 	qDebug() << "OCTproZ destructor";
-	this->saveSettings();
 
 	processingThread.quit();
 	processingThread.wait();
@@ -204,9 +203,7 @@ OCTproZ::~OCTproZ(){
 }
 
 void OCTproZ::closeEvent(QCloseEvent* event) {
-	//save main window position and size
-	(Settings::getInstance())->mainWindowSettings.insert(MAIN_GEOMETRY, this->saveGeometry());
-	//(Settings::getInstance())->mainWindowSettings.insert(MAIN_STATE, this->saveState());
+	this->saveSettings();
 
 	//Stop acquisition if it is running
 	if (this->currSystem != nullptr) {
@@ -491,6 +488,10 @@ void OCTproZ::initExtensionsMenu() {
 }
 
 void OCTproZ::slot_start() {
+	//under certain circumstances, the OpenGL windows remain black. this fixes this issue
+	this->resize(static_cast<float>(this->size().width()-1),static_cast<float>(this->size().height()-1));
+	this->resize(static_cast<float>(this->size().width()+1),static_cast<float>(this->size().height()+1));
+
 	//(re-)init resampling curve, dispersion curve, window curve, streaming //todo: carefully check if this is really necessary here
 	this->forceUpdateProcessingParams();
 
@@ -849,10 +850,16 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 
 void OCTproZ::setSystem(QString systemName) {
 	if(this->currSystemName == systemName){ //system already activated
+		emit info(tr("System is already opened."));
 		return;
 	}
 
 	AcquisitionSystem* system = this->sysManager->getSystemByName(systemName);
+
+	if(system == nullptr){
+		emit error(tr("Opening of OCT system failed. Could not find a system with the name: ") + systemName);
+		return;
+	}
 
 	if(this->currSystem != nullptr){
 		this->deactivateSystem(this->currSystem);
@@ -869,6 +876,7 @@ void OCTproZ::setSystem(QString systemName) {
 	emit loadPluginSettings(Settings::getInstance()->getStoredSettings(systemName));
 	this->actionStart->setEnabled(true);
 	this->actionRecord->setEnabled(true);
+	emit info(tr("System opened: ") + this->currSystemName);
 }
 
 void OCTproZ::activateSystem(AcquisitionSystem* system) {
@@ -919,6 +927,15 @@ void OCTproZ::forceUpdateProcessingParams() {
 	this->sidebar->slot_updateProcessingParams();
 }
 
+void OCTproZ::updateSettingsMap() {
+	//main window position and size
+	this->mainWindowSettings.insert(MAIN_GEOMETRY, this->saveGeometry());
+	//this->mainWindowSettings.insert(MAIN_STATE, this->saveState());
+
+	//acquisition system
+	this->mainWindowSettings.insert(MAIN_ACTIVE_SYSTEM, this->currSystemName);
+}
+
 void OCTproZ::loadMainWindowSettings(){
 	Settings* settingsManager = Settings::getInstance();
 
@@ -928,9 +945,14 @@ void OCTproZ::loadMainWindowSettings(){
 	//apply loaded settings
 	this->restoreGeometry(this->mainWindowSettings.value(MAIN_GEOMETRY).toByteArray());
 	//this->restoreState(this->mainWindowSettings.value(MAIN_STATE).toByteArray()); //this crashes the application under certain circumstances. todo: find a way to save the gui state
+	QString loadedSystemName = this->mainWindowSettings.value(MAIN_ACTIVE_SYSTEM).toString();
+	if(loadedSystemName != ""){
+		this->setSystem(loadedSystemName);
+	}
 }
 
 void OCTproZ::saveMainWindowSettings() {
+	this->updateSettingsMap();
 	Settings* settingsManager = Settings::getInstance();
 	settingsManager->storeSettings(MAIN_WINDOW_SETTINGS_GROUP, this->mainWindowSettings);
 }
@@ -956,3 +978,5 @@ void OCTproZ::saveSettings() {
 	this->volumeWindow->saveSettings();
 	this->saveMainWindowSettings();
 }
+
+
