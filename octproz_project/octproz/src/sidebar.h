@@ -40,8 +40,6 @@
 #include "ui_sidebar.h"
 
 
-
-
 #define REC "record"
 #define PROC "processing"
 #define STREAM "streaming"
@@ -83,9 +81,6 @@
 #define PROC_SINUSOIDAL_SCAN_CORRECTION "sinusoidal_scan_correction"
 #define STREAM_STREAMING "streaming_enabled"
 #define STREAM_STREAMING_SKIP "streaming_skip"
-
-
-
 
 
 class Sidebar : public QWidget
@@ -165,15 +160,3 @@ signals:
 	void info(QString);
 };
 #endif // SIDEBAR_H
-
-
-
-
-
-
-
-
-
-
-
-
