@@ -324,7 +324,7 @@ void GLWindow2D::setMarkerPosition(unsigned int position) {
 }
 
 void GLWindow2D::saveSettings() {
-	Settings::getInstance()->storeSystemSettings(this->getName(), this->getSettings());
+	Settings::getInstance()->storeSettings(this->getName(), this->getSettings());
 }
 
 void GLWindow2D::slot_saveScreenshot(QString savePath, QString fileName) {

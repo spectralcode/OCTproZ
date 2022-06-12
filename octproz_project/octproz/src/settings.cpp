@@ -31,55 +31,55 @@
 Settings* Settings::settings = nullptr;
 
 Settings::Settings() {
-	this->recordSettings.insert(REC_PATH, QVariant(QString("")));
-	this->recordSettings.insert(REC_RAW, QVariant(false));
-	this->recordSettings.insert(REC_PROCESSED, QVariant(true));
-	this->recordSettings.insert(REC_SCREENSHOTS, QVariant(true));
-	this->recordSettings.insert(REC_RAW, QVariant(true));
-	this->recordSettings.insert(REC_STOP, QVariant(false));
-	this->recordSettings.insert(REC_META, QVariant(true));
-	this->recordSettings.insert(REC_VOLUMES, QVariant(uint(2)));
-	this->recordSettings.insert(REC_NAME, QVariant(QString("")));
-	this->recordSettings.insert(REC_START_WITH_FIRST_BUFFER, QVariant(true));
-	this->recordSettings.insert(REC_DESCRIPTION, QVariant(QString("")));
-	this->processingSettings.insert(PROC_FLIP_BSCANS, QVariant(false));
-	this->processingSettings.insert(PROC_BITSHIFT, QVariant(false));
-	this->processingSettings.insert(PROC_MAX, QVariant(100.0));
-	this->processingSettings.insert(PROC_MIN, QVariant(30.0));
-	this->processingSettings.insert(PROC_LOG, QVariant(true));
-	this->processingSettings.insert(PROC_COEFF, QVariant(1.0));
-	this->processingSettings.insert(PROC_ADDEND, QVariant(0.0));
-	this->processingSettings.insert(PROC_RESAMPLING, QVariant(false));
-	this->processingSettings.insert(PROC_RESAMPLING_INTERPOLATION, QVariant(uint(0)));
-	this->processingSettings.insert(PROC_RESAMPLING_C0, QVariant(0.0));
-	this->processingSettings.insert(PROC_RESAMPLING_C1, QVariant(1024.0));
-	this->processingSettings.insert(PROC_RESAMPLING_C2, QVariant(0.0));
-	this->processingSettings.insert(PROC_RESAMPLING_C3, QVariant(0.0));
-	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION, QVariant(false));
-	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D0, QVariant(0.0));
-	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D1, QVariant(0.0));
-	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D2, QVariant(0.0));
-	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D3, QVariant(0.0));
-	this->processingSettings.insert(PROC_WINDOWING, QVariant(false));
-	this->processingSettings.insert(PROC_WINDOWING_TYPE, QVariant(uint(0)));
-	this->processingSettings.insert(PROC_WINDOWING_FILL_FACTOR, QVariant(0.9));
-	this->processingSettings.insert(PROC_WINDOWING_CENTER_POSITION, QVariant(0.5));
-	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL, QVariant(false));
-	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY, QVariant(false));
-	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, QVariant(uint(1)));
-	this->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, QVariant(false));
-	this->streamingSettings.insert(STREAM_STREAMING, QVariant(false));
-	this->streamingSettings.insert(STREAM_STREAMING_SKIP, QVariant(uint(0)));
-	this->mainWindowSettings.insert(MAIN_GEOMETRY, QVariant(QByteArray()));
-	this->mainWindowSettings.insert(MAIN_STATE, QVariant(QByteArray()));
+//	this->recordSettings.insert(REC_PATH, QVariant(QString("")));
+//	this->recordSettings.insert(REC_RAW, QVariant(false));
+//	this->recordSettings.insert(REC_PROCESSED, QVariant(true));
+//	this->recordSettings.insert(REC_SCREENSHOTS, QVariant(true));
+//	this->recordSettings.insert(REC_RAW, QVariant(true));
+//	this->recordSettings.insert(REC_STOP, QVariant(false));
+//	this->recordSettings.insert(REC_META, QVariant(true));
+//	this->recordSettings.insert(REC_VOLUMES, QVariant(uint(2)));
+//	this->recordSettings.insert(REC_NAME, QVariant(QString("")));
+//	this->recordSettings.insert(REC_START_WITH_FIRST_BUFFER, QVariant(true));
+//	this->recordSettings.insert(REC_DESCRIPTION, QVariant(QString("")));
+//	this->processingSettings.insert(PROC_FLIP_BSCANS, QVariant(false));
+//	this->processingSettings.insert(PROC_BITSHIFT, QVariant(false));
+//	this->processingSettings.insert(PROC_MAX, QVariant(100.0));
+//	this->processingSettings.insert(PROC_MIN, QVariant(30.0));
+//	this->processingSettings.insert(PROC_LOG, QVariant(true));
+//	this->processingSettings.insert(PROC_COEFF, QVariant(1.0));
+//	this->processingSettings.insert(PROC_ADDEND, QVariant(0.0));
+//	this->processingSettings.insert(PROC_RESAMPLING, QVariant(false));
+//	this->processingSettings.insert(PROC_RESAMPLING_INTERPOLATION, QVariant(uint(0)));
+//	this->processingSettings.insert(PROC_RESAMPLING_C0, QVariant(0.0));
+//	this->processingSettings.insert(PROC_RESAMPLING_C1, QVariant(1024.0));
+//	this->processingSettings.insert(PROC_RESAMPLING_C2, QVariant(0.0));
+//	this->processingSettings.insert(PROC_RESAMPLING_C3, QVariant(0.0));
+//	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION, QVariant(false));
+//	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D0, QVariant(0.0));
+//	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D1, QVariant(0.0));
+//	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D2, QVariant(0.0));
+//	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D3, QVariant(0.0));
+//	this->processingSettings.insert(PROC_WINDOWING, QVariant(false));
+//	this->processingSettings.insert(PROC_WINDOWING_TYPE, QVariant(uint(0)));
+//	this->processingSettings.insert(PROC_WINDOWING_FILL_FACTOR, QVariant(0.9));
+//	this->processingSettings.insert(PROC_WINDOWING_CENTER_POSITION, QVariant(0.5));
+//	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL, QVariant(false));
+//	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY, QVariant(false));
+//	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, QVariant(uint(1)));
+//	this->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, QVariant(false));
+//	this->streamingSettings.insert(STREAM_STREAMING, QVariant(false));
+//	this->streamingSettings.insert(STREAM_STREAMING_SKIP, QVariant(uint(0)));
+//	this->mainWindowSettings.insert(MAIN_GEOMETRY, QVariant(QByteArray()));
+//	this->mainWindowSettings.insert(MAIN_STATE, QVariant(QByteArray()));
 
-	//if settings file does not exists, copy default settings file with reasonable inital values	
+	//if settings file does not exists, copy default settings file with reasonable initial values
 	QDir settingsDir(SETTINGS_DIR);
 	if(!QFileInfo::exists(SETTINGS_PATH) || !settingsDir.exists(SETTINGS_PATH)){
 		settingsDir.mkpath(SETTINGS_DIR);
 		bool success = QFile::copy(":default/settings.ini", SETTINGS_PATH);
 		if(!success){
-			emit error(tr("Could not create settings file in: ") + SETTINGS_PATH);
+			emit error(tr("Could not create settings file in: ") + SETTINGS_PATH); //todo: this signal is not received by any slot since the signal is only connected after the constructor has been executed
 		}
 		QFile::setPermissions(SETTINGS_PATH, QFileDevice::WriteOther);
 	}
@@ -93,35 +93,15 @@ Settings* Settings::getInstance() {
 Settings::~Settings() {
 }
 
-void Settings::storeSettings(QString path) {
-	QSettings settings(path, QSettings::IniFormat);
-	settings.setValue(TIMESTAMP, this->timestamp);
-	this->storeValues(&settings, REC, &this->recordSettings);
-	this->storeValues(&settings, PROC, &this->processingSettings); 
-	this->storeValues(&settings, STREAM, &this->streamingSettings);
-	this->storeValues(&settings, MAIN, &this->mainWindowSettings);
-}
-
-void Settings::loadSettings(QString path) {
-	QSettings settings(path, QSettings::IniFormat);
-	this->timestamp = settings.value(TIMESTAMP, "").toString();
-	this->loadValues(&settings, REC, &this->recordSettings);
-	this->loadValues(&settings, PROC, &this->processingSettings);
-	this->loadValues(&settings, STREAM, &this->streamingSettings);
-	this->loadValues(&settings, MAIN, &this->mainWindowSettings);
-}
-
 void Settings::setTimestamp(QString timestamp) {
 	this->timestamp = timestamp;
 	QSettings settings(SETTINGS_PATH, QSettings::IniFormat);
 	settings.setValue(TIMESTAMP, this->timestamp);
 }
 
-void Settings::storeSystemSettings(QString sysName, QVariantMap settingsMap) {
-	this->systemSettings = settingsMap;
-	this->systemSettings.detach(); //force deep copy
+void Settings::storeSettings(QString settingsGroupName, QVariantMap settingsMap) {
 	QSettings settings(SETTINGS_PATH, QSettings::IniFormat);
-	this->storeValues(&settings, sysName, &this->systemSettings);
+	this->storeValues(&settings, settingsGroupName, settingsMap);
 }
 
 QVariantMap Settings::getStoredSettings(QString settingsGroupName) {
@@ -140,8 +120,8 @@ void Settings::copySettingsFile(QString path) {
 	}
 }
 
-void Settings::storeValues(QSettings* settings, QString groupName, QVariantMap* settingsMap) {
-	QMapIterator<QString, QVariant> i(*settingsMap);
+void Settings::storeValues(QSettings* settings, QString groupName, QVariantMap settingsMap) {
+	QMapIterator<QString, QVariant> i(settingsMap);
 	settings->beginGroup(groupName);
 	while (i.hasNext()) {
 		i.next();

@@ -52,7 +52,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent) {
 	this->initGui();
 	
 	//Connect gui signals to save changed settings
-	this->connectGuiElementsToUpdateSettingsMaps();
+	this->connectGuiElementsToAutosave(); //todo: rethink if this is really useful. maybe make this optional and add it to the general application settings
 	this->connectUpdateProcessingParams();
 
 	this->resampleCurvePlot = this->ui.widget_resampleCurvePlot;
@@ -152,99 +152,107 @@ void Sidebar::init(QAction* start, QAction* stop, QAction* rec, QAction* system,
 }
 
 void Sidebar::loadSettings() {
-	this->disconnectGuiElementsFromUpdateSettingsMaps();
-	Settings* settings = Settings::getInstance();
-	settings->loadSettings(SETTINGS_PATH);
+	this->disconnectGuiElementsFromAutosave();
+	Settings* settingsManager = Settings::getInstance();
+
+	//load setting maps
+	this->recordSettings = settingsManager->getStoredSettings(REC);
+	this->processingSettings = settingsManager->getStoredSettings(PROC);
+	this->streamingSettings = settingsManager->getStoredSettings(STREAM);
 
 	//Recording
-	this->ui.lineEdit_saveFolder->setText(settings->recordSettings.value(REC_PATH).toString());
-	this->ui.checkBox_recordScreenshots->setChecked(settings->recordSettings.value(REC_SCREENSHOTS).toBool());
-	this->ui.checkBox_recordRawBuffers->setChecked(settings->recordSettings.value(REC_RAW).toBool());
-	this->ui.checkBox_recordProcessedBuffers->setChecked(settings->recordSettings.value(REC_PROCESSED).toBool());
-	this->ui.checkBox_startWithFirstBuffer->setChecked(settings->recordSettings.value(REC_START_WITH_FIRST_BUFFER).toBool());
-	this->ui.checkBox_stopAfterRec->setChecked(settings->recordSettings.value(REC_STOP).toBool());
-	this->ui.checkBox_meta->setChecked(settings->recordSettings.value(REC_META).toBool());
-	this->ui.spinBox_volumes->setValue(settings->recordSettings.value(REC_VOLUMES).toUInt());
-	this->ui.lineEdit_recName->setText(settings->recordSettings.value(REC_NAME).toString());
-	this->ui.plainTextEdit_description->setPlainText(settings->recordSettings.value(REC_DESCRIPTION).toString());
+	this->ui.lineEdit_saveFolder->setText(this->recordSettings.value(REC_PATH).toString());
+	this->ui.checkBox_recordScreenshots->setChecked(this->recordSettings.value(REC_SCREENSHOTS).toBool());
+	this->ui.checkBox_recordRawBuffers->setChecked(this->recordSettings.value(REC_RAW).toBool());
+	this->ui.checkBox_recordProcessedBuffers->setChecked(this->recordSettings.value(REC_PROCESSED).toBool());
+	this->ui.checkBox_startWithFirstBuffer->setChecked(this->recordSettings.value(REC_START_WITH_FIRST_BUFFER).toBool());
+	this->ui.checkBox_stopAfterRec->setChecked(this->recordSettings.value(REC_STOP).toBool());
+	this->ui.checkBox_meta->setChecked(this->recordSettings.value(REC_META).toBool());
+	this->ui.spinBox_volumes->setValue(this->recordSettings.value(REC_VOLUMES).toUInt());
+	this->ui.lineEdit_recName->setText(this->recordSettings.value(REC_NAME).toString());
+	this->ui.plainTextEdit_description->setPlainText(this->recordSettings.value(REC_DESCRIPTION).toString());
 
 	//Processing
-	this->ui.checkBox_bitshift->setChecked(settings->processingSettings.value(PROC_BITSHIFT).toBool());
-	this->ui.checkBox_bscanFlip->setChecked(settings->processingSettings.value(PROC_FLIP_BSCANS).toBool());
-	this->ui.checkBox_logScaling->setChecked(settings->processingSettings.value(PROC_LOG).toBool());
-	this->ui.doubleSpinBox_signalMax->setValue(settings->processingSettings.value(PROC_MAX).toDouble());
-	this->ui.doubleSpinBox_signalMin->setValue(settings->processingSettings.value(PROC_MIN).toDouble());
-	this->ui.doubleSpinBox_signalMultiplicator->setValue(settings->processingSettings.value(PROC_COEFF).toDouble());
-	this->ui.doubleSpinBox_signalAddend->setValue(settings->processingSettings.value(PROC_ADDEND).toDouble());
-	this->ui.groupBox_resampling->setChecked(settings->processingSettings.value(PROC_RESAMPLING).toBool());
-	this->ui.comboBox_interpolation->setCurrentIndex(settings->processingSettings.value(PROC_RESAMPLING_INTERPOLATION).toUInt());
-	this->ui.doubleSpinBox_c0->setValue(settings->processingSettings.value(PROC_RESAMPLING_C0).toDouble());
-	this->ui.doubleSpinBox_c1->setValue(settings->processingSettings.value(PROC_RESAMPLING_C1).toDouble());
-	this->ui.doubleSpinBox_c2->setValue(settings->processingSettings.value(PROC_RESAMPLING_C2).toDouble());
-	this->ui.doubleSpinBox_c3->setValue(settings->processingSettings.value(PROC_RESAMPLING_C3).toDouble());
-	this->ui.groupBox_dispersionCompensation->setChecked(settings->processingSettings.value(PROC_DISPERSION_COMPENSATION).toBool());
-	this->ui.doubleSpinBox_d0->setValue(settings->processingSettings.value(PROC_DISPERSION_COMPENSATION_D0).toDouble());
-	this->ui.doubleSpinBox_d1->setValue(settings->processingSettings.value(PROC_DISPERSION_COMPENSATION_D1).toDouble());
-	this->ui.doubleSpinBox_d2->setValue(settings->processingSettings.value(PROC_DISPERSION_COMPENSATION_D2).toDouble());
-	this->ui.doubleSpinBox_d3->setValue(settings->processingSettings.value(PROC_DISPERSION_COMPENSATION_D3).toDouble());
-	this->ui.groupBox_windowing->setChecked(settings->processingSettings.value(PROC_WINDOWING).toBool());
-	this->ui.comboBox_windowType->setCurrentIndex(settings->processingSettings.value(PROC_WINDOWING_TYPE).toUInt());
-	this->ui.doubleSpinBox_windowFillFactor->setValue(settings->processingSettings.value(PROC_WINDOWING_FILL_FACTOR).toDouble());
-	this->ui.doubleSpinBox_windowCenterPosition->setValue(settings->processingSettings.value(PROC_WINDOWING_CENTER_POSITION).toDouble());
-	this->ui.groupBox_fixedPatternNoiseRemoval->setChecked(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL).toBool());
-	this->ui.radioButton_continuously->setChecked(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY).toBool());
-	this->ui.spinBox_bscansFixedNoise->setValue(settings->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_BSCANS).toUInt());
-	this->ui.checkBox_sinusoidalScanCorrection->setChecked(settings->processingSettings.value(PROC_SINUSOIDAL_SCAN_CORRECTION).toBool());
+	this->ui.checkBox_bitshift->setChecked(this->processingSettings.value(PROC_BITSHIFT).toBool());
+	this->ui.checkBox_bscanFlip->setChecked(this->processingSettings.value(PROC_FLIP_BSCANS).toBool());
+	this->ui.checkBox_logScaling->setChecked(this->processingSettings.value(PROC_LOG).toBool());
+	this->ui.doubleSpinBox_signalMax->setValue(this->processingSettings.value(PROC_MAX).toDouble());
+	this->ui.doubleSpinBox_signalMin->setValue(this->processingSettings.value(PROC_MIN).toDouble());
+	this->ui.doubleSpinBox_signalMultiplicator->setValue(this->processingSettings.value(PROC_COEFF).toDouble());
+	this->ui.doubleSpinBox_signalAddend->setValue(this->processingSettings.value(PROC_ADDEND).toDouble());
+	this->ui.groupBox_resampling->setChecked(this->processingSettings.value(PROC_RESAMPLING).toBool());
+	this->ui.comboBox_interpolation->setCurrentIndex(this->processingSettings.value(PROC_RESAMPLING_INTERPOLATION).toUInt());
+	this->ui.doubleSpinBox_c0->setValue(this->processingSettings.value(PROC_RESAMPLING_C0).toDouble());
+	this->ui.doubleSpinBox_c1->setValue(this->processingSettings.value(PROC_RESAMPLING_C1).toDouble());
+	this->ui.doubleSpinBox_c2->setValue(this->processingSettings.value(PROC_RESAMPLING_C2).toDouble());
+	this->ui.doubleSpinBox_c3->setValue(this->processingSettings.value(PROC_RESAMPLING_C3).toDouble());
+	this->ui.groupBox_dispersionCompensation->setChecked(this->processingSettings.value(PROC_DISPERSION_COMPENSATION).toBool());
+	this->ui.doubleSpinBox_d0->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D0).toDouble());
+	this->ui.doubleSpinBox_d1->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D1).toDouble());
+	this->ui.doubleSpinBox_d2->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D2).toDouble());
+	this->ui.doubleSpinBox_d3->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D3).toDouble());
+	this->ui.groupBox_windowing->setChecked(this->processingSettings.value(PROC_WINDOWING).toBool());
+	this->ui.comboBox_windowType->setCurrentIndex(this->processingSettings.value(PROC_WINDOWING_TYPE).toUInt());
+	this->ui.doubleSpinBox_windowFillFactor->setValue(this->processingSettings.value(PROC_WINDOWING_FILL_FACTOR).toDouble());
+	this->ui.doubleSpinBox_windowCenterPosition->setValue(this->processingSettings.value(PROC_WINDOWING_CENTER_POSITION).toDouble());
+	this->ui.groupBox_fixedPatternNoiseRemoval->setChecked(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL).toBool());
+	this->ui.radioButton_continuously->setChecked(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY).toBool());
+	this->ui.spinBox_bscansFixedNoise->setValue(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_BSCANS).toUInt());
+	this->ui.checkBox_sinusoidalScanCorrection->setChecked(this->processingSettings.value(PROC_SINUSOIDAL_SCAN_CORRECTION).toBool());
 
 	//GPU to RAM Streaming
-	this->ui.groupBox_streaming->setChecked(settings->streamingSettings.value(STREAM_STREAMING).toBool());
-	this->ui.spinBox_streamingBuffersToSkip->setValue(settings->streamingSettings.value(STREAM_STREAMING_SKIP).toUInt());
+	this->ui.groupBox_streaming->setChecked(this->streamingSettings.value(STREAM_STREAMING).toBool());
+	this->ui.spinBox_streamingBuffersToSkip->setValue(this->streamingSettings.value(STREAM_STREAMING_SKIP).toUInt());
 
-	this->connectGuiElementsToUpdateSettingsMaps();
+	this->connectGuiElementsToAutosave();
 }
 
 void Sidebar::saveSettings() {
-	Settings::getInstance()->storeSettings(SETTINGS_PATH);
+	this->updateSettingsMaps();
+	Settings* settingsManager = Settings::getInstance();
+	settingsManager->storeSettings(REC, this->recordSettings);
+	settingsManager->storeSettings(PROC, this->processingSettings);
+	settingsManager->storeSettings(STREAM, this->streamingSettings);
 }
 
-void Sidebar::connectGuiElementsToUpdateSettingsMaps() {
+void Sidebar::connectGuiElementsToAutosave() {
 	//Connects to store recording settings
 	foreach(auto element,this->spinBoxes) {
-		connect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::updateSettingsMaps);
+		connect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::saveSettings);
 	}
 	foreach(auto element,this->doubleSpinBoxes) {
-		connect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Sidebar::updateSettingsMaps);
+		connect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Sidebar::saveSettings);
 	}
 	foreach(auto element,this->lineEdits) {
-		connect(element, &QLineEdit::textChanged, this, &Sidebar::updateSettingsMaps);
+		connect(element, &QLineEdit::textChanged, this, &Sidebar::saveSettings);
 	}
 	foreach(auto element,this->checkBoxes) {
-		connect(element, &QCheckBox::clicked, this, &Sidebar::updateSettingsMaps);
+		connect(element, &QCheckBox::clicked, this, &Sidebar::saveSettings);
 	}
 	foreach(auto element,this->groupBoxes) {
-		connect(element, &QGroupBox::clicked, this, &Sidebar::updateSettingsMaps);
+		connect(element, &QGroupBox::clicked, this, &Sidebar::saveSettings);
 	}
-	connect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::updateSettingsMaps);
+	connect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::saveSettings);
 }
 
-void Sidebar::disconnectGuiElementsFromUpdateSettingsMaps() {
+void Sidebar::disconnectGuiElementsFromAutosave() {
 	//Disconnects to store recording settings
 	foreach(auto element,this->spinBoxes) {
-		disconnect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::updateSettingsMaps);
+		disconnect(element, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Sidebar::saveSettings);
 	}
 	foreach(auto element,this->doubleSpinBoxes) {
-		disconnect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Sidebar::updateSettingsMaps);
+		disconnect(element, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Sidebar::saveSettings);
 	}
 	foreach(auto element,this->lineEdits) {
-		disconnect(element, &QLineEdit::textChanged, this, &Sidebar::updateSettingsMaps);
+		disconnect(element, &QLineEdit::textChanged, this, &Sidebar::saveSettings);
 	}
 	foreach(auto element,this->checkBoxes) {
-		disconnect(element, &QCheckBox::clicked, this, &Sidebar::updateSettingsMaps);
+		disconnect(element, &QCheckBox::clicked, this, &Sidebar::saveSettings);
 	}
 	foreach(auto element,this->groupBoxes) {
-		disconnect(element, &QGroupBox::clicked, this, &Sidebar::updateSettingsMaps);
+		disconnect(element, &QGroupBox::clicked, this, &Sidebar::saveSettings);
 	}
-	disconnect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::updateSettingsMaps);
+	disconnect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::saveSettings);
 }
 
 void Sidebar::connectUpdateProcessingParams() {
@@ -377,8 +385,7 @@ void Sidebar::updateWindowingParams() {
 void Sidebar::slot_selectSaveDir() {
 	emit dialogAboutToOpen();
 	QCoreApplication::processEvents();
-	Settings* settings = Settings::getInstance();
-	QString savedPath = settings->recordSettings.value(REC_PATH).toString();
+	QString savedPath = this->recordSettings.value(REC_PATH).toString();
 	QString standardLocation = savedPath.size() == 0 ? QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) : savedPath;
 	QString selectedSaveDir = QFileDialog::getExistingDirectory(this, tr("Select OCTrpoZ Save Folder"), standardLocation, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks );
 	if (selectedSaveDir == "") {
@@ -495,49 +502,47 @@ void Sidebar::show() {
 }
 
 void Sidebar::updateSettingsMaps() {
-	Settings* settings = Settings::getInstance();
-
 	//Recording
-	settings->recordSettings.insert(REC_PATH, this->ui.lineEdit_saveFolder->text());
-	settings->recordSettings.insert(REC_SCREENSHOTS, this->ui.checkBox_recordScreenshots->isChecked());
-	settings->recordSettings.insert(REC_RAW, this->ui.checkBox_recordRawBuffers->isChecked());
-	settings->recordSettings.insert(REC_PROCESSED, this->ui.checkBox_recordProcessedBuffers->isChecked());
-	settings->recordSettings.insert(REC_START_WITH_FIRST_BUFFER, this->ui.checkBox_startWithFirstBuffer->isChecked());
-	settings->recordSettings.insert(REC_STOP, this->ui.checkBox_stopAfterRec->isChecked());
-	settings->recordSettings.insert(REC_META, this->ui.checkBox_meta->isChecked());
-	settings->recordSettings.insert(REC_VOLUMES, this->ui.spinBox_volumes->value());
-	settings->recordSettings.insert(REC_NAME, this->ui.lineEdit_recName->text());
-	settings->recordSettings.insert(REC_DESCRIPTION, this->ui.plainTextEdit_description->toPlainText());
+	this->recordSettings.insert(REC_PATH, this->ui.lineEdit_saveFolder->text());
+	this->recordSettings.insert(REC_SCREENSHOTS, this->ui.checkBox_recordScreenshots->isChecked());
+	this->recordSettings.insert(REC_RAW, this->ui.checkBox_recordRawBuffers->isChecked());
+	this->recordSettings.insert(REC_PROCESSED, this->ui.checkBox_recordProcessedBuffers->isChecked());
+	this->recordSettings.insert(REC_START_WITH_FIRST_BUFFER, this->ui.checkBox_startWithFirstBuffer->isChecked());
+	this->recordSettings.insert(REC_STOP, this->ui.checkBox_stopAfterRec->isChecked());
+	this->recordSettings.insert(REC_META, this->ui.checkBox_meta->isChecked());
+	this->recordSettings.insert(REC_VOLUMES, this->ui.spinBox_volumes->value());
+	this->recordSettings.insert(REC_NAME, this->ui.lineEdit_recName->text());
+	this->recordSettings.insert(REC_DESCRIPTION, this->ui.plainTextEdit_description->toPlainText());
 
 	//Processing
-	settings->processingSettings.insert(PROC_BITSHIFT, this->ui.checkBox_bitshift->isChecked());
-	settings->processingSettings.insert(PROC_FLIP_BSCANS, this->ui.checkBox_bscanFlip->isChecked());
-	settings->processingSettings.insert(PROC_LOG, this->ui.checkBox_logScaling->isChecked());
-	settings->processingSettings.insert(PROC_MAX, this->ui.doubleSpinBox_signalMax->value());
-	settings->processingSettings.insert(PROC_MIN, this->ui.doubleSpinBox_signalMin->value());
-	settings->processingSettings.insert(PROC_COEFF, this->ui.doubleSpinBox_signalMultiplicator->value());
-	settings->processingSettings.insert(PROC_ADDEND, this->ui.doubleSpinBox_signalAddend->value());
-	settings->processingSettings.insert(PROC_RESAMPLING, this->ui.groupBox_resampling->isChecked());
-	settings->processingSettings.insert(PROC_RESAMPLING_INTERPOLATION, this->ui.comboBox_interpolation->currentIndex());
-	settings->processingSettings.insert(PROC_RESAMPLING_C0, this->ui.doubleSpinBox_c0->value());
-	settings->processingSettings.insert(PROC_RESAMPLING_C1, this->ui.doubleSpinBox_c1->value());
-	settings->processingSettings.insert(PROC_RESAMPLING_C2, this->ui.doubleSpinBox_c2->value());
-	settings->processingSettings.insert(PROC_RESAMPLING_C3, this->ui.doubleSpinBox_c3->value());
-	settings->processingSettings.insert(PROC_DISPERSION_COMPENSATION, this->ui.groupBox_dispersionCompensation->isChecked());
-	settings->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D0, this->ui.doubleSpinBox_d0->value());
-	settings->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D1, this->ui.doubleSpinBox_d1->value());
-	settings->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D2, this->ui.doubleSpinBox_d2->value());
-	settings->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D3, this->ui.doubleSpinBox_d3->value());
-	settings->processingSettings.insert(PROC_WINDOWING, this->ui.groupBox_windowing->isChecked());
-	settings->processingSettings.insert(PROC_WINDOWING_TYPE, this->ui.comboBox_windowType->currentIndex());
-	settings->processingSettings.insert(PROC_WINDOWING_FILL_FACTOR, this->ui.doubleSpinBox_windowFillFactor->value());
-	settings->processingSettings.insert(PROC_WINDOWING_CENTER_POSITION, this->ui.doubleSpinBox_windowCenterPosition->value());
-	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL, this->ui.groupBox_fixedPatternNoiseRemoval->isChecked());
-	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY, this->ui.radioButton_continuously->isChecked());
-	settings->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, this->ui.spinBox_bscansFixedNoise->value());
-	settings->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, this->ui.checkBox_sinusoidalScanCorrection->isChecked());
+	this->processingSettings.insert(PROC_BITSHIFT, this->ui.checkBox_bitshift->isChecked());
+	this->processingSettings.insert(PROC_FLIP_BSCANS, this->ui.checkBox_bscanFlip->isChecked());
+	this->processingSettings.insert(PROC_LOG, this->ui.checkBox_logScaling->isChecked());
+	this->processingSettings.insert(PROC_MAX, this->ui.doubleSpinBox_signalMax->value());
+	this->processingSettings.insert(PROC_MIN, this->ui.doubleSpinBox_signalMin->value());
+	this->processingSettings.insert(PROC_COEFF, this->ui.doubleSpinBox_signalMultiplicator->value());
+	this->processingSettings.insert(PROC_ADDEND, this->ui.doubleSpinBox_signalAddend->value());
+	this->processingSettings.insert(PROC_RESAMPLING, this->ui.groupBox_resampling->isChecked());
+	this->processingSettings.insert(PROC_RESAMPLING_INTERPOLATION, this->ui.comboBox_interpolation->currentIndex());
+	this->processingSettings.insert(PROC_RESAMPLING_C0, this->ui.doubleSpinBox_c0->value());
+	this->processingSettings.insert(PROC_RESAMPLING_C1, this->ui.doubleSpinBox_c1->value());
+	this->processingSettings.insert(PROC_RESAMPLING_C2, this->ui.doubleSpinBox_c2->value());
+	this->processingSettings.insert(PROC_RESAMPLING_C3, this->ui.doubleSpinBox_c3->value());
+	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION, this->ui.groupBox_dispersionCompensation->isChecked());
+	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D0, this->ui.doubleSpinBox_d0->value());
+	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D1, this->ui.doubleSpinBox_d1->value());
+	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D2, this->ui.doubleSpinBox_d2->value());
+	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D3, this->ui.doubleSpinBox_d3->value());
+	this->processingSettings.insert(PROC_WINDOWING, this->ui.groupBox_windowing->isChecked());
+	this->processingSettings.insert(PROC_WINDOWING_TYPE, this->ui.comboBox_windowType->currentIndex());
+	this->processingSettings.insert(PROC_WINDOWING_FILL_FACTOR, this->ui.doubleSpinBox_windowFillFactor->value());
+	this->processingSettings.insert(PROC_WINDOWING_CENTER_POSITION, this->ui.doubleSpinBox_windowCenterPosition->value());
+	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL, this->ui.groupBox_fixedPatternNoiseRemoval->isChecked());
+	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY, this->ui.radioButton_continuously->isChecked());
+	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, this->ui.spinBox_bscansFixedNoise->value());
+	this->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, this->ui.checkBox_sinusoidalScanCorrection->isChecked());
 
 	//GPU to RAM Streaming
-	settings->streamingSettings.insert(STREAM_STREAMING, this->ui.groupBox_streaming->isChecked());
-	settings->streamingSettings.insert(STREAM_STREAMING_SKIP, this->ui.spinBox_streamingBuffersToSkip->value());
+	this->streamingSettings.insert(STREAM_STREAMING, this->ui.groupBox_streaming->isChecked());
+	this->streamingSettings.insert(STREAM_STREAMING_SKIP, this->ui.spinBox_streamingBuffersToSkip->value());
 }

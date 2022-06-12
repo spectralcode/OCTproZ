@@ -37,50 +37,7 @@
 #define SETTINGS_FILE_NAME "settings.ini"
 #define SETTINGS_PATH  SETTINGS_DIR + "/" + SETTINGS_FILE_NAME
 #define TIMESTAMP "timestamp"
-#define REC "record"
-#define PROC "processing"
-#define STREAM "streaming"
-#define MAIN "main_window_settings"
-#define MAIN_GEOMETRY "main_geometry"
-#define MAIN_STATE "main_state"
-#define REC_PATH "path"
-#define REC_RAW "record_raw"
-#define REC_PROCESSED "record_processed"
-#define REC_SCREENSHOTS "record_screenshots"
-#define REC_STOP "stop_after_record"
-#define REC_META "save_meta_info"
-#define REC_VOLUMES "volumes"
-#define REC_NAME "name"
-#define REC_START_WITH_FIRST_BUFFER "start_with_first_buffer"
-#define REC_DESCRIPTION "description"
-#define PROC_FLIP_BSCANS "flip_bscans"
-#define PROC_BITSHIFT "bitshift"
-#define PROC_MIN "min"
-#define PROC_MAX "max"
-#define PROC_LOG "log"
-#define PROC_COEFF "coeff"
-#define PROC_ADDEND "addend"
-#define PROC_RESAMPLING "resampling"
-#define PROC_RESAMPLING_INTERPOLATION "resampling_interpolation"
-#define PROC_RESAMPLING_C0 "resampling_c0"
-#define PROC_RESAMPLING_C1 "resampling_c1"
-#define PROC_RESAMPLING_C2 "resampling_c2"
-#define PROC_RESAMPLING_C3 "resampling_c3"
-#define PROC_DISPERSION_COMPENSATION "dispersion_compensation"
-#define PROC_DISPERSION_COMPENSATION_D0 "dispersion_compensation_d0"
-#define PROC_DISPERSION_COMPENSATION_D1 "dispersion_compensation_d1"
-#define PROC_DISPERSION_COMPENSATION_D2 "dispersion_compensation_d2"
-#define PROC_DISPERSION_COMPENSATION_D3 "dispersion_compensation_d3"
-#define PROC_WINDOWING "windowing"
-#define PROC_WINDOWING_TYPE "window_type"
-#define PROC_WINDOWING_FILL_FACTOR "window_fill_factor"
-#define PROC_WINDOWING_CENTER_POSITION "window_center_position"
-#define PROC_FIXED_PATTERN_REMOVAL "fixed_pattern_removal"
-#define PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY "fixed_pattern_removal_continuously"
-#define PROC_FIXED_PATTERN_REMOVAL_BSCANS "fixed_pattern_removal_bscans"
-#define PROC_SINUSOIDAL_SCAN_CORRECTION "sinusoidal_scan_correction"
-#define STREAM_STREAMING "streaming_enabled"
-#define STREAM_STREAMING_SKIP "streaming_skip"
+
 
 
 #include <QStandardPaths>
@@ -120,20 +77,6 @@ public:
 	~Settings();
 
 	/**
-	* Stores settings in a file at a location definded by path
-	*
-	* @param path is the file path of the settings file
-	**/
-	void storeSettings(QString path);
-
-	/**
-	* Loads settings from a file at a location definde by path. If reading of save file fails default values will be loaded.
-	*
-	* @param path is the file path of the settings file
-	**/
-	void loadSettings(QString path);
-
-	/**
 	* Set timestamp variable which will be saved together with all other settings inside settings file. The timestamp can be used as a part of several filenames to enable easy identification of related files. 
 	*
 	* @param timestamp contains date and time information
@@ -150,15 +93,15 @@ public:
 	/**
 	* Stores settings from arbitrary QVariantMap into the settings group defined by "sysName". This method is typically used to store settings from systems. Systems are shared libraries, so the main application can not know in advance (during compile time) which settings every system has. This method could be used to mess up previously stored settings if sysName is an already used group name.
 	*
-	* @param sysName is the group name that will be used in the settings file. To load the saved settings, the identical group name needs to be used. 
+	* @param settingsGroupName is the group name that will be used in the settings file. To load the saved settings, the identical group name needs to be used.
 	* @param settingsMap is a arbitrary QVariantMap that contains the settings to be saved. 
 	**/
-	void storeSystemSettings(QString sysName, QVariantMap settingsMap);
+	void storeSettings(QString settingsGroupName, QVariantMap settingsMap);
 
 	/**
 	* Loads previously stored settings from settings group defined by "settingsGroupName". This method is typically used to load arbitrary system settings.
 	*
-	* @see storeSystemSettings(QString sysName, QVariantMap settings)
+	* @see storeSettings(QString sysName, QVariantMap settings)
 	* @param settingsGroupName is the group name that will be used in the settings file. To load the saved settings, the identical group name needs to be used.
 	* @return QVariantMap that contains previously saved settings.
 	**/
@@ -178,7 +121,7 @@ private:
 	static Settings *settings;
 	QString timestamp;
 
-	void storeValues(QSettings* settings, QString groupName, QVariantMap* settingsMap);
+	void storeValues(QSettings* settings, QString groupName, QVariantMap settingsMap);
 	void loadValues(QSettings* settings, QString groupName, QVariantMap* settingsMap);
 
 

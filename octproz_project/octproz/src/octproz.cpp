@@ -169,18 +169,12 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	int y = (screenGeometry.height()) / 10;
 	this->move(x, y);
 
-	//restore main window position and size (if application was already open once)
-	this->restoreGeometry(settings->mainWindowSettings.value(MAIN_GEOMETRY).toByteArray());
-	//this->restoreState(settings->mainWindowSettings.value(MAIN_STATE).toByteArray()); //this crashes the application under certain circumstances
-
-	//memorize stream2host setings
+	//default values to memorize stream2host setings
 	this->streamToHostMemorized = this->octParams->streamToHost;
 	this->streamingBuffersToSkipMemorized = octParams->streamingBuffersToSkip;
 
-	//restore B-scan window and EnFaceView window settings
-	this->bscanWindow->setSettings(Settings::getInstance()->getStoredSettings(this->bscanWindow->getName()));
-	this->enFaceViewWindow->setSettings(Settings::getInstance()->getStoredSettings(this->enFaceViewWindow->getName()));
-	this->volumeWindow->setSettings(Settings::getInstance()->getStoredSettings(this->volumeWindow->getName()));
+	//load saved settings from disc for main application
+	this->loadSettings();
 
 	//connect(qApp, &QCoreApplication::aboutToQuit, this, &OCTproZ::saveSettings); //todo: check if there is any difference between calling saveSettings via aboutToQuit signal and via the OCTproZ destructor
 }
@@ -765,7 +759,7 @@ void OCTproZ::slot_reopenOpenGLwindows() {
 }
 
 void OCTproZ::slot_storePluginSettings(QString pluginName, QVariantMap settings) {
-	Settings::getInstance()->storeSystemSettings(pluginName, settings);
+	Settings::getInstance()->storeSettings(pluginName, settings);
 }
 
 void OCTproZ::slot_prepareGpu2HostForProcessedRecording() {
@@ -925,6 +919,34 @@ void OCTproZ::forceUpdateProcessingParams() {
 	this->sidebar->slot_updateProcessingParams();
 }
 
+void OCTproZ::loadMainWindowSettings(){
+	Settings* settingsManager = Settings::getInstance();
+
+	//load setting maps
+	this->mainWindowSettings = settingsManager->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
+
+	//apply loaded settings
+	this->restoreGeometry(this->mainWindowSettings.value(MAIN_GEOMETRY).toByteArray());
+	//this->restoreState(this->mainWindowSettings.value(MAIN_STATE).toByteArray()); //this crashes the application under certain circumstances. todo: find a way to save the gui state
+}
+
+void OCTproZ::saveMainWindowSettings() {
+	Settings* settingsManager = Settings::getInstance();
+	settingsManager->storeSettings(MAIN_WINDOW_SETTINGS_GROUP, this->mainWindowSettings);
+}
+
+void OCTproZ::loadSettings(){
+	this->sidebar->loadSettings();
+
+	//restore main window position and size (if application was already open once)
+	this->loadMainWindowSettings();
+
+	//restore B-scan window and EnFaceView window settings
+	this->bscanWindow->setSettings(Settings::getInstance()->getStoredSettings(this->bscanWindow->getName()));
+	this->enFaceViewWindow->setSettings(Settings::getInstance()->getStoredSettings(this->enFaceViewWindow->getName()));
+	this->volumeWindow->setSettings(Settings::getInstance()->getStoredSettings(this->volumeWindow->getName()));
+}
+
 void OCTproZ::saveSettings() {
 	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmsszzz");
 	Settings::getInstance()->setTimestamp(timestamp);
@@ -932,4 +954,5 @@ void OCTproZ::saveSettings() {
 	this->bscanWindow->saveSettings();
 	this->enFaceViewWindow->saveSettings();
 	this->volumeWindow->saveSettings();
+	this->saveMainWindowSettings();
 }

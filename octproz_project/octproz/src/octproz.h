@@ -37,6 +37,7 @@
 
 #include <QMainWindow>
 #include <QThread>
+#include <QVariantMap>
 #include <qdir.h>
 #include <qpluginloader.h>
 #include "sidebar.h"
@@ -58,6 +59,10 @@
 #define APP_VERSION "1.5.0"
 #define APP_VERSION_DATE "05 April 2022"
 #define APP_NAME "OCTproZ"
+
+#define MAIN_WINDOW_SETTINGS_GROUP "main_window_settings"
+#define MAIN_GEOMETRY "main_geometry"
+#define MAIN_STATE "main_state"
 
 
 namespace Ui {
@@ -117,9 +122,13 @@ private:
 	void deactivateSystem(AcquisitionSystem* system);
 	void reactivateSystem(AcquisitionSystem* system);
 	void forceUpdateProcessingParams();
+	void loadMainWindowSettings();
+	void saveMainWindowSettings();
+	void loadSettings();
 	void saveSettings();
 
 	Ui::OCTproZ *ui;
+	QVariantMap mainWindowSettings;
 	AboutDialog* aboutWindow;
 	Sidebar* sidebar;
 	SystemManager* sysManager;

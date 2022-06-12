@@ -40,6 +40,54 @@
 #include "ui_sidebar.h"
 
 
+
+
+#define REC "record"
+#define PROC "processing"
+#define STREAM "streaming"
+#define REC_PATH "path"
+#define REC_RAW "record_raw"
+#define REC_PROCESSED "record_processed"
+#define REC_SCREENSHOTS "record_screenshots"
+#define REC_STOP "stop_after_record"
+#define REC_META "save_meta_info"
+#define REC_VOLUMES "volumes"
+#define REC_NAME "name"
+#define REC_START_WITH_FIRST_BUFFER "start_with_first_buffer"
+#define REC_DESCRIPTION "description"
+#define PROC_FLIP_BSCANS "flip_bscans"
+#define PROC_BITSHIFT "bitshift"
+#define PROC_MIN "min"
+#define PROC_MAX "max"
+#define PROC_LOG "log"
+#define PROC_COEFF "coeff"
+#define PROC_ADDEND "addend"
+#define PROC_RESAMPLING "resampling"
+#define PROC_RESAMPLING_INTERPOLATION "resampling_interpolation"
+#define PROC_RESAMPLING_C0 "resampling_c0"
+#define PROC_RESAMPLING_C1 "resampling_c1"
+#define PROC_RESAMPLING_C2 "resampling_c2"
+#define PROC_RESAMPLING_C3 "resampling_c3"
+#define PROC_DISPERSION_COMPENSATION "dispersion_compensation"
+#define PROC_DISPERSION_COMPENSATION_D0 "dispersion_compensation_d0"
+#define PROC_DISPERSION_COMPENSATION_D1 "dispersion_compensation_d1"
+#define PROC_DISPERSION_COMPENSATION_D2 "dispersion_compensation_d2"
+#define PROC_DISPERSION_COMPENSATION_D3 "dispersion_compensation_d3"
+#define PROC_WINDOWING "windowing"
+#define PROC_WINDOWING_TYPE "window_type"
+#define PROC_WINDOWING_FILL_FACTOR "window_fill_factor"
+#define PROC_WINDOWING_CENTER_POSITION "window_center_position"
+#define PROC_FIXED_PATTERN_REMOVAL "fixed_pattern_removal"
+#define PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY "fixed_pattern_removal_continuously"
+#define PROC_FIXED_PATTERN_REMOVAL_BSCANS "fixed_pattern_removal_bscans"
+#define PROC_SINUSOIDAL_SCAN_CORRECTION "sinusoidal_scan_correction"
+#define STREAM_STREAMING "streaming_enabled"
+#define STREAM_STREAMING_SKIP "streaming_skip"
+
+
+
+
+
 class Sidebar : public QWidget
 {
 	Q_OBJECT
@@ -53,8 +101,8 @@ public:
 	void init(QAction* start, QAction* stop, QAction* rec, QAction* system, QAction* settings);
 	void loadSettings();
 	void saveSettings();
-	void connectGuiElementsToUpdateSettingsMaps();
-	void disconnectGuiElementsFromUpdateSettingsMaps();
+	void connectGuiElementsToAutosave();
+	void disconnectGuiElementsFromAutosave();
 	void connectUpdateProcessingParams();
 	void updateProcessingParams();
 	void updateStreamingParams(); //todo: find a nice way to enable/disable streaming (allocate/release memory for streaming buffers)
@@ -79,6 +127,9 @@ private:
 	MiniCurvePlot*			windowCurvePlot;
 	unsigned int			defaultWidth;
 	QAction*				copyInfoAction;
+	QVariantMap recordSettings;
+	QVariantMap processingSettings;
+	QVariantMap streamingSettings;
 
 	void initGui();
 	void findGuiElements();
