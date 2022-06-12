@@ -66,7 +66,7 @@ struct GLWindow3DParams {
 	bool extendedViewEnabled;
 	qreal rayMarchStepLength;
 	qreal threshold;
-	bool updateContinuously;
+	//bool updateContinuously;
 	QString displayMode;
 	int displayModeIndex;
 	qreal stretchX;
@@ -96,6 +96,7 @@ private:
 	void findGuiElements();
 	void connectGuiToSettingsChangedSignal();
 	void disconnectGuiFromSettingsChangedSignal();
+	QHBoxLayout* createHBoxLayout(QWidget* firstWidget, QWidget* secondWidget);
 
 	GLWindow3DParams params;
 	bool extendedView;
@@ -112,7 +113,6 @@ private:
 	QLabel* labelThreshold;
 	QLabel* labelMode;
 	StringSpinBox* stringBoxModes;
-	QCheckBox* checkBoxUpdateContinuously;
 	QCheckBox* checkBoxShading;
 	QHBoxLayout* widgetLayout;
 	QGridLayout* layout;

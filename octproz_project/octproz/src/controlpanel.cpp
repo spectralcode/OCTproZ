@@ -43,15 +43,13 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->doubleSpinBoxThreshold = new QDoubleSpinBox(this->panel);
 	this->doubleSpinBoxStepLength = new QDoubleSpinBox(this->panel);
 	this->stringBoxModes = new StringSpinBox(this->panel);
-	this->checkBoxUpdateContinuously = new QCheckBox(this->panel);
 	this->checkBoxShading = new QCheckBox(this->panel);
-	this->labelSmoothFactor = new QLabel(tr("Smooth Factor:"), this->panel);
-	this->labelAlphaExponent = new QLabel(tr("Alpha Exponent:"), this->panel);
-	this->labelDepthWeight = new QLabel(tr("Depth Weight:"), this->panel);
+	this->labelSmoothFactor = new QLabel(tr("Smooth Factor: "), this->panel);
+	this->labelAlphaExponent = new QLabel(tr("Alpha Exponent: "), this->panel);
+	this->labelDepthWeight = new QLabel(tr("Depth Weight: "), this->panel);
 	this->labelThreshold = new QLabel(tr("Threshold:"), this->panel);
-	this->labelStepLength = new QLabel(tr("Ray Step:"), this->panel);
+	this->labelStepLength = new QLabel(tr("Ray Step: "), this->panel);
 	this->labelMode = new QLabel(tr("Mode:"), this->panel);
-	this->checkBoxUpdateContinuously->setText(tr("Update Continuously"));
 	this->checkBoxShading->setText(tr("Shading"));
 
 	this->doubleSpinBoxStretchX = new QDoubleSpinBox(this->panel);
@@ -77,20 +75,20 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->layout->addWidget(this->labelThreshold, 1, 0, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->doubleSpinBoxThreshold, 1, 1, 1, 1);
 
+	QHBoxLayout* hLayoutDepthWeight = createHBoxLayout(this->labelDepthWeight, this->doubleSpinBoxDepthWeight);
+	QHBoxLayout* hLayoutAlphaExponent = createHBoxLayout(this->labelAlphaExponent, this->doubleSpinBoxAlphaExponent);
+	QHBoxLayout* hLayoutSmoothFactor = createHBoxLayout(this->labelSmoothFactor, this->spinBoxSmoothFactor);
+	QHBoxLayout* hLayoutStepLength = createHBoxLayout(this->labelStepLength, this->doubleSpinBoxStepLength);
+	QHBoxLayout* hLayoutGamma = createHBoxLayout(this->labelGamma, this->doubleSpinBoxGamma);
 
+	this->layout->addLayout(hLayoutSmoothFactor, 0, 3, 1, 1);
+	this->layout->addLayout(hLayoutDepthWeight, 1, 3, 1, 1);
 
-//	this->layout->addWidget(this->labeThreshold, 0, 2, 1, 1, Qt::AlignRight);
-//	this->layout->addWidget(this->doubleSpinBoxThreshold, 0, 3, 1, 1);
-	this->layout->addWidget(this->labelSmoothFactor, 0, 2, 1, 1, Qt::AlignRight);
-	this->layout->addWidget(this->spinBoxSmoothFactor, 0, 3, 1, 1);
-	this->layout->addWidget(this->labelDepthWeight, 0, 2, 1, 1, Qt::AlignRight);
-	this->layout->addWidget(this->doubleSpinBoxDepthWeight, 0, 3, 1, 1);
-	this->layout->addWidget(this->labelAlphaExponent, 0, 2, 1, 1, Qt::AlignRight);
-	this->layout->addWidget(this->doubleSpinBoxAlphaExponent, 0, 3, 1, 1);
+	this->layout->addLayout(hLayoutAlphaExponent, 0, 3, 1, 1);
 	this->layout->setColumnStretch(2, 10);
 	this->layout->addWidget(this->toolButtonMore, 1, 2, 1, 1, Qt::AlignCenter);
-	this->layout->addWidget(this->checkBoxUpdateContinuously, 1, 3, 1, 1, Qt::AlignLeft);
-	this->layout->addWidget(this->checkBoxShading, 3, 3, 1, 1, Qt::AlignLeft);
+
+	this->layout->addWidget(this->checkBoxShading, 1, 3, 1, 1, Qt::AlignCenter);
 
 	this->layout->addWidget(this->labelStretchX, 3, 0, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->doubleSpinBoxStretchX,3, 1, 1, 1);
@@ -99,12 +97,8 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->layout->addWidget(this->labelStretchZ, 5, 0, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->doubleSpinBoxStretchZ, 5, 1, 1, 1);
 
-
-	this->layout->addWidget(this->labelStepLength, 4, 2, 1, 1, Qt::AlignRight);
-	this->layout->addWidget(this->doubleSpinBoxStepLength, 4, 3, 1, 1);
-
-	this->layout->addWidget(this->labelGamma, 5, 2, 1, 1, Qt::AlignRight);
-	this->layout->addWidget(this->doubleSpinBoxGamma,5, 3, 1, 1);
+	this->layout->addLayout(hLayoutStepLength ,4, 3, 1, 1);
+	this->layout->addLayout(hLayoutGamma, 5, 3, 1, 1);
 
 	this->doubleSpinBoxStepLength->setMinimum(0.001);
 	this->doubleSpinBoxStepLength->setMaximum(10.0);
@@ -135,8 +129,6 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->doubleSpinBoxAlphaExponent->setDecimals(1);
 
 
-
-	this->checkBoxUpdateContinuously->setChecked(false);
 	this->checkBoxShading->setChecked(false);
 
 	//todo: refactor this class. avoid repeating code
@@ -179,9 +171,6 @@ void ControlPanel3D::setModes(QStringList modes) {
 	this->stringBoxModes->setStrings(modes);
 }
 
-void ControlPanel3D::enableContinuousUpdate(bool enable) {
-	this->checkBoxUpdateContinuously->setChecked(enable);
-}
 
 GLWindow3DParams ControlPanel3D::getParams() {
 	this->params.extendedViewEnabled = this->extendedView;
@@ -191,7 +180,6 @@ GLWindow3DParams ControlPanel3D::getParams() {
 	this->params.depthWeight = this->doubleSpinBoxDepthWeight->value();
 	this->params.threshold = this->doubleSpinBoxThreshold->value();
 	this->params.rayMarchStepLength = this->doubleSpinBoxStepLength->value();
-	this->params.updateContinuously = this->checkBoxUpdateContinuously->isChecked();
 	this->params.stretchX = this->doubleSpinBoxStretchX->value();
 	this->params.stretchY = this->doubleSpinBoxStretchY->value();
 	this->params.stretchZ = this->doubleSpinBoxStretchZ->value();
@@ -211,8 +199,8 @@ void ControlPanel3D::updateDisplayParameters() {
 		this->doubleSpinBoxDepthWeight->setVisible(true);
 		this->labelSmoothFactor->setVisible(false);
 		this->spinBoxSmoothFactor->setVisible(false);
-		this->labelAlphaExponent->setVisible(false);
-		this->doubleSpinBoxAlphaExponent->setVisible(false);
+		this->labelAlphaExponent->setVisible(true);
+		this->doubleSpinBoxAlphaExponent->setVisible(true);
 		this->checkBoxShading->setVisible(false);
 
 	} else if(this->params.displayMode == "Isosurface"){
@@ -231,7 +219,7 @@ void ControlPanel3D::updateDisplayParameters() {
 		this->spinBoxSmoothFactor->setVisible(false);
 		this->labelAlphaExponent->setVisible(true);
 		this->doubleSpinBoxAlphaExponent->setVisible(true);
-		this->checkBoxShading->setVisible(true && this->extendedView);
+		this->checkBoxShading->setVisible(true);
 
 	} else if(this->params.displayMode == "X-ray"){
 		this->labelDepthWeight->setVisible(false);
@@ -293,16 +281,22 @@ void ControlPanel3D::disconnectGuiFromSettingsChangedSignal() {
 	}
 }
 
+QHBoxLayout *ControlPanel3D::createHBoxLayout(QWidget *firstWidget, QWidget *secondWidget) {
+	QHBoxLayout* hLayout = new QHBoxLayout();
+	hLayout->addWidget(firstWidget);
+	hLayout->addWidget(secondWidget);
+	return hLayout;
+}
+
 void ControlPanel3D::setParams(GLWindow3DParams params) {
 	this->disconnectGuiFromSettingsChangedSignal();
 	this->params = params;
 	this->enableExtendedView(params.extendedViewEnabled);
-	this->stringBoxModes->setIndex(params.displayModeIndex);
+	this->stringBoxModes->setIndex(params.displayModeIndex); //todo: get index from QStringList that contains the rendering mode names
 	this->spinBoxSmoothFactor->setValue(params.smoothFactor);
 	this->doubleSpinBoxDepthWeight->setValue(params.depthWeight);
 	this->doubleSpinBoxThreshold->setValue(params.threshold);
 	this->doubleSpinBoxStepLength->setValue(params.rayMarchStepLength);
-	this->checkBoxUpdateContinuously->setChecked(params.updateContinuously);
 	this->doubleSpinBoxStretchX->setValue(params.stretchX);
 	this->doubleSpinBoxStretchY->setValue(params.stretchY);
 	this->doubleSpinBoxStretchZ->setValue(params.stretchZ);
