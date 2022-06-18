@@ -208,6 +208,8 @@ private:
 	unsigned int volumeWidth;
 	unsigned int volumeHeight;
 	unsigned int volumeDepth;
+	QPoint mousePos;
+	QPointF viewPos;
 	qreal fps;
 	QElapsedTimer timer;
 	int counter;

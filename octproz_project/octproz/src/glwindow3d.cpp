@@ -119,6 +119,9 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 	//this->timer.start();
 	this->counter = 0;
 
+	this->viewPos.setX(0);
+	this->viewPos.setY(0);
+
 	connect(this->panel, &ControlPanel3D::displayParametersChanged, this, &GLWindow3D::slot_updateDisplayParams);
 }
 
@@ -233,7 +236,7 @@ void GLWindow3D::paintGL() {
 
 	// Compute geometry
 	m_viewMatrix.setToIdentity();
-	m_viewMatrix.translate(0, 0, -4.0f * std::exp(m_distExp / 600.0f));
+	m_viewMatrix.translate(this->viewPos.x(), this->viewPos.y(), -4.0f * std::exp(m_distExp / 600.0f));
 	m_viewMatrix.rotate(m_trackBall.rotation());
 
 	m_modelViewProjectionMatrix.setToIdentity();
@@ -311,6 +314,8 @@ QPointF GLWindow3D::pixelPosToViewPos(const QPointF& p) {
 void GLWindow3D::mouseDoubleClickEvent(QMouseEvent *event){
 	if(!this->panel->underMouse()){
 		this->m_distExp = -500;
+		this->viewPos.setX(0);
+		this->viewPos.setY(0);
 		update();
 	}
 }
@@ -337,10 +342,15 @@ void GLWindow3D::mouseMoveEvent(QMouseEvent *event) {
 	if (event->buttons() & Qt::LeftButton && !this->panel->underMouse()) {
 		m_trackBall.move(pixelPosToViewPos(event->pos()), m_scene_trackBall.rotation().conjugated());
 	}else if(event->buttons() &Qt::MiddleButton && !this->panel->underMouse()){
-		//todo: x y translation
+		QPoint delta = (event->pos() - this->mousePos);
+		int windowWidth = this->size().width();
+		int windowHeight = this->size().height();
+		this->viewPos.rx() += 2.0*static_cast<float>(delta.x())/static_cast<float>(windowWidth);
+		this->viewPos.ry() += -2.0*static_cast<float>(delta.y())/static_cast<float>(windowHeight);
 	} else {
 		m_trackBall.release(pixelPosToViewPos(event->pos()), m_scene_trackBall.rotation().conjugated());
 	}
+	this->mousePos = event->pos();
 	update();
 }
 
@@ -349,6 +359,7 @@ void GLWindow3D::mouseMoveEvent(QMouseEvent *event) {
  * \brief Callback for mouse press.
  */
 void GLWindow3D::mousePressEvent(QMouseEvent *event){
+	this->mousePos = event->pos();
 	if (event->buttons() & Qt::LeftButton && !this->panel->underMouse()) {
 		m_trackBall.push(pixelPosToViewPos(event->pos()), m_scene_trackBall.rotation().conjugated());
 	} else if (event->buttons() & Qt::MiddleButton) {
