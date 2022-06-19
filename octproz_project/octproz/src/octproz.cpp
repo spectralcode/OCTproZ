@@ -934,6 +934,9 @@ void OCTproZ::updateSettingsMap() {
 
 	//acquisition system
 	this->mainWindowSettings.insert(MAIN_ACTIVE_SYSTEM, this->currSystemName);
+
+	//message console
+	this->mainWindowSettings.insert(MESSAGE_CONSOLE_BOTTOM, this->console->getParams().newestMessageAtBottom);
 }
 
 void OCTproZ::loadMainWindowSettings(){
@@ -949,6 +952,10 @@ void OCTproZ::loadMainWindowSettings(){
 	if(loadedSystemName != ""){
 		this->setSystem(loadedSystemName);
 	}
+
+	MessageConsoleParams consoleParams;
+	consoleParams.newestMessageAtBottom = this->mainWindowSettings.value(MESSAGE_CONSOLE_BOTTOM).toBool();
+	this->console->setParams(consoleParams);
 }
 
 void OCTproZ::saveMainWindowSettings() {

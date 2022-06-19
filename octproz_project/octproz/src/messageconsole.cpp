@@ -32,6 +32,7 @@ MessageConsole::MessageConsole(QWidget *parent) : QWidget(parent){
 	this->gridLayout = new QGridLayout(this);
 	this->textEdit = new QTextEdit(this);
 	this->textEdit->setReadOnly(true);
+	this->textEdit->setContextMenuPolicy(Qt::NoContextMenu);
 	this->gridLayout->setMargin(0);
 	this->gridLayout->addWidget(this->textEdit, 0, 0, 1, 1);
 	this->setMinimumWidth(320);
@@ -43,39 +44,119 @@ MessageConsole::MessageConsole(QWidget *parent) : QWidget(parent){
 		string = "";
 	}
 	this->messagesIndex = 0;
+
+	this->params.newestMessageAtBottom = false;
+
+
+
 }
 
 MessageConsole::~MessageConsole(){
 
 }
 
-QString MessageConsole::addStringToMessageBuffer(QString message){
+void MessageConsole::setParams(MessageConsoleParams params) {
+	this->params = params;
+	this->insertNewMessagesAtBottom(this->params.newestMessageAtBottom);
+}
+
+//todo: rethink and redo this. there is probably a much better way than recreating the entire message string for every new message
+QString MessageConsole::addStringToMessageBuffer(QString message) {
 	this->messages[this->messagesIndex] = message+"<br>";
 	QString messagesString;
-	//append all messages to messagesString and make first one bold
-	for(int i = this->messagesIndex+MAX_MESSAGES; i > this->messagesIndex; i--){
+
+	if(this->params.newestMessageAtBottom){
+		for(int i = 0; i < this->messagesIndex+1; i++){
+		messagesString = messagesString + (i == messagesIndex ? "<b>"+this->messages.at(i)+"</b>" : this->messages.at(i));
+		}
+	} else {
+		//append all messages to messagesString and make first one bold
+		for(int i = this->messagesIndex+MAX_MESSAGES; i > this->messagesIndex; i--){
 		messagesString = messagesString + (i == messagesIndex+MAX_MESSAGES ? "<b>"+this->messages.at(i%MAX_MESSAGES)+"</b>" : this->messages.at(i%MAX_MESSAGES));
+		}
 	}
+
 	this->messagesIndex = (this->messagesIndex+1) % MAX_MESSAGES;
 	return messagesString;
 }
 
-void MessageConsole::contextMenuEvent(QContextMenuEvent* event){
-	QMenu* menu = this->textEdit->createStandardContextMenu();
+void MessageConsole::contextMenuEvent(QContextMenuEvent* event) {
+	QMenu* menu =this->textEdit->createStandardContextMenu();
+
+	QAction* messageAtBottom = menu->addAction("Newest message at bottom");
+	messageAtBottom->setCheckable(true);
+	messageAtBottom->setChecked(this->params.newestMessageAtBottom);
+	connect(messageAtBottom, &QAction::toggled, this, &MessageConsole::insertNewMessagesAtBottom);
+
 	menu->exec(event->globalPos());
 	delete menu;
 }
 
-void MessageConsole::displayInfo(QString info){
+void MessageConsole::refreshMessages() {
+	if(this->messagesIndex>1){
+		this->messagesIndex--;
+	} else {
+		return;
+	}
+
+	QString messagesString;
+	if(this->params.newestMessageAtBottom){
+		for(int i = 0; i < this->messagesIndex+1; i++){
+		messagesString = messagesString + (i == messagesIndex ? "<b>"+this->messages.at(i)+"</b>" : this->messages.at(i));
+		}
+	} else {
+		//append all messages to messagesString and make first one bold
+		for(int i = this->messagesIndex+MAX_MESSAGES; i > this->messagesIndex; i--){
+		messagesString = messagesString + (i == messagesIndex+MAX_MESSAGES ? "<b>"+this->messages.at(i%MAX_MESSAGES)+"</b>" : this->messages.at(i%MAX_MESSAGES));
+		}
+	}
+	this->textEdit->setText(messagesString);
+
+	if(this->messagesIndex>0){
+		this->messagesIndex++;
+	}
+
+	if(this->params.newestMessageAtBottom){
+		this->textEdit->moveCursor(QTextCursor::End);
+		this->textEdit->ensureCursorVisible();
+	}
+}
+
+void MessageConsole::insertNewMessagesAtBottom(bool enable) {
+	if(this->params.newestMessageAtBottom == enable){
+		return;
+	}
+	this->params.newestMessageAtBottom = enable;
+	this->refreshMessages();
+}
+
+void MessageConsole::displayInfo(QString info) {
 	QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss") + " ";
 	QString htmlStart = "<font color=\"#4863A0\">";	//#4863A0 = "Steel Blue", RGB: 72, 99, 160, (http://www.computerhope.com/htmcolor.htm#color-codes)
 	QString htmlEnd = "</font>";
 	this->textEdit->setText(addStringToMessageBuffer(currentTime + htmlStart + info + htmlEnd));
+
+	if(this->params.newestMessageAtBottom){
+		this->textEdit->moveCursor(QTextCursor::End);
+		this->textEdit->ensureCursorVisible();
+	}
 }
 
-void MessageConsole::displayError(QString error){
+void MessageConsole::displayError(QString error) {
 	QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss") + " ";
 	QString htmlStart = "<font color=\"#E41B17\">";	//#E41B17 = "Love Red" (http://www.computerhope.com/htmcolor.htm#color-codes)
 	QString htmlEnd = "</font>";
+
+	//todo: maybe don't use a QVector<QString> as message buffer to generate a string for textEdit. instead maybe add new messages like this:
+	//	auto cursor = QTextCursor(this->textEdit->document());
+	//	cursor.setPosition(0);
+	//	this->textEdit->setTextCursor(cursor);
+	//	this->textEdit->insertHtml((currentTime + htmlStart + error + htmlEnd + "<br>"));
+
 	this->textEdit->setText(addStringToMessageBuffer(currentTime + htmlStart + "<b>ERROR: </b>" + error + htmlEnd));
+
+	if(this->params.newestMessageAtBottom){
+		this->textEdit->moveCursor(QTextCursor::End);
+		this->textEdit->ensureCursorVisible();
+	}
 }

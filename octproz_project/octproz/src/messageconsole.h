@@ -39,6 +39,9 @@
 
 #define MAX_MESSAGES 512
 
+struct MessageConsoleParams {
+	bool newestMessageAtBottom;
+};
 
 class MessageConsole : public QWidget
 {
@@ -48,6 +51,8 @@ public:
 	~MessageConsole();
 
 	QDockWidget* getDock(){return this->dock;}
+	void setParams(MessageConsoleParams params);
+	MessageConsoleParams getParams(){return this->params;}
 
 private:
 	QTextEdit* textEdit;
@@ -56,15 +61,18 @@ private:
 	QPoint mousePos;
 	QVector<QString> messages;
 	int messagesIndex;
+	MessageConsoleParams params;
 
 	QString addStringToMessageBuffer(QString message);
-	void contextMenuEvent(QContextMenuEvent* event);
+	void contextMenuEvent(QContextMenuEvent* event) override;
+	void refreshMessages();
 
 signals:
 	void error(QString);
 	void info(QString);
 
 public slots:
+	void insertNewMessagesAtBottom(bool enable);
 	void displayInfo(QString info);
 	void displayError(QString error);
 };
