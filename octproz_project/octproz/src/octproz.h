@@ -56,8 +56,8 @@
 
 #include "ui_octproz.h"
 
-#define APP_VERSION "1.5.0"
-#define APP_VERSION_DATE "05 April 2022"
+#define APP_VERSION "1.6.0"
+#define APP_VERSION_DATE "24 June 2022"
 #define APP_NAME "OCTproZ"
 
 #define MAIN_WINDOW_SETTINGS_GROUP "main_window_settings"
