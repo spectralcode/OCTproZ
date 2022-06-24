@@ -28,8 +28,8 @@
 
 
 <div class="content container">
-  <h1 id="octproz-user-manual"><a name="main"></a>Welcome to the OCTproZ v1.5.0 User Manual!</h1>
-  <p><small>Date: April 19, 2022 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</small></p>
+  <h1 id="octproz-user-manual"><a name="main"></a>Welcome to the OCTproZ v1.6.0 User Manual!</h1>
+  <p><small>Date: June 24, 2022 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</small></p>
 
 
   <h1 id="id-about"><a name="about-section"></a>About</h1>
@@ -89,14 +89,13 @@
     <div class="message">Please note: The polynomial used for the resampling curve has the form <br>
       c<sub>0</sub> + (c<sub>1</sub>/N)x + (c<sub>2</sub>/N<sup>2</sup>)x<sup>2</sup> + (c<sub>3</sub>/N<sup>3</sup>)x<sup>3</sup> <br>
       where N is the number of samples per raw A-scan - 1.</div>
-      <div class="message">Please note: A custom resampling curve (that does not need to be a polynomial fit) can be loaded by clicking on <br>
-        <i>Extras &rarr; Resampling curve for k-linearization &rarr; Use custom curve from file</i> <br>
-         <strong>and</strong> <br>
-         <i>Extras &rarr; Resampling curve for k-linearization &rarr; Load custom curve from file...</i> <br>
+      <div class="message">Please note: A custom resampling curve (that does not need to be a polynomial fit) can be loaded by clicking on 
+         <i>Extras&rarr; Resampling curve for k-linearization &rarr; Load custom curve from file...</i> <br>
          The structure of the csv file with the curve data should be the same as the structure of the csv file that you get by right clicking on the resampling curve plot in the sidebar and saving the plot as csv file.
       </div></p><p></p>
     
-     There are currently three interpolation methods to choose from: Linear, Cubic and Lanczos. They are a tradeoff between speed and accuracy, with Linear being the fastest and Lanczos being the most accurate.<br>
+     There are currently three interpolation methods to choose from: Linear, Cubic and Lanczos. They are a tradeoff between speed and accuracy, with Linear being the fastest and Lanczos being the most accurate.
+     The figure below shows typical interpolation artifacts that can be seen when using linear and cubic interpolation but are not present when using Lanczos interpolation:<br>
     </p><p><img src="images/processing_interpolation.png"></p></a></p> <br><p></p>
     </li>
 
@@ -109,7 +108,7 @@
     </li>
     <li>
     <p><strong>IFFT</strong>  <br>
-    The inverse Fourier transformation is the essential processing step to calculate the depth profile from the acquired and pre-processed (k-lineariziation, dispersion compensation, windowing) fringe pattern. OCTproZ utilizes the NVIDIA CUDA Fast Fourier Transformation library (cuFFT) to execute the inverse Fast Fourier Transform (IFFT).<br></p>
+    The inverse Fourier transform is the essential processing step to calculate the depth profile from the acquired and pre-processed (k-lineariziation, dispersion compensation, windowing) fringe pattern. OCTproZ utilizes the NVIDIA CUDA Fast Fourier Transform library (cuFFT) to execute the inverse Fast Fourier Transform (IFFT).<br></p>
     </li>
     <li>
     <p><strong>Fixed-pattern noise removal</strong>  <br>
@@ -117,7 +116,7 @@
     </li>
     <li>
     <p><strong>Truncate</strong>  <br>
-    This step removes the mirror image of each B-scan which naturally occurs after IFFT. Since the inverse Fourier transformation is applied to a real-valued signal, the result must be Hermitian symmetric. As consequence, mirror images, with the zero path reference as the mirror axis, can be seen in the resulting B-scans. If numerical dispersion correction is applied prior IFFT these mirror images are not identical with their counterparts but appear blurred. To avoid displaying duplicate or blurred images and reduce data size the data is truncated. <br></p>
+    This step removes the mirror image on the opposite side of zero pathlength by cropping half of the processed OCT data. The mirror image is sometimes referred to as mirror artifact or complex conjugate artifact.  It originates from the fact that the inverse Fourier transform is applied to a real-valued signal which results in a conjugate symmetric signal (i.e. the positive and negative distances are complex conjugates of each other). <br></p>
     </li>
     <li>
     <p><strong>Logarithm</strong>  <br>
@@ -125,11 +124,11 @@
     </li>
     <li>
     <p><strong>Backward scan correction</strong>  <br>
-    To increase frame rate, a bidirectional scanning scheme can be used. However, this means that every other frame is flipped horizontally. The backward scan correction step unflips these frames. <p><img src="images/processing_bscanflip.png"></p></a></p> The image above shows the effect of the backward scan correction on the en face view of an OCT volume that was acquired using a bidirectional scanning scheme. A piece of wood with a laser burned hole was used as sample. Left: Spot path on sample when a bidirectional scanning scheme is applied. Middle: En face view with enabled backward scan correction. Right: En face view when backward scan correction is disabled.<br><p></p>
+    To increase frame rate, a bidirectional scanning scheme can be used. However, this means that every other frame is flipped. The backward scan correction step unflips these frames. <p><img src="images/processing_bscanflip.png"></p></a></p> The image above shows the effect of the backward scan correction on the en face view of an OCT volume that was acquired using a bidirectional scanning scheme. A piece of wood with a laser burned hole was used as sample. Left: Spot path on sample when a bidirectional scanning scheme is applied. Middle: En face view with enabled backward scan correction. Right: En face view when backward scan correction is disabled.<br><p></p>
     </li>
     <li>
     <p><strong>Sinusoidal scan correction</strong>  <br>
-    A resonant scanner can be used for high speed OCT-systems. Due to the sinusoidal movement of the scanner the resulting B-scans would be distorted without this processing step as can be seen in the figure below. </p><p><img src="images/processing_sinusoidalcorrection.png"></p></a></p> <br><p></p>
+    A resonant scanner can be used for high speed OCT systems. Due to the sinusoidal movement of the scanner the resulting B-scans would be distorted without this processing step as can be seen in the figure below. </p><p><img src="images/processing_sinusoidalcorrection.png"></p></a></p> <br><p></p>
     </li>
     <li>
     <p><strong>Visualization</strong>  <br>
