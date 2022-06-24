@@ -139,6 +139,8 @@ public:
 
 	GLuint getVolumeTexture(){return this->m_volume_texture;}
 
+	void setOrigin(float x, float y, float z){this->m_origin={x,y,z};}
+
 private:
 	GLuint m_volume_texture;
 	GLuint m_noise_texture;
