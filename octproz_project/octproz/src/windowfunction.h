@@ -63,6 +63,7 @@ private:
 	void calculateSineWindow();
 	void calculateLanczosWindow();
 	void calculateFlatTopWindow();
+	void calculateTaylorWindow();
 
 	float* data;
 	WindowType type;

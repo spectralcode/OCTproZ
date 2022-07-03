@@ -248,3 +248,82 @@ void WindowFunction::calculateFlatTopWindow(){
 		}
 	}
 }
+
+void WindowFunction::calculateTaylorWindow(){
+//see: Doerry, Armin W. "Catalog of window taper functions for sidelobe control." Sandia National Laboratories (2017).
+	int width = static_cast<int>(this->fillFactor * this->size);
+	int center = static_cast<int>(this->centerPosition * this->size);
+	int minPos = center - width / 2;
+	int maxPos = minPos + width;
+	if (maxPos < minPos) {
+		int tmp = minPos;
+		minPos = maxPos;
+		maxPos = tmp;
+	}
+	for (unsigned i = 0; i < this->size; i++) {
+		data[i] = 0.0;
+	}
+
+	float nbar = 7;
+	float sidelobeLevel = -50;
+
+	float nbarf = static_cast<float>(nbar);
+	float nbarf2 = nbarf*nbarf;
+
+	float eta = pow(10.0, - sidelobeLevel / 20.0);
+	float a = acosh(eta) / M_PI;
+	float a2 = a*a;
+	float sigma2 = (nbarf2) / (a2 + (((nbarf - 0.5)*((nbarf - 0.5)))));
+
+	for (int m = 1; m < static_cast<int>(nbar); m++) {
+		float numerator = 1.0f;
+		float denominator = 1.0f;
+
+		float mf = static_cast<float>(m);
+		float mf2 = mf*mf;
+
+		for (int n = 1; n < static_cast<int>(nbar); n++) {
+			float nf = static_cast<float>(n);
+
+			numerator *= (1.0f - ((mf*mf) / (sigma2)) / (a2 + ((nf - 0.5f)*(nf - 0.5f))));
+			if (n != m) {
+				denominator *= (1.0f - (mf2 / (nf*nf)));
+			}
+		}
+		float sign = pow(-1, m);
+		numerator = numerator * sign;
+
+		float Fm = (numerator / denominator);
+
+		for (int i = 0; i < this->size; i++) {
+			int xi = i - minPos;
+			float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
+			if (xiNorm > 0.999f || xiNorm < 0.0001f) {
+				data[i] = -999.99;
+			}
+			else {
+				data[i] += Fm * cos(mf * 2.0f * M_PI * xiNorm);
+			}
+		}
+	}
+
+	//normalize window to 1
+	double maxVal = 0;
+	double minVal = 100000;
+	for (int i = 0; i < this->size; i++) {
+		if(data[i]>maxVal){
+		maxVal = data[i];
+		}
+		if(data[i] > -999 && data[i]<minVal){
+		minVal = data[i];
+		}
+	}
+	for (int i = 0; i < this->size; i++) {
+		if(data[i] < -999){
+			data[i] = minVal;
+		}
+		data[i] -= minVal;
+		data[i] /= (maxVal-minVal);
+	}
+
+}
