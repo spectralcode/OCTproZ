@@ -26,6 +26,7 @@
 **/
 
 #include "controlpanel.h"
+#include <QCoreApplication>
 
 
 ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
@@ -62,6 +63,14 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->doubleSpinBoxGamma = new QDoubleSpinBox(this->panel);
 	this->labelGamma = new QLabel(tr("Gamma:"), this->panel);
 
+	this->checkBoxLUT = new QCheckBox(this->panel);
+	this->checkBoxLUT->setText(tr("LUT"));
+
+	this->toolButtonOpenLUT = new QToolButton(this->panel);
+	this->toolButtonOpenLUT->setText(tr("Load LUT..."));
+	this->toolButtonOpenLUT->setAutoRaise(true);
+	connect(this->toolButtonOpenLUT, &QToolButton::clicked, this, &ControlPanel3D::openLUTDialog);
+
 	this->toolButtonMore = new QToolButton(this->panel);
 	this->toolButtonMore->setArrowType(Qt::DownArrow);
 	this->toolButtonMore->setAutoRaise(true);
@@ -80,6 +89,8 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	QHBoxLayout* hLayoutSmoothFactor = createHBoxLayout(this->labelSmoothFactor, this->spinBoxSmoothFactor);
 	QHBoxLayout* hLayoutStepLength = createHBoxLayout(this->labelStepLength, this->doubleSpinBoxStepLength);
 	QHBoxLayout* hLayoutGamma = createHBoxLayout(this->labelGamma, this->doubleSpinBoxGamma);
+	QHBoxLayout* hLayoutLUT = createHBoxLayout(this->checkBoxLUT, this->toolButtonOpenLUT);
+
 
 	this->layout->addLayout(hLayoutSmoothFactor, 0, 3, 1, 1);
 	this->layout->addLayout(hLayoutDepthWeight, 1, 3, 1, 1);
@@ -97,6 +108,7 @@ ControlPanel3D::ControlPanel3D(QWidget *parent) : QWidget(parent){
 	this->layout->addWidget(this->labelStretchZ, 5, 0, 1, 1, Qt::AlignRight);
 	this->layout->addWidget(this->doubleSpinBoxStretchZ, 5, 1, 1, 1);
 
+	this->layout->addLayout(hLayoutLUT, 3, 3, 1, 1);
 	this->layout->addLayout(hLayoutStepLength ,4, 3, 1, 1);
 	this->layout->addLayout(hLayoutGamma, 5, 3, 1, 1);
 
@@ -171,6 +183,10 @@ void ControlPanel3D::setModes(QStringList modes) {
 	this->stringBoxModes->setStrings(modes);
 }
 
+void ControlPanel3D::eraseLUTFileName() {
+	this->params.lutFileName = "";
+}
+
 
 GLWindow3DParams ControlPanel3D::getParams() {
 	this->params.extendedViewEnabled = this->extendedView;
@@ -186,6 +202,7 @@ GLWindow3DParams ControlPanel3D::getParams() {
 	this->params.gamma = this->doubleSpinBoxGamma->value();
 	this->params.alphaExponent = this->doubleSpinBoxAlphaExponent->value();
 	this->params.shading = this->checkBoxShading->isChecked();
+	this->params.lutEnabled = this->checkBoxLUT->isChecked();
 
 	return this->params;
 }
@@ -303,8 +320,42 @@ void ControlPanel3D::setParams(GLWindow3DParams params) {
 	this->doubleSpinBoxGamma->setValue(params.gamma);
 	this->doubleSpinBoxAlphaExponent->setValue(params.alphaExponent);
 	this->checkBoxShading->setChecked(params.shading);
+	this->checkBoxLUT->setChecked(params.lutEnabled);
 	this->updateDisplayParameters();
 	this->connectGuiToSettingsChangedSignal();
+}
+
+void ControlPanel3D::openLUTDialog() {
+	emit dialogAboutToOpen();
+	QCoreApplication::processEvents();
+	QString filters("(*.png);;(*.jpg);;(*.bmp)");
+	QString defaultFilter("(*.png)");
+	QDir dir;
+	if(this->params.lutFileName != ""){
+		dir = QFileInfo(this->params.lutFileName).absoluteDir();
+	}else{
+		dir = QCoreApplication::applicationDirPath() + "/luts/";
+	}
+	const QString fileName = QFileDialog::getOpenFileName(this, tr("Select image file with lookup table..."), dir.path(), filters, &defaultFilter);
+	emit dialogClosed();
+	if(fileName == ""){
+		return;
+	}
+	if(fileName == this->params.lutFileName){
+		emit info(tr("The selected LUT is already in use!"));
+	} else {
+		QImage lut(fileName);
+		if(lut.isNull()){
+			emit error(tr("Could not load LUT! File: ") + fileName);
+			this->params.lutFileName = "";
+			return;
+		}
+		this->params.lutFileName = fileName;
+		this->params.lutEnabled = true;
+		this->checkBoxLUT->setChecked(true);
+		emit lutSelected(lut);
+		emit info(tr("LUT for volume rendering loaded! File used: ") + fileName);
+	}
 }
 
 void ControlPanel3D::enableExtendedView(bool enable) {
@@ -320,7 +371,9 @@ void ControlPanel3D::enableExtendedView(bool enable) {
 	this->doubleSpinBoxStepLength->setVisible(enable);
 	this->labelGamma->setVisible(enable);
 	this->doubleSpinBoxGamma->setVisible(enable);
-	this->checkBoxShading->setVisible(enable && (this->params.displayMode == "MIDA" || this->params.displayMode == "Alpha blending"));
+	this->checkBoxLUT->setVisible(enable);
+	this->toolButtonOpenLUT->setVisible(enable);
+	//this->checkBoxShading->setVisible(enable && (this->params.displayMode == "MIDA" || this->params.displayMode == "Alpha blending"));
 }
 
 void ControlPanel3D::findGuiElements() {

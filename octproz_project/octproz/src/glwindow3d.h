@@ -174,6 +174,7 @@ public slots:
 	void slot_initProcessingThreadOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void slot_registerGLbufferWithCuda();
 	void slot_updateDisplayParams(GLWindow3DParams params);
+	void openLUTFromImage(QImage lut);
 	void saveSettings();
 
 protected:
@@ -244,6 +245,7 @@ private:
 	GLfloat m_alpha_exponent;
 	GLint m_smooth_factor;
 	GLboolean m_shading_enabled;
+	GLboolean m_lut_enabled;
 
 	RayCastVolume *raycastingVolume;
 

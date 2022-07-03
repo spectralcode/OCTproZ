@@ -123,6 +123,11 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 	this->viewPos.setY(0);
 
 	connect(this->panel, &ControlPanel3D::displayParametersChanged, this, &GLWindow3D::slot_updateDisplayParams);
+	connect(this->panel, &ControlPanel3D::lutSelected, this, &GLWindow3D::openLUTFromImage);
+	connect(this->panel, &ControlPanel3D::info, this, &GLWindow3D::info);
+	connect(this->panel, &ControlPanel3D::error, this, &GLWindow3D::error);
+	connect(this->panel, &ControlPanel3D::dialogAboutToOpen, this, &GLWindow3D::dialogAboutToOpen);
+	connect(this->panel, &ControlPanel3D::dialogClosed, this, &GLWindow3D::dialogClosed);
 }
 
 
@@ -150,6 +155,8 @@ void GLWindow3D::setSettings(QVariantMap settings) {
 	params.smoothFactor = settings.value(SMOOTH_FACTOR).toInt();
 	params.alphaExponent = settings.value(ALPHA_EXPONENT).toReal();
 	params.shading = settings.value(SHADING_ENABLED).toBool();
+	params.lutEnabled = settings.value(LUT_ENABLED).toBool();
+	params.lutFileName = settings.value(LUT_FILENAME).toString();
 	this->panel->setParams(params);
 }
 
@@ -169,6 +176,8 @@ QVariantMap GLWindow3D::getSettings() {
 	settings.insert(SMOOTH_FACTOR, params.smoothFactor);
 	settings.insert(ALPHA_EXPONENT, params.alphaExponent);
 	settings.insert(SHADING_ENABLED, params.shading);
+	settings.insert(LUT_ENABLED, params.lutEnabled);
+	settings.insert(LUT_FILENAME, params.lutFileName);
 	return settings;
 }
 
@@ -218,6 +227,23 @@ void GLWindow3D::initializeGL() {
 	}
 
 	this->slot_updateDisplayParams(this->displayParams); //set display parameters that are restored from previous octproz session
+
+	//restore lut settings from previous session
+	QString fileName = this->displayParams.lutFileName;
+	QImage lut(":/luts/hotter_lut.png"); //deafult lut
+	if(fileName != ""){
+		QImage lutFromFile(fileName);
+		if(lutFromFile.isNull()){
+			emit error(tr("Could not load LUT! File: ") + fileName);
+			this->panel->eraseLUTFileName();
+		}else{
+			lut = lutFromFile;
+		}
+		//emit info(tr("LUT for volume rendering loaded! File used: ") + fileName);
+	}
+	makeCurrent();
+	this->raycastingVolume->setLUT(lut);
+	doneCurrent();
 }
 
 
@@ -292,10 +318,12 @@ void GLWindow3D::raycasting(const QString& shader) {
 		m_shaders[shader]->setUniformValue("gamma", m_gamma);
 		m_shaders[shader]->setUniformValue("volume", 0);
 		m_shaders[shader]->setUniformValue("jitter", 1);
+		m_shaders[shader]->setUniformValue("lut", 2);
 		m_shaders[shader]->setUniformValue("depth_weight", m_depth_weight);
 		m_shaders[shader]->setUniformValue("smooth_factor", m_smooth_factor);
 		m_shaders[shader]->setUniformValue("alpha_exponent", m_alpha_exponent);
 		m_shaders[shader]->setUniformValue("shading_enabled", m_shading_enabled);
+		m_shaders[shader]->setUniformValue("lut_enabled", m_lut_enabled);
 
 		glClearColor(m_background.redF(), m_background.greenF(), m_background.blueF(), m_background.alphaF());
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -451,9 +479,17 @@ void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
 	this->setStretch(params.stretchX, params.stretchY, params.stretchZ);
 	this->m_gamma = params.gamma;
 	this->m_depth_weight = params.depthWeight;
-	this->setSmoothFactor(params.smoothFactor);
-	this->setAlphaExponent(params.alphaExponent);
-	this->enableShading(params.shading);
+	this->m_smooth_factor = params.smoothFactor;
+	this->m_alpha_exponent = params.alphaExponent;
+	this->m_shading_enabled = params.shading;
+	this->m_lut_enabled = params.lutEnabled;
+}
+
+void GLWindow3D::openLUTFromImage(QImage lut){
+	makeCurrent();
+	this->raycastingVolume->setLUT(lut);
+	doneCurrent();
+	this->m_lut_enabled = true;
 }
 
 void GLWindow3D::delayedUpdate() {

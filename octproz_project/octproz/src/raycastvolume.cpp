@@ -54,6 +54,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <QOpenGLTexture>
 
 
 /*!
@@ -110,6 +111,20 @@ RayCastVolume::RayCastVolume(void)
  */
 RayCastVolume::~RayCastVolume()
 {
+}
+
+void RayCastVolume::setLUT(QImage image) {
+	const uchar* data = image.bits();
+	int width = image.width();
+
+	glDeleteBuffers(1, &lutTexture);
+	glGenBuffers(1, &lutTexture);
+	glBindBuffer(GL_TEXTURE_1D, lutTexture);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, width, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
+	glBindTexture(GL_TEXTURE_1D, 0);
 }
 
 

@@ -1,0 +1,2 @@
+Most of the color lookup tables in this folder are inspired by the LUTs one can find in ImageJ:
+- https://imagej.nih.gov/ij/download/luts/

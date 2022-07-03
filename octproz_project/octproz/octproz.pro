@@ -130,5 +130,8 @@ include(pri/cuda.pri)
 #include pri file to copy documentation to build folder
 include(pri/docs.pri)
 
+#include pri file to copy color lookup tables to build folder
+include(pri/luts.pri)
+
 #set application icon
 RC_ICONS = icons/OCTproZ_icon.ico

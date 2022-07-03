@@ -67,6 +67,7 @@ public:
 	RayCastVolume(void);
 	virtual ~RayCastVolume();
 
+	void setLUT(QImage image);
 	void generateTestVolume();
 	void createNoise();
 	void paint();
@@ -142,6 +143,7 @@ public:
 	void setOrigin(float x, float y, float z){this->m_origin={x,y,z};}
 
 private:
+	GLuint lutTexture;
 	GLuint m_volume_texture;
 	GLuint m_noise_texture;
 	Mesh m_cube_vao;

@@ -72,10 +72,12 @@ uniform float threshold;
 
 uniform sampler3D volume;
 uniform sampler2D jitter;
+uniform sampler1D lut;
 
 uniform float gamma;
 uniform float alpha_exponent;
 uniform bool shading_enabled;
+uniform bool lut_enabled;
 
 // Ray
 struct Ray {
@@ -183,20 +185,28 @@ void main()
 	vec3 position = ray_start;
 	vec4 colour = vec4(0.0);
 
-	// Ray march until reaching the end of the volume, or colour saturation
+	//ray march until reaching the end of the volume, or colour saturation
 	while (ray_length > 0 && colour.a < 0.9) {
 
 		float intensity = texture(volume, position).r;
 
 		if(intensity > threshold){
-			vec4 c = colour_transfer(intensity, alpha_exponent);
+			//colour transfer function
+			vec4 c;
+			if(lut_enabled){
+				//vec4 c = texture(lut, position.b); //oct depth coloring
+				c = texture(lut, intensity);
+				c.a = pow(intensity, alpha_exponent);
+			} else {
+				c = colour_transfer(intensity, alpha_exponent);
+			}
 
-			// Alpha-blending
+			//alpha-blending
 			colour.rgb = c.a * c.rgb + (1 - c.a) * colour.a * colour.rgb;
 			colour.a = c.a + (1 - c.a) * colour.a;
 
 			//depth cue
-			//colour.rgb = colour.a*colour.rgb*(pow(2.25, (ray_length/length(ray)))/(1.75));
+			colour.rgb = colour.a*colour.rgb*(pow(2.25, (ray_length/length(ray)))/(1.75));
 
 			if(shading_enabled){
 				colour.rgb = shading(colour.rgb, position, ray);
@@ -207,11 +217,11 @@ void main()
 		position += step_vector;
 	}
 
-	// Blend background
+	//blend background
 	colour.rgb = colour.a * colour.rgb + (1 - colour.a) * pow(background_colour, vec3(gamma)).rgb;
 	colour.a = 1.0;
 
-	// Gamma correction
+	//gamma correction
 	a_colour.rgb = pow(colour.rgb, vec3(1.0 / gamma));
 	a_colour.a = colour.a;
 }

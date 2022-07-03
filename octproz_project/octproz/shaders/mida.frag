@@ -72,18 +72,19 @@ uniform float threshold;
 
 uniform sampler3D volume;
 uniform sampler2D jitter;
+uniform sampler1D lut;
 
 uniform float gamma;
 uniform float alpha_exponent;
 uniform bool shading_enabled;
+uniform bool lut_enabled;
 
-// Ray
 struct Ray {
 	vec3 origin;
 	vec3 direction;
 };
 
-// Axis-aligned bounding box
+//axis-aligned bounding box
 struct AABB {
 	vec3 top;
 	vec3 bottom;
@@ -101,7 +102,7 @@ vec3 normal(vec3 position)
 	return -normalize(n);
 }
 
-// Slab method for ray-box intersection
+//slab method for ray-box intersection
 void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 {
 	vec3 direction_inv = 1.0 / ray.direction;
@@ -115,7 +116,6 @@ void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 	t_1 = min(t.x, t.y);
 }
 
-// A very simple colour transfer function
 vec4 colour_transfer(float intensity, float exponent)
 {
 	vec3 high = vec3(1.0, 1.0, 1.0);
@@ -124,7 +124,7 @@ vec4 colour_transfer(float intensity, float exponent)
 	return vec4(intensity * high + (1.0 - intensity) * low, alpha);
 }
 
-// Blinn-Phong shading
+//Blinn-Phong shading
 vec3 shading(vec3 colour, vec3 position, vec3 ray)
 {
 	vec3 L = normalize(light_position - position);
@@ -159,7 +159,7 @@ void main()
 	float ray_length = length(ray);
 	vec3 step_vector = step_length * ray / ray_length;
 
-	// Random jitter
+	//random jitter
 	ray_start += step_vector * texture(jitter, gl_FragCoord.xy / viewport_size).r;
 
 	vec3 position = ray_start;
@@ -168,15 +168,24 @@ void main()
 	float maxIntensity = 0.0;
 	float weighting = 0;
 
-	// Ray march until reaching the end of the volume, or colour saturation
+	//ray march until reaching the end of the volume, or colour saturation
 	while (ray_length > 0 && colour.a < 0.9) {
 		float intensity = texture(volume, position).r;
 
 		if(intensity > threshold && intensity > maxIntensity){
+
+			//transfer function
+			vec4 c;
+			if(lut_enabled){
+				c = texture(lut, intensity);
+				c.a = pow(intensity, alpha_exponent);
+			} else {
+				c = colour_transfer(intensity, alpha_exponent);
+			}
+
 			//Maximum Intensity Difference Accumulation (MIDA). Inspired by: Bruckner, Stefan, and M. Eduard Gröller. "Instant volume visualization using maximum intensity difference accumulation." Computer Graphics Forum. Vol. 28. No. 3. Oxford, UK: Blackwell Publishing Ltd, 2009.
 			weighting = 1.0 - (intensity - maxIntensity);
 			maxIntensity = intensity;
-			vec4 c = colour_transfer(intensity, alpha_exponent);
 			float tmp = (1.0-weighting*colour.a)*c.a;
 			colour.rgb = weighting*colour.rgb+tmp*c.rgb;
 			colour.a = weighting*colour.a+tmp;

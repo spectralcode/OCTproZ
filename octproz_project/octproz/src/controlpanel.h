@@ -42,6 +42,8 @@
 #define SMOOTH_FACTOR "smooth_factor"
 #define ALPHA_EXPONENT "alpha_exponent"
 #define SHADING_ENABLED "shading_enabled"
+#define LUT_ENABLED "lut_enabled"
+#define LUT_FILENAME "lut_filename"
 
 #include <QSpinBox>
 #include <QLabel>
@@ -77,6 +79,8 @@ struct GLWindow3DParams {
 	int smoothFactor;
 	qreal alphaExponent;
 	bool shading;
+	bool lutEnabled;
+	QString lutFileName;
 };
 
 class ControlPanel3D : public QWidget
@@ -88,6 +92,7 @@ public:
 	~ControlPanel3D();
 	void setModes(QStringList modes);
 	void enableContinuousUpdate(bool enable);
+	void eraseLUTFileName();
 	GLWindow3DParams getParams();
 
 
@@ -128,6 +133,9 @@ private:
 	QDoubleSpinBox* doubleSpinBoxGamma;
 	QLabel* labelGamma;
 
+	QCheckBox* checkBoxLUT;
+	QToolButton* toolButtonOpenLUT;
+
 	QList<QLineEdit*> lineEdits;
 	QList<QCheckBox*> checkBoxes;
 	QList<QDoubleSpinBox*> doubleSpinBoxes;
@@ -142,12 +150,17 @@ public slots:
 	void updateDisplayParameters();
 	void toggleExtendedView();
 	void setParams(GLWindow3DParams params);
+	void openLUTDialog();
 
 
 signals:
 	void displayParametersChanged(GLWindow3DParams params);
 	void settingsChanged();
-
+	void lutSelected(QImage lut);
+	void dialogAboutToOpen();
+	void dialogClosed();
+	void error(QString);
+	void info(QString);
 };
 
 

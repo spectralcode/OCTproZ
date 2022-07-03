@@ -35,5 +35,6 @@
 		<file>icons/octproz_volume_icon.png</file>
 		<file>icons/octproz_manual_icon.png</file>
 		<file>default/settings.ini</file>
+		<file>luts/hotter_lut.png</file>
 	</qresource>
 </RCC>

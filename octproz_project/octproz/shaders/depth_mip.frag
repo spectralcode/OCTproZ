@@ -73,18 +73,19 @@ uniform float depth_weight;
 
 uniform sampler3D volume;
 uniform sampler2D jitter;
+uniform sampler1D lut;
 
 uniform float gamma;
-uniform bool shading_enabled;
 uniform float alpha_exponent;
+uniform bool shading_enabled;
+uniform bool lut_enabled;
 
-// Ray
 struct Ray {
 	vec3 origin;
 	vec3 direction;
 };
 
-// Axis-aligned bounding box
+//axis-aligned bounding box
 struct AABB {
 	vec3 top;
 	vec3 bottom;
@@ -102,7 +103,7 @@ vec3 normal(vec3 position)
 	return -normalize(n);
 }
 
-// Slab method for ray-box intersection
+//slab method for ray-box intersection
 void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 {
 	vec3 direction_inv = 1.0 / ray.direction;
@@ -116,7 +117,6 @@ void ray_box_intersection(Ray ray, AABB box, out float t_0, out float t_1)
 	t_1 = min(t.x, t.y);
 }
 
-// A very simple colour transfer function
 vec4 colour_transfer(float intensity, float exponent)
 {
 	vec3 high = vec3(1.0, 1.0, 1.0);
@@ -159,7 +159,7 @@ void main()
 	float ray_length = length(ray);
 	vec3 step_vector = step_length * ray / ray_length;
 
-	// Random jitter
+	//random jitter
 	ray_start += step_vector * texture(jitter, gl_FragCoord.xy / viewport_size).r;
 	vec3 position = ray_start;
 	vec3 position_at_max = position;
@@ -168,7 +168,7 @@ void main()
 	float ray_length_at_max = 0;
 	float initial_ray_lenght = ray_length;
 
-	// Ray march until reaching the end of the volume until max possible intensity encountered (early ray termination)
+	//ray march until reaching the end of the volume or until max possible intensity encountered (early ray termination)
 	while (ray_length > 0 && maximum_intensity < 0.99) {
 
 		float intensity = texture(volume, position).r;
@@ -182,15 +182,25 @@ void main()
 		ray_length -= step_length;
 		position += step_vector;
 	}
-	// Multiply MIP with depth component (inspired by Díaz Iriberri, José, and Pere Pau Vázquez Alcocer. "Depth-enhanced maximum intensity projection." 8th IEEE/EG International Symposium on Volume Graphics. 2010.)
-	maximum_intensity = maximum_intensity *  (1.0-depth_weight)+2.0*depth_weight*(0.5*ray_length_at_max/initial_ray_lenght);
-	vec4 colour = colour_transfer(maximum_intensity, alpha_exponent);
 
-	// Blend background
+	//transfer function
+	vec4 colour;
+	if(lut_enabled){
+		colour= texture(lut, maximum_intensity);
+		colour.a = pow(maximum_intensity, alpha_exponent);
+	} else {;
+		colour = colour_transfer(maximum_intensity, alpha_exponent);
+	}
+
+	//multiply MIP with depth component (inspired by Díaz Iriberri, José, and Pere Pau Vázquez Alcocer. "Depth-enhanced maximum intensity projection." 8th IEEE/EG International Symposium on Volume Graphics. 2010.)
+	float depth = length(position_at_max-ray_start)/(length(ray_stop-ray_start));
+	colour = colour*((1.0-depth_weight)+2.0*depth_weight*(1.0-depth));
+
+	//blend background
 	colour.rgb = colour.a * colour.rgb + (1 - colour.a) * pow(background_colour, vec3(gamma)).rgb;
 	colour.a = 1.0;
 
-	// Gamma correction
+	//gamma correction
 	a_colour.rgb = pow(colour.rgb, vec3(1.0 / gamma));
 	a_colour.a = colour.a;
 }
