@@ -384,7 +384,7 @@ void OCTproZ::initMenu() {
 	QAction* klinSeparator = klinMenu->addSeparator();
 	klinMenu->addAction(this->actionSetCustomKLinCurve);
 	QList<QAction*> klinActions;
-	klinActions << this->actionUseSidebarKLinCurve << this->actionUseCustomKLinCurve << klinSeparator <<this->actionSetCustomKLinCurve;
+	klinActions << this->actionUseSidebarKLinCurve << this->actionUseCustomKLinCurve << klinSeparator <<this->actionSetCustomKLinCurve; //todo: move k-linearization actions to sidebar class as well as loadResamplingCurveFromFile method. Get the actions from the sidebar to create the extras menu of main window. Save if custom curve is used and add auto loading at startup
 	this->sidebar->addActionsForKlinGroupBoxMenu(klinActions);
 
 	//help menu
@@ -827,25 +827,7 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 		return;
 	}
 
-	QFile file(fileName);
-	QVector<float> curve;
-	file.open(QIODevice::ReadOnly);
-	QTextStream txtStream(&file);
-	QString line = txtStream.readLine();
-	while (!txtStream.atEnd()){
-		line = txtStream.readLine();
-		curve.append((line.section(";", 1, 1).toFloat()));
-	}
-	file.close();
-	if(curve.size() > 0){
-		this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
-		this->octParams->acquisitionParamsChanged = true;
-		this->sidebar->slot_updateProcessingParams();
-		this->actionUseCustomKLinCurve->setEnabled(true);
-		this->actionUseCustomKLinCurve->setChecked(true);
-	}else{
-		emit error(tr("Custom resampling curve has a size of 0. Check if .csv file with resampling curve is not empty has right format."));
-	}
+	this->loadResamplingCurveFromFile(fileName);
 }
 
 void OCTproZ::setSystem(QString systemName) {
@@ -937,6 +919,32 @@ void OCTproZ::updateSettingsMap() {
 
 	//message console
 	this->mainWindowSettings.insert(MESSAGE_CONSOLE_BOTTOM, this->console->getParams().newestMessageAtBottom);
+}
+
+void OCTproZ::loadResamplingCurveFromFile(QString fileName){
+	if(fileName == ""){
+		return;
+	}
+	QFile file(fileName);
+	QVector<float> curve;
+	file.open(QIODevice::ReadOnly);
+	QTextStream txtStream(&file);
+	QString line = txtStream.readLine();
+	while (!txtStream.atEnd()){
+		line = txtStream.readLine();
+		curve.append((line.section(";", 1, 1).toFloat()));
+	}
+	file.close();
+	if(curve.size() > 0){
+		this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
+		this->octParams->acquisitionParamsChanged = true;
+		this->sidebar->slot_updateProcessingParams();
+		this->actionUseCustomKLinCurve->setEnabled(true);
+		this->actionUseCustomKLinCurve->setChecked(true);
+		emit info(tr("Custom resampling curve loaded! File used: ") + fileName);
+	}else{
+		emit error(tr("Custom resampling curve has a size of 0. Check if .csv file with resampling curve is not empty has right format."));
+	}
 }
 
 void OCTproZ::loadMainWindowSettings(){

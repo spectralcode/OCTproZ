@@ -68,6 +68,7 @@
 
 
 
+
 namespace Ui {
 class OCTproZ;
 }
@@ -130,6 +131,7 @@ private:
 	void loadSettings();
 	void saveSettings();
 	void updateSettingsMap();
+	void loadResamplingCurveFromFile(QString fileName);
 
 	Ui::OCTproZ *ui;
 	QVariantMap mainWindowSettings;
