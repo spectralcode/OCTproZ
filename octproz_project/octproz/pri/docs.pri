@@ -51,7 +51,7 @@ win32{
 	}
 }
 
-##Create dock directories if not already existing
+##Create directories for documentation files
 exists($$DOCEXPORTDIR){
 	message("docdir already existing")
 }else{
