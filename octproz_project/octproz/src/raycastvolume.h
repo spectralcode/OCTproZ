@@ -143,9 +143,9 @@ public:
 	void setOrigin(float x, float y, float z){this->m_origin={x,y,z};}
 
 private:
-	GLuint lutTexture;
 	GLuint m_volume_texture;
 	GLuint m_noise_texture;
+	GLuint lutTexture;
 	Mesh m_cube_vao;
 	QVector3D m_origin;
 	QVector3D m_spacing;

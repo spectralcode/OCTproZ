@@ -63,6 +63,7 @@
 RayCastVolume::RayCastVolume(void)
 	: m_volume_texture {0}
 	, m_noise_texture {0}
+	, lutTexture {0}
 	, m_cube_vao {
 		  {
 			  -1.0f, -1.0f,  1.0f,
@@ -127,42 +128,30 @@ void RayCastVolume::setLUT(QImage image) {
 	glBindTexture(GL_TEXTURE_1D, 0);
 }
 
-
-/*!
- * \brief Load a volume from file.
- * \param File to be loaded.
- */
 void RayCastVolume::generateTestVolume() {
-	int elementsInVolume = 0;
-	float* testData = nullptr;
-
 	float x = 512/8;
 	float y = 512/8;
-	float z = 832/8;
+	float z = 512/8;
 	m_size = QVector3D(x, y, z);
-	float x0 = x/2.0f;
-	float y0 = y/2.0f;
-	float z0 = z/2.0f;
-	m_origin = QVector3D(x0, y0, z0);
+	m_origin = QVector3D(0, 0, 0);
+	m_spacing = QVector3D(1.0, 1.0, 1.0);
 
-	elementsInVolume = x*y*z;
-	testData = (float*)malloc(elementsInVolume*sizeof(float));
+	int elementsInVolume = x*y*z;
+	float* testData = (float*)malloc(elementsInVolume*sizeof(float));
 	for(int i = 0; i < elementsInVolume; i++){
-		//testData[i] = (static_cast<float>(i)/static_cast<float>(elementsInVolume))*1.0;
 		float argument = static_cast<float>(i)/static_cast<float>(elementsInVolume/20.0);
-		testData[i] = abs(pow(sinf(argument)/argument, 1))/1.1;
+		testData[i] = abs(pow(sinf(argument)/argument, 0.5));
 	}
 
-	glDeleteBuffers(1, &m_volume_texture);
-	glGenBuffers(1, &m_volume_texture);
-	glBindBuffer(GL_TEXTURE_3D, m_volume_texture);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, (x * y * z*  sizeof(float)), 0, GL_DYNAMIC_COPY);
+	glDeleteTextures(1, &m_volume_texture);
+	glGenTextures(1, &m_volume_texture);
+	glBindTexture(GL_TEXTURE_3D, m_volume_texture);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // The array on the host has 1 byte alignment
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // The array on the host has 1 byte alignment
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, m_size.x(), m_size.y(), m_size.z(), 0, GL_RED, GL_FLOAT, testData);
 	glBindTexture(GL_TEXTURE_3D, 0);
 
@@ -181,7 +170,7 @@ void RayCastVolume::createNoise(){
 
 	QVector<unsigned char>* noiseData = new QVector<unsigned char>(width*height);
 	for(int i = 0; i<noiseData->size(); i++){
-	   (*noiseData)[i] = static_cast<unsigned char>(std::rand() % 256);
+		(*noiseData)[i] = static_cast<unsigned char>(std::rand() % 256);
 	}
 
 	glDeleteTextures(1, &m_noise_texture);

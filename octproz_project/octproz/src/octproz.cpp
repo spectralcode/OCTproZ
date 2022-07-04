@@ -806,6 +806,11 @@ void OCTproZ::slot_easterEgg() {
 		if(this->currSystem == nullptr){
 			this->volumeWindow->generateTestVolume();
 		}
+		if(this->currSystem != nullptr){
+			if(!this->currSystem->acqusitionRunning){
+				this->volumeWindow->generateTestVolume();
+			}
+		}
 	}
 }
 

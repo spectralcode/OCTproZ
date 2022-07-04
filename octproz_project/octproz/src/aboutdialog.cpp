@@ -142,6 +142,9 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	vLayoutMain->addLayout(hLayoutBottom);
 
 	connect(tabWidget, &QTabWidget::tabBarDoubleClicked, this, &AboutDialog::easterEgg);
+
+	labelWithLogo->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+	connect(labelWithLogo, &QLabel::customContextMenuRequested, this, &AboutDialog::easterEgg);
 }
 
 AboutDialog::~AboutDialog() {
