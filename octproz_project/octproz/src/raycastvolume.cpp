@@ -211,24 +211,16 @@ float RayCastVolume::scale_factor(void) {
 
 void RayCastVolume::changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth){
 	m_size = {static_cast<float>(height), static_cast<float>(depth), static_cast<float>(width)};
+	m_origin = {0, 0, 0};
 
-	float x0 = 0;
-	float y0 = 0;
-	float z0 = 0;
-	m_origin = {x0, y0, z0};
-
-	glDeleteBuffers(1, &m_volume_texture);
+	glDeleteTextures(1, &m_volume_texture);
 	glGenTextures(1, &m_volume_texture);
 	glBindTexture(GL_TEXTURE_3D, m_volume_texture);
-	//glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, (width * height * depth*  sizeof(float)), 0, GL_DYNAMIC_COPY);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-	//glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, m_size.x(), m_size.y(), m_size.z(), 0, GL_RED, GL_FLOAT, NULL);
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, m_size.x(), m_size.y(), m_size.z(), 0, GL_RED, GL_FLOAT, NULL);
 	glBindTexture(GL_TEXTURE_3D, 0);
-
 }

@@ -71,7 +71,6 @@ public:
 	void generateTestVolume();
 	void createNoise();
 	void paint();
-	std::pair<double, double> range();
 
 
 	/*!

@@ -199,15 +199,15 @@ protected:
 
 
 public slots:
-	void slot_saveScreenshot(QString savePath, QString fileName);
-	void slot_changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth);
-	void slot_initProcessingThreadOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
-	void slot_registerGLbufferWithCuda();
+	void saveScreenshot(QString savePath, QString fileName);
+	void changeTextureSize(unsigned int width, unsigned int height, unsigned int depth);
+	void createOpenGLContextForProcessing(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
+	void registerOpenGLBufferWithCuda();
 	void setKeepAspectRatio(bool enable);
 	void setRotationAngle(float angle);
 	void setStretchX(float stretchFactor);
 	void setStretchY(float stretchFactor);
-	void slot_screenshot();
+	void openScreenshotDialog();
 	void enableMarker(bool enable);
 	void setMarkerPosition(unsigned int position);
 	void saveSettings();

@@ -147,7 +147,7 @@ void GLWindow2D::initContextMenu() {
 	contextMenu->addAction(this->markerAction);
 
 	this->screenshotAction = new QAction(tr("&Screenshot..."), this);
-	connect(this->screenshotAction, &QAction::triggered, this, &GLWindow2D::slot_screenshot);
+	connect(this->screenshotAction, &QAction::triggered, this, &GLWindow2D::openScreenshotDialog);
 	this->contextMenu->addAction(this->screenshotAction);
 }
 
@@ -192,7 +192,7 @@ void GLWindow2D::delayedUpdate() {
 	this->delayedUpdatingRunning = false;
 }
 
-void GLWindow2D::slot_changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth) {
+void GLWindow2D::changeTextureSize(unsigned int width, unsigned int height, unsigned int depth) {
 	this->width = width <= 1 ? 128 : width; //width and height shall not be zero. 128 is an arbitrary value greater 1 and a power of 2
 	this->height = height <= 1 ? 128 : height;
 	this->depth = depth;
@@ -218,7 +218,7 @@ void GLWindow2D::slot_changeBufferAndTextureSize(unsigned int width, unsigned in
 	this->setMarkerPosition(this->markerPosition);
 }
 
-void GLWindow2D::slot_initProcessingThreadOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread) {
+void GLWindow2D::createOpenGLContextForProcessing(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread) {
 	QOpenGLContext* renderContext = this->context();
 	(processingContext)->setFormat(renderContext->format());
 	(processingContext)->setShareContext(renderContext);
@@ -228,12 +228,12 @@ void GLWindow2D::slot_initProcessingThreadOpenGL(QOpenGLContext* processingConte
 	(processingSurface)->create(); //Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms, cross-platform applications must ensure that create() is only called on the main (GUI) thread
 	(processingSurface)->moveToThread(processingThread);
 	
-	this->slot_changeBufferAndTextureSize(this->width, this->height, this->depth);
+	this->changeTextureSize(this->width, this->height, this->depth);
 
 	//QOpenGLContext::areSharing(processingContext, renderContext) ? emit info("processingContext, renderContext: yes") : emit info("processingContext, renderContext: no");
 }
 
-void GLWindow2D::slot_registerGLbufferWithCuda() {
+void GLWindow2D::registerOpenGLBufferWithCuda() {
 	emit registerBufferCudaGL(this->buf);
 }
 
@@ -257,7 +257,7 @@ void GLWindow2D::setStretchY(float stretchFactor) {
 	this->resizeGL(this->size().width(),this->size().height());
 }
 
-void GLWindow2D::slot_screenshot() {
+void GLWindow2D::openScreenshotDialog() {
 	QImage screenshot = this->grabFramebuffer();
 	emit dialogAboutToOpen();
 	QCoreApplication::processEvents();
@@ -327,7 +327,7 @@ void GLWindow2D::saveSettings() {
 	Settings::getInstance()->storeSettings(this->getName(), this->getSettings());
 }
 
-void GLWindow2D::slot_saveScreenshot(QString savePath, QString fileName) {
+void GLWindow2D::saveScreenshot(QString savePath, QString fileName) {
 	QImage screenshot = this->grabFramebuffer();
 	QString filePath = savePath + "/" + fileName;
 	screenshot.save(filePath);
@@ -367,7 +367,7 @@ void GLWindow2D::initializeGL() {
 	this->initialized = true;
 
 	if(this->changeBufferSizeFlag){
-		this->slot_changeBufferAndTextureSize(this->width, this->height, this->depth);
+		this->changeTextureSize(this->width, this->height, this->depth);
 		this->changeBufferSizeFlag = false;
 	}
 }

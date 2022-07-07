@@ -81,13 +81,13 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->bscanWindow, &GLWindow2D::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
 	connect(this->enFaceViewWindow, &GLWindow2D::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
 
-	connect(this, &OCTproZ::glBufferTextureSizeBscan, this->bscanWindow, &GLWindow2D::slot_changeBufferAndTextureSize);
+	connect(this, &OCTproZ::glBufferTextureSizeBscan, this->bscanWindow, &GLWindow2D::changeTextureSize);
 	this->dock2D = new QDockWidget(tr("2D - B-scan"), this);
 	this->dock2D->setObjectName("2D - B-scan");
 	//this->dock2D->setFeatures(QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetClosable); //make dock not floatable
 	connect(this->dock2D, &QDockWidget::visibilityChanged, this, &OCTproZ::slot_enableBscanViewProcessing);
 
-	connect(this, &OCTproZ::glBufferTextureSizeEnFaceView, this->enFaceViewWindow, &GLWindow2D::slot_changeBufferAndTextureSize);
+	connect(this, &OCTproZ::glBufferTextureSizeEnFaceView, this->enFaceViewWindow, &GLWindow2D::changeTextureSize);
 	this->dockEnFaceView = new QDockWidget(tr("2D - En Face View"), this);
 	this->dockEnFaceView->setObjectName("2D - En Face View");
 	connect(this->dockEnFaceView, &QDockWidget::visibilityChanged, this, &OCTproZ::slot_enableEnFaceViewProcessing);
@@ -97,7 +97,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->dockVolumeView = new QDockWidget(tr("3D - Volume"), this);
 	this->dockVolumeView->setObjectName("3D - Volume");
 	this->dockVolumeView->setFeatures(QDockWidget::DockWidgetClosable); //make dock not floatable, and not movable
-	connect(this, &OCTproZ::glBufferTextureSizeBscan, this->volumeWindow, &GLWindow3D::slot_changeBufferAndTextureSize);
+	connect(this, &OCTproZ::glBufferTextureSizeBscan, this->volumeWindow, &GLWindow3D::changeTextureSize);
 	connect(this->dockVolumeView, &QDockWidget::visibilityChanged, this, &OCTproZ::slot_enableVolumeViewProcessing);
 	connect(this->volumeWindow, &GLWindow3D::dialogAboutToOpen, this, &OCTproZ::slot_closeOpenGLwindows); //GL windows need to be closed to avoid linux bug where QFileDialog is not usable when a GL window is opend in background
 	connect(this->volumeWindow, &GLWindow3D::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
@@ -146,12 +146,12 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->volumeWindow, &GLWindow3D::registerBufferCudaGL, this->signalProcessing, &Processing::slot_registerVolumeViewOpenGLbufferWithCuda);
 	//Processing connections:
 	connect(this->signalProcessing, &Processing::updateInfoBox, this->sidebar, &Sidebar::slot_updateInfoBox);
-	connect(this->signalProcessing, &Processing::initOpenGL, this->bscanWindow, &GLWindow2D::slot_initProcessingThreadOpenGL);
+	connect(this->signalProcessing, &Processing::initOpenGL, this->bscanWindow, &GLWindow2D::createOpenGLContextForProcessing);
 	if(!this->processingInThread){
-		connect(this->signalProcessing, &Processing::initOpenGL, this->enFaceViewWindow, &GLWindow2D::slot_initProcessingThreadOpenGL); //due to opengl context sharing this connect is not necessary
+		connect(this->signalProcessing, &Processing::initOpenGL, this->enFaceViewWindow, &GLWindow2D::createOpenGLContextForProcessing); //due to opengl context sharing this connect is not necessary
 	}
-	connect(this->signalProcessing, &Processing::initOpenGLenFaceView, this->enFaceViewWindow, &GLWindow2D::slot_registerGLbufferWithCuda);
-	connect(this->signalProcessing, &Processing::initOpenGLenFaceView, this->volumeWindow, &GLWindow3D::slot_registerGLbufferWithCuda);
+	connect(this->signalProcessing, &Processing::initOpenGLenFaceView, this->enFaceViewWindow, &GLWindow2D::registerOpenGLBufferWithCuda);
+	connect(this->signalProcessing, &Processing::initOpenGLenFaceView, this->volumeWindow, &GLWindow3D::registerOpenGLBufferWithCuda);
 	processingThread.start();
 
 	this->initGui();
@@ -492,6 +492,9 @@ void OCTproZ::slot_start() {
 	this->resize(static_cast<float>(this->size().width()-1),static_cast<float>(this->size().height()-1));
 	this->resize(static_cast<float>(this->size().width()+1),static_cast<float>(this->size().height()+1));
 
+	//update OpenGL texture size (this is only necessary in if test volume is activated, since the test volume changes the opengl texture size) //todo: emit signal for opengl texture size update only if test volume is active
+	emit glBufferTextureSizeBscan(this->octParams->samplesPerLine/2, this->octParams->ascansPerBscan, this->octParams->bscansPerBuffer*this->octParams->buffersPerVolume);
+
 	//(re-)init resampling curve, dispersion curve, window curve, streaming //todo: carefully check if this is really necessary here
 	this->forceUpdateProcessingParams();
 
@@ -574,13 +577,13 @@ void OCTproZ::slot_record() {
 		QString savePath = recParams.savePath;
 		QString fileName = recParams.timestamp + recName + "_";
 		if(this->bscanWindow->isVisible()) {
-			this->bscanWindow->slot_saveScreenshot(savePath, fileName + "bscan_snapshot.png");
+			this->bscanWindow->saveScreenshot(savePath, fileName + "bscan_snapshot.png");
 		}
 		if(this->enFaceViewWindow->isVisible()) {
-			this->enFaceViewWindow->slot_saveScreenshot(savePath, fileName + "enfaceview_snapshot.png");
+			this->enFaceViewWindow->saveScreenshot(savePath, fileName + "enfaceview_snapshot.png");
 		}
 		if(this->volumeWindow->isVisible()) {
-			this->volumeWindow->slot_saveScreenshot(savePath, fileName + "volume_snapshot.png");
+			this->volumeWindow->saveScreenshot(savePath, fileName + "volume_snapshot.png");
 		}
 	}
 

@@ -72,26 +72,22 @@ QVector3D to_vector3d(const QColor& colour) {
  * \brief Constructor for the canvas.
  * \param parent Parent widget.
  */
-GLWindow3D::GLWindow3D(QWidget *parent)
-	: QOpenGLWidget {parent}
-	, raycastingVolume {nullptr}
+GLWindow3D::GLWindow3D(QWidget *parent) : QOpenGLWidget {parent}, raycastingVolume {nullptr}
 {
 	qRegisterMetaType<GLWindow3DParams >("GLWindow3DParams");
 	this->panel = new ControlPanel3D(this);
 
-
 	// Register available rendering modes here
 	QStringList modes = { "Isosurface", "MIDA", "Alpha blending", "X-ray", "DMIP", "MIP"};
 //	foreach(auto mode, modes){
-//		m_modes[mode] = [&]() { GLWindow3D::raycasting(mode); };  //todo: figure out why this does not work
+//		this->modes[mode] = [&]() { GLWindow3D::raycasting(mode); };  //todo: figure out why this does not work
 //	}
-	m_modes["MIP"] = [&]() { GLWindow3D::raycasting("MIP"); };
-	m_modes["DMIP"] = [&]() { GLWindow3D::raycasting("DMIP"); };
-	m_modes["MIDA"] = [&]() { GLWindow3D::raycasting("MIDA"); };
-	m_modes["Isosurface"] = [&]() { GLWindow3D::raycasting("Isosurface"); };
-	m_modes["Alpha blending"] = [&]() { GLWindow3D::raycasting("Alpha blending"); };
-	m_modes["X-ray"] = [&]() { GLWindow3D::raycasting("X-ray"); };
-
+	this->modes["MIP"] = [&]() { GLWindow3D::raycasting("MIP"); };
+	this->modes["DMIP"] = [&]() { GLWindow3D::raycasting("DMIP"); };
+	this->modes["MIDA"] = [&]() { GLWindow3D::raycasting("MIDA"); };
+	this->modes["Isosurface"] = [&]() { GLWindow3D::raycasting("Isosurface"); };
+	this->modes["Alpha blending"] = [&]() { GLWindow3D::raycasting("Alpha blending"); };
+	this->modes["X-ray"] = [&]() { GLWindow3D::raycasting("X-ray"); };
 
 	this->panel->setModes(modes);
 
@@ -110,7 +106,6 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 
 	this->initContextMenu();
 
-
 	this->setMode("MIP");
 	this->setThreshold(0.5);
 	this->setStepLength(0.01f);
@@ -122,7 +117,7 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 	this->viewPos.setX(0);
 	this->viewPos.setY(0);
 
-	connect(this->panel, &ControlPanel3D::displayParametersChanged, this, &GLWindow3D::slot_updateDisplayParams);
+	connect(this->panel, &ControlPanel3D::displayParametersChanged, this, &GLWindow3D::updateDisplayParams);
 	connect(this->panel, &ControlPanel3D::lutSelected, this, &GLWindow3D::openLUTFromImage);
 	connect(this->panel, &ControlPanel3D::info, this, &GLWindow3D::info);
 	connect(this->panel, &ControlPanel3D::error, this, &GLWindow3D::error);
@@ -134,7 +129,7 @@ GLWindow3D::GLWindow3D(QWidget *parent)
 GLWindow3D::~GLWindow3D()
 {
 	this->saveSettings();
-	foreach (auto element, m_shaders) {
+	foreach (auto element, this->shaders) {
 		delete element.second;
 	}
 	delete this->raycastingVolume;
@@ -181,11 +176,55 @@ QVariantMap GLWindow3D::getSettings() {
 	return settings;
 }
 
+void GLWindow3D::setStepLength(const GLfloat step_length) {
+	this->stepLength = step_length;
+	update();
+}
+
+void GLWindow3D::setThreshold(const GLfloat threshold) {
+	this->threshold = threshold;
+	update();
+}
+
+void GLWindow3D::setDepthWeight(const GLfloat depth_weight) {
+	this->depthWeight = depth_weight;
+	update();
+}
+
+void GLWindow3D::setSmoothFactor(const GLint smooth_factor) {
+	this->smoothFactor = smooth_factor;
+	update();
+}
+
+void GLWindow3D::setAlphaExponent(const GLfloat alpha_exponent) {
+	this->alphaExponent = alpha_exponent;
+	update();
+}
+
+void GLWindow3D::enableShading(const GLboolean shading_enabled) {
+	this->shadingEnabled = shading_enabled;
+	update();
+}
+
+void GLWindow3D::setMode(const QString &mode) {
+	this->activeMode = mode;
+	update();
+}
+
+void GLWindow3D::setBackground(const QColor &colour) {
+	this->background = colour;
+	update();
+}
+
 void GLWindow3D::setStretch(const qreal x, const qreal y, const qreal z) {
 	if(this->raycastingVolume != nullptr){
 		this->raycastingVolume->setStretch(x, y, z);
 		update();
 	}
+}
+
+void GLWindow3D::setGammaCorrection(float gamma) {
+	this->gamma = gamma;
 }
 
 void GLWindow3D::generateTestVolume() {
@@ -194,6 +233,15 @@ void GLWindow3D::generateTestVolume() {
 		this->raycastingVolume->generateTestVolume();
 		doneCurrent();
 	}
+}
+
+QVector<QString> GLWindow3D::getModes() {
+	QVector<QString> modes;
+	foreach(auto element, this->modes){
+		QString key = element.first;
+		modes.append(key);
+	}
+	return modes;
 }
 
 void GLWindow3D::initializeGL() {
@@ -215,66 +263,46 @@ void GLWindow3D::initializeGL() {
 		this->addShader("X-ray", ":/shaders/xray.vert", ":/shaders/xray.frag");
 	}
 
-
 	if(this->initialized){
 		emit registerBufferCudaGL(this->raycastingVolume->getVolumeTexture()); //registerBufferCudaGL is necessary here because as soon as the openglwidget/dock is removed from the main window initializeGL() is called again. //todo: check if opengl context (buffer, texture,...) cleanup is necessary!
 	}
 	this->initialized = true;
 
 	if(this->changeTextureSizeFlag){
-		this->slot_changeBufferAndTextureSize(this->volumeWidth, this->volumeHeight, this->volumeDepth);
+		this->changeTextureSize(this->volumeWidth, this->volumeHeight, this->volumeDepth);
 		this->changeTextureSizeFlag = false;
 	}
 
-	this->slot_updateDisplayParams(this->displayParams); //set display parameters that are restored from previous octproz session
+	this->updateDisplayParams(this->displayParams); //set display parameters that are restored from previous octproz session
 
-	//restore lut settings from previous session
-	QString fileName = this->displayParams.lutFileName;
-	QImage lut(":/luts/hotter_lut.png"); //deafult lut
-	if(fileName != ""){
-		QImage lutFromFile(fileName);
-		if(lutFromFile.isNull()){
-			emit error(tr("Could not load LUT! File: ") + fileName);
-			this->panel->eraseLUTFileName();
-		}else{
-			lut = lutFromFile;
-		}
-		//emit info(tr("LUT for volume rendering loaded! File used: ") + fileName);
-	}
-	makeCurrent();
-	this->raycastingVolume->setLUT(lut);
-	doneCurrent();
+	this->restoreLUTSettingsFromPreviousSession();
 }
-
-
 
 void GLWindow3D::resizeGL(int w, int h) {
-	m_viewportSize = {(float) scaled_width(), (float) scaled_height()};
-	m_aspectRatio = (float) scaled_width() / scaled_height();
-	glViewport(0, 0, scaled_width(), scaled_height());
+	this->viewportSize = {static_cast<float>(this->scaledWidth()), static_cast<float>(this->scaledHeight())};
+	this->aspectRatio = static_cast<float>(this->scaledWidth()) / static_cast<float>(this->scaledHeight());
+	glViewport(0, 0, this->scaledWidth(), this->scaledHeight());
 	//this->raycastingVolume->createNoise(); //todo: bugfix! software crashes sometimes here after createNoise() is called
 }
-
-
 
 void GLWindow3D::paintGL() {
 	//this->countFPS();
 
 	// Compute geometry
-	m_viewMatrix.setToIdentity();
-	m_viewMatrix.translate(this->viewPos.x(), this->viewPos.y(), -4.0f * std::exp(m_distExp / 600.0f));
-	m_viewMatrix.rotate(m_trackBall.rotation());
+	this->viewMatrix.setToIdentity();
+	this->viewMatrix.translate(this->viewPos.x(), this->viewPos.y(), -4.0f * qExp(this->distExp / 600.0f));
+	this->viewMatrix.rotate(this->trackBall.rotation());
 
-	m_modelViewProjectionMatrix.setToIdentity();
-	m_modelViewProjectionMatrix.perspective(m_fov, (float)scaled_width()/scaled_height(), 0.1f, 50.0f);
-	m_modelViewProjectionMatrix *= m_viewMatrix * raycastingVolume->modelMatrix();
+	this->modelViewProjectionMatrix.setToIdentity();
+	this->modelViewProjectionMatrix.perspective(this->fov, static_cast<float>(this->scaledWidth()) / static_cast<float>(this->scaledHeight()), 0.1f, 50.0f);
+	this->modelViewProjectionMatrix *= this->viewMatrix * raycastingVolume->modelMatrix();
 
-	m_normalMatrix = (m_viewMatrix * raycastingVolume->modelMatrix()).normalMatrix();
+	this->normalMatrix = (this->viewMatrix * raycastingVolume->modelMatrix()).normalMatrix();
 
-	m_rayOrigin = m_viewMatrix.inverted() * QVector3D({0.0f, 0.0f, 0.0f});
+	this->rayOrigin = this->viewMatrix.inverted() * QVector3D({0.0f, 0.0f, 0.0f});
 
 	// Perform raycasting
-	m_modes[m_active_mode]();
+	this->modes[this->activeMode]();
 
 	if(this->updateContinuously){
 		update();
@@ -286,89 +314,74 @@ void GLWindow3D::paintGL() {
 	}
 }
 
-
-
-GLuint GLWindow3D::scaled_width() {
+GLuint GLWindow3D::scaledWidth() {
 	return devicePixelRatio() * width();
 }
 
-
-GLuint GLWindow3D::scaled_height() {
+GLuint GLWindow3D::scaledHeight() {
 	return devicePixelRatio() * height();
 }
 
-
 void GLWindow3D::raycasting(const QString& shader) {
-	m_shaders[shader]->bind();
+	this->shaders[shader]->bind();
 	{
-		m_shaders[shader]->setUniformValue("ViewMatrix", m_viewMatrix);
-		m_shaders[shader]->setUniformValue("ModelViewProjectionMatrix", m_modelViewProjectionMatrix);
-		m_shaders[shader]->setUniformValue("NormalMatrix", m_normalMatrix);
-		m_shaders[shader]->setUniformValue("aspect_ratio", m_aspectRatio);
-		m_shaders[shader]->setUniformValue("focal_length", m_focalLength);
-		m_shaders[shader]->setUniformValue("viewport_size", m_viewportSize);
-		m_shaders[shader]->setUniformValue("ray_origin", m_rayOrigin);
-		m_shaders[shader]->setUniformValue("top", raycastingVolume->top());
-		m_shaders[shader]->setUniformValue("bottom", raycastingVolume->bottom());
-		m_shaders[shader]->setUniformValue("background_colour", to_vector3d(m_background));
-		m_shaders[shader]->setUniformValue("light_position", m_lightPosition);
-		m_shaders[shader]->setUniformValue("material_colour", m_diffuseMaterial);
-		m_shaders[shader]->setUniformValue("step_length", m_stepLength);
-		m_shaders[shader]->setUniformValue("threshold", m_threshold);
-		m_shaders[shader]->setUniformValue("gamma", m_gamma);
-		m_shaders[shader]->setUniformValue("volume", 0);
-		m_shaders[shader]->setUniformValue("jitter", 1);
-		m_shaders[shader]->setUniformValue("lut", 2);
-		m_shaders[shader]->setUniformValue("depth_weight", m_depth_weight);
-		m_shaders[shader]->setUniformValue("smooth_factor", m_smooth_factor);
-		m_shaders[shader]->setUniformValue("alpha_exponent", m_alpha_exponent);
-		m_shaders[shader]->setUniformValue("shading_enabled", m_shading_enabled);
-		m_shaders[shader]->setUniformValue("lut_enabled", m_lut_enabled);
+		this->shaders[shader]->setUniformValue("ViewMatrix", this->viewMatrix);
+		this->shaders[shader]->setUniformValue("ModelViewProjectionMatrix", this->modelViewProjectionMatrix);
+		this->shaders[shader]->setUniformValue("NormalMatrix", this->normalMatrix);
+		this->shaders[shader]->setUniformValue("aspect_ratio", this->aspectRatio);
+		this->shaders[shader]->setUniformValue("focal_length", this->focalLength);
+		this->shaders[shader]->setUniformValue("viewport_size", this->viewportSize);
+		this->shaders[shader]->setUniformValue("ray_origin", this->rayOrigin);
+		this->shaders[shader]->setUniformValue("top", raycastingVolume->top());
+		this->shaders[shader]->setUniformValue("bottom", raycastingVolume->bottom());
+		this->shaders[shader]->setUniformValue("background_colour", to_vector3d(this->background));
+		this->shaders[shader]->setUniformValue("light_position", this->lightPosition);
+		this->shaders[shader]->setUniformValue("material_colour", this->diffuseMaterial);
+		this->shaders[shader]->setUniformValue("step_length", this->stepLength);
+		this->shaders[shader]->setUniformValue("threshold", this->threshold);
+		this->shaders[shader]->setUniformValue("gamma", this->gamma);
+		this->shaders[shader]->setUniformValue("volume", 0);
+		this->shaders[shader]->setUniformValue("jitter", 1);
+		this->shaders[shader]->setUniformValue("lut", 2);
+		this->shaders[shader]->setUniformValue("depth_weight", this->depthWeight);
+		this->shaders[shader]->setUniformValue("smooth_factor", this->smoothFactor);
+		this->shaders[shader]->setUniformValue("alpha_exponent", this->alphaExponent);
+		this->shaders[shader]->setUniformValue("shading_enabled", this->shadingEnabled);
+		this->shaders[shader]->setUniformValue("lut_enabled", this->lutEnabled);
 
-		glClearColor(m_background.redF(), m_background.greenF(), m_background.blueF(), m_background.alphaF());
+		glClearColor(this->background.redF(), this->background.greenF(), this->background.blueF(), this->background.alphaF());
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		raycastingVolume->paint();
 	}
-	m_shaders[shader]->release();
+	this->shaders[shader]->release();
 }
-
 
 QPointF GLWindow3D::pixelPosToViewPos(const QPointF& p) {
 	return QPointF(2.0 * float(p.x()) / width() - 1.0, 1.0 - 2.0 * float(p.y()) / height());
 }
 
-
-void GLWindow3D::mouseDoubleClickEvent(QMouseEvent *event){
+void GLWindow3D::mouseDoubleClickEvent(QMouseEvent *event) {
 	if(!this->panel->underMouse()){
-		this->m_distExp = -500;
+		this->distExp = -500;
 		this->viewPos.setX(0);
 		this->viewPos.setY(0);
 		update();
 	}
 }
 
-
-
-void GLWindow3D::enterEvent(QEvent *event){
+void GLWindow3D::enterEvent(QEvent *event) {
 	this->panel->setVisible(true);
 }
 
 
-void GLWindow3D::leaveEvent(QEvent *event){
+void GLWindow3D::leaveEvent(QEvent *event) {
 	this->panel->setVisible(false);
 }
 
-
-
-
-
-/*!
- * \brief Callback for mouse movement.
- */
 void GLWindow3D::mouseMoveEvent(QMouseEvent *event) {
 	if (event->buttons() & Qt::LeftButton && !this->panel->underMouse()) {
-		m_trackBall.move(pixelPosToViewPos(event->pos()), m_scene_trackBall.rotation().conjugated());
+		this->trackBall.move(pixelPosToViewPos(event->pos()), this->sceneTrackBall.rotation().conjugated());
 	}else if(event->buttons() &Qt::MiddleButton && !this->panel->underMouse()){
 		QPoint delta = (event->pos() - this->mousePos);
 		int windowWidth = this->size().width();
@@ -376,49 +389,34 @@ void GLWindow3D::mouseMoveEvent(QMouseEvent *event) {
 		this->viewPos.rx() += 2.0*static_cast<float>(delta.x())/static_cast<float>(windowWidth);
 		this->viewPos.ry() += -2.0*static_cast<float>(delta.y())/static_cast<float>(windowHeight);
 	} else {
-		m_trackBall.release(pixelPosToViewPos(event->pos()), m_scene_trackBall.rotation().conjugated());
+		this->trackBall.release(pixelPosToViewPos(event->pos()), this->sceneTrackBall.rotation().conjugated());
 	}
 	this->mousePos = event->pos();
 	update();
 }
 
-
-/*!
- * \brief Callback for mouse press.
- */
-void GLWindow3D::mousePressEvent(QMouseEvent *event){
+void GLWindow3D::mousePressEvent(QMouseEvent *event) {
 	this->mousePos = event->pos();
 	if (event->buttons() & Qt::LeftButton && !this->panel->underMouse()) {
-		m_trackBall.push(pixelPosToViewPos(event->pos()), m_scene_trackBall.rotation().conjugated());
-	} else if (event->buttons() & Qt::MiddleButton) {
-
+		this->trackBall.push(pixelPosToViewPos(event->pos()), this->sceneTrackBall.rotation().conjugated());
 	}
-
 	update();
 }
 
-
-/*!
- * \brief Callback for mouse release.
- */
 void GLWindow3D::mouseReleaseEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton && !this->panel->underMouse()) {
-		m_trackBall.release(pixelPosToViewPos(event->pos()), m_scene_trackBall.rotation().conjugated());
+		this->trackBall.release(pixelPosToViewPos(event->pos()), this->sceneTrackBall.rotation().conjugated());
 	}
 	update();
 }
 
-
-/*!
- * \brief Callback for mouse wheel.
- */
 void GLWindow3D::wheelEvent(QWheelEvent * event) {
 	if(!this->panel->underMouse()){
-		m_distExp += event->delta();
-		if (m_distExp < -2800)
-			m_distExp = -2800;
-		if (m_distExp > 800)
-			m_distExp = 800;
+		this->distExp += event->delta();
+		if (this->distExp < -2800)
+			this->distExp = -2800;
+		if (this->distExp > 800)
+			this->distExp = 800;
 		update();
 	}
 }
@@ -429,13 +427,12 @@ void GLWindow3D::contextMenuEvent(QContextMenuEvent *event) {
 
 void GLWindow3D::initContextMenu(){
 	this->contextMenu = new QMenu(this);
-
 	this->screenshotAction = new QAction(tr("&Screenshot..."), this);
-	connect(this->screenshotAction, &QAction::triggered, this, &GLWindow3D::slot_screenshot);
+	connect(this->screenshotAction, &QAction::triggered, this, &GLWindow3D::openScreenshotDialog);
 	this->contextMenu->addAction(this->screenshotAction);
 }
 
-void GLWindow3D::slot_changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth) {
+void GLWindow3D::changeTextureSize(unsigned int width, unsigned int height, unsigned int depth) {
 	this->volumeWidth = width;
 	this->volumeHeight = height;
 	this->volumeDepth = depth;
@@ -449,47 +446,49 @@ void GLWindow3D::slot_changeBufferAndTextureSize(unsigned int width, unsigned in
 	this->raycastingVolume->changeBufferAndTextureSize(width, height, depth);
 	doneCurrent();
 
+	this->panel->updateDisplayParameters();
+
 	emit registerBufferCudaGL(this->raycastingVolume->getVolumeTexture());
 }
 
-void GLWindow3D::slot_initProcessingThreadOpenGL(QOpenGLContext *processingContext, QOffscreenSurface *processingSurface, QThread *processingThread) {
+void GLWindow3D::createOpenGLContextForProcessing(QOpenGLContext *processingContext, QOffscreenSurface *processingSurface, QThread *processingThread) {
 	QOpenGLContext* renderContext = this->context();
 	(processingContext)->setFormat(renderContext->format());
 	(processingContext)->setShareContext(renderContext);
 	(processingContext)->create();
 	(processingContext)->moveToThread(processingThread);
 	(processingSurface)->setFormat(renderContext->format());
-	(processingSurface)->create(); //Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms, cross-platform applications must ensure that create() is only called on the main (GUI) thread
+	(processingSurface)->create();//Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms, cross-platform applications must ensure that create() is only called on the main (GUI) thread
 	(processingSurface)->moveToThread(processingThread);
 
-	this->slot_changeBufferAndTextureSize(this->volumeWidth, this->volumeHeight, this->volumeDepth);
+	this->changeTextureSize(this->volumeWidth, this->volumeHeight, this->volumeDepth);
 }
 
-void GLWindow3D::slot_registerGLbufferWithCuda() {
+void GLWindow3D::registerOpenGLBufferWithCuda() {
 	if(this->initialized){
 		emit registerBufferCudaGL(this->raycastingVolume->getVolumeTexture());
 	}
 }
 
-void GLWindow3D::slot_updateDisplayParams(GLWindow3DParams params) {
+void GLWindow3D::updateDisplayParams(GLWindow3DParams params) {
 	this->displayParams = params;
 	this->setMode(params.displayMode);
 	this->setStepLength(params.rayMarchStepLength);
 	this->setThreshold(params.threshold);
 	this->setStretch(params.stretchX, params.stretchY, params.stretchZ);
-	this->m_gamma = params.gamma;
-	this->m_depth_weight = params.depthWeight;
-	this->m_smooth_factor = params.smoothFactor;
-	this->m_alpha_exponent = params.alphaExponent;
-	this->m_shading_enabled = params.shading;
-	this->m_lut_enabled = params.lutEnabled;
+	this->gamma = params.gamma;
+	this->depthWeight = params.depthWeight;
+	this->smoothFactor = params.smoothFactor;
+	this->alphaExponent = params.alphaExponent;
+	this->shadingEnabled = params.shading;
+	this->lutEnabled = params.lutEnabled;
 }
 
 void GLWindow3D::openLUTFromImage(QImage lut){
 	makeCurrent();
 	this->raycastingVolume->setLUT(lut);
 	doneCurrent();
-	this->m_lut_enabled = true;
+	this->lutEnabled = true;
 }
 
 void GLWindow3D::delayedUpdate() {
@@ -517,14 +516,14 @@ void GLWindow3D::saveSettings() {
 	Settings::getInstance()->storeSettings(this->getName(), this->getSettings());
 }
 
-void GLWindow3D::slot_saveScreenshot(QString savePath, QString fileName) {
+void GLWindow3D::saveScreenshot(QString savePath, QString fileName) {
 	QImage screenshot = this->grabFramebuffer();
 	QString filePath = savePath + "/" + fileName;
 	screenshot.save(filePath);
 	emit info(tr("Screenshot saved to ") + filePath);
 }
 
-void GLWindow3D::slot_screenshot() {
+void GLWindow3D::openScreenshotDialog() {
 	QImage screenshot = this->grabFramebuffer();
 	emit dialogAboutToOpen();
 	QCoreApplication::processEvents();
@@ -546,8 +545,26 @@ void GLWindow3D::slot_screenshot() {
 }
 
 void GLWindow3D::addShader(const QString& name, const QString& vertex, const QString& fragment) {
-	m_shaders[name] = new QOpenGLShaderProgram(this);
-	m_shaders[name]->addShaderFromSourceFile(QOpenGLShader::Vertex, vertex);
-	m_shaders[name]->addShaderFromSourceFile(QOpenGLShader::Fragment, fragment);
-	m_shaders[name]->link();
+	this->shaders[name] = new QOpenGLShaderProgram(this);
+	this->shaders[name]->addShaderFromSourceFile(QOpenGLShader::Vertex, vertex);
+	this->shaders[name]->addShaderFromSourceFile(QOpenGLShader::Fragment, fragment);
+	this->shaders[name]->link();
+}
+
+void GLWindow3D::restoreLUTSettingsFromPreviousSession() {
+	QString fileName = this->displayParams.lutFileName;
+	QImage lut(":/luts/hotter_lut.png"); //deafult lut
+	if(fileName != ""){
+		QImage lutFromFile(fileName);
+		if(lutFromFile.isNull()){
+			emit error(tr("Could not load LUT! File: ") + fileName);
+			this->panel->eraseLUTFileName();
+		}else{
+			lut = lutFromFile;
+		}
+		//emit info(tr("LUT for volume rendering loaded! File used: ") + fileName);
+	}
+	makeCurrent();
+	this->raycastingVolume->setLUT(lut);
+	doneCurrent();
 }

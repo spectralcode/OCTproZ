@@ -89,68 +89,21 @@ public:
 	void setSettings(QVariantMap settings) override;
 	QVariantMap getSettings() override;
 
-	void setStepLength(const GLfloat step_length) {
-		m_stepLength = step_length;
-		update();
-	}
-
-	void setThreshold(const GLfloat threshold) {
-		m_threshold = threshold;
-		update();
-	}
-
-	void setDepthWeight(const GLfloat depth_weight) {
-		m_depth_weight = depth_weight;
-		update();
-	}
-
-	void setSmoothFactor(const GLint smooth_factor) {
-		m_smooth_factor = smooth_factor;
-		update();
-	}
-
-	void setAlphaExponent(const GLfloat alpha_exponent) {
-		m_alpha_exponent = alpha_exponent;
-		update();
-	}
-
-	void enableShading(const GLboolean shading_enabled) {
-		m_shading_enabled = shading_enabled;
-		update();
-	}
-
-	void setMode(const QString& mode) {
-		m_active_mode = mode;
-		update();
-	}
-
-	void setBackground(const QColor& colour) {
-		m_background = colour;
-		update();
-	}
-
+	void setStepLength(const GLfloat stepLength);
+	void setThreshold(const GLfloat threshold);
+	void setDepthWeight(const GLfloat depthWeight);
+	void setSmoothFactor(const GLint smoothFactor);
+	void setAlphaExponent(const GLfloat alphaExponent);
+	void enableShading(const GLboolean shadingEnabled);
+	void setMode(const QString& mode);
+	void setBackground(const QColor& colour);
 	void setStretch(const qreal x, const qreal y, const qreal z);
-	void setGammaCorrection(float gamma){m_gamma = gamma;}
+	void setGammaCorrection(float gamma);
 	void generateTestVolume();
 
-	std::vector<QString> getModes(void) {
-		std::vector<QString> modes;
+	QVector<QString> getModes(void);
 
-		foreach(auto element, m_modes){
-		   QString key = element.first;
-		   modes.push_back(key);
-		}
-
-		return modes;
-	}
-
-	QColor getBackground(void) {
-		return m_background;
-	}
-
-	std::pair<double, double> getRange(void) {
-		return raycastingVolume->range();
-	}
+	QColor getBackground(void){return this->background;}
 
 signals:
 	void registerBufferCudaGL(unsigned int bufferId);
@@ -168,12 +121,12 @@ public slots:
 	virtual void mouseReleaseEvent(QMouseEvent* event) override;
 	virtual void wheelEvent(QWheelEvent* event) override;
 
-	void slot_saveScreenshot(QString savePath, QString fileName);
-	void slot_screenshot();
-	void slot_changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth);
-	void slot_initProcessingThreadOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
-	void slot_registerGLbufferWithCuda();
-	void slot_updateDisplayParams(GLWindow3DParams params);
+	void saveScreenshot(QString savePath, QString fileName);
+	void openScreenshotDialog();
+	void changeTextureSize(unsigned int width, unsigned int height, unsigned int depth);
+	void createOpenGLContextForProcessing(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
+	void registerOpenGLBufferWithCuda();
+	void updateDisplayParams(GLWindow3DParams params);
 	void openLUTFromImage(QImage lut);
 	void saveSettings();
 
@@ -182,19 +135,19 @@ protected:
 	/*!
 	 * \brief Initialise OpenGL-related state.
 	 */
-	void initializeGL();
+	void initializeGL() override;
 
 	/*!
 	 * \brief Paint a frame on the canvas.
 	 */
-	void paintGL();
+	void paintGL() override;
 
 	/*!
 	 * \brief Callback to handle canvas resizing.
 	 * \param w New width.
 	 * \param h New height.
 	 */
-	void resizeGL(int width, int height);
+	void resizeGL(int width, int height) override;
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void enterEvent(QEvent* event) override;
 	void leaveEvent(QEvent* event) override;
@@ -221,52 +174,50 @@ private:
 	ControlPanel3D* panel;
 	QVBoxLayout* layout;
 
+	QMatrix4x4 viewMatrix;
+	QMatrix4x4 modelViewProjectionMatrix;
+	QMatrix3x3 normalMatrix;
 
+	const GLfloat fov = 50.0f;										  /*!< Vertical field of view. */
+	const GLfloat focalLength = 1.0 / qTan(M_PI / 180.0 * this->fov / 2.0); /*!< Focal length. */
+	GLfloat aspectRatio;												/*!< width / height */
 
-	QMatrix4x4 m_viewMatrix;
-	QMatrix4x4 m_modelViewProjectionMatrix;
-	QMatrix3x3 m_normalMatrix;
+	QVector2D viewportSize;
+	QVector3D rayOrigin; /*!< Camera position in model space coordinates. */
 
-	const GLfloat m_fov = 50.0f;										  /*!< Vertical field of view. */
-	const GLfloat m_focalLength = 1.0 / qTan(M_PI / 180.0 * m_fov / 2.0); /*!< Focal length. */
-	GLfloat m_aspectRatio;												/*!< width / height */
+	QVector3D lightPosition {1.0, 3.0, 3.0};	/*!< In camera coordinates. */
+	QVector3D diffuseMaterial {1.0, 1.0, 1.0};  /*!< Material colour. */
+	GLfloat stepLength;						 /*!< Step length for ray march. */
+	GLfloat threshold;						  /*!< Isosurface intensity threshold. */
+	QColor background;						  /*!< Viewport background colour. */
 
-	QVector2D m_viewportSize;
-	QVector3D m_rayOrigin; /*!< Camera position in model space coordinates. */
-
-	QVector3D m_lightPosition {1.0, 3.0, 3.0};	/*!< In camera coordinates. */
-	QVector3D m_diffuseMaterial {1.0, 1.0, 1.0};  /*!< Material colour. */
-	GLfloat m_stepLength;						 /*!< Step length for ray march. */
-	GLfloat m_threshold;						  /*!< Isosurface intensity threshold. */
-	QColor m_background;						  /*!< Viewport background colour. */
-
-	GLfloat m_gamma = 2.2f; /*!< Gamma correction parameter. */
-	GLfloat m_depth_weight;
-	GLfloat m_alpha_exponent;
-	GLint m_smooth_factor;
-	GLboolean m_shading_enabled;
-	GLboolean m_lut_enabled;
+	GLfloat gamma = 2.2f; /*!< Gamma correction parameter. */
+	GLfloat depthWeight;
+	GLfloat alphaExponent;
+	GLint smoothFactor;
+	GLboolean shadingEnabled;
+	GLboolean lutEnabled;
 
 	RayCastVolume *raycastingVolume;
 
-	std::map<QString, QOpenGLShaderProgram*> m_shaders;
-	std::map<QString, std::function<void(void)>> m_modes;
-	QString m_active_mode;
+	std::map<QString, QOpenGLShaderProgram*> shaders;
+	std::map<QString, std::function<void(void)>> modes;
+	QString activeMode;
 
-	TrackBall m_trackBall {};	   /*!< Trackball holding the model rotation. */
-	TrackBall m_scene_trackBall {}; /*!< Trackball holding the scene rotation. */
+	TrackBall trackBall {};	   /*!< Trackball holding the model rotation. */
+	TrackBall sceneTrackBall {}; /*!< Trackball holding the scene rotation. */
 
-	GLint m_distExp = -500;
+	GLint distExp = -500;
 
 	/*!
 	 * \brief Width scaled by the pixel ratio (for HiDPI devices).
 	 */
-	GLuint scaled_width();
+	GLuint scaledWidth();
 
 	/*!
 	 * \brief Height scaled by the pixel ratio (for HiDPI devices).
 	 */
-	GLuint scaled_height();
+	GLuint scaledHeight();
 
 	/*!
 	 * \brief Perform raycasting.
@@ -287,6 +238,7 @@ private:
 	 * \param fragment Fragment shader source file.
 	 */
 	void addShader(const QString& name, const QString& vector, const QString& fragment);
+	void restoreLUTSettingsFromPreviousSession();
 
 	void initContextMenu();
 	void delayedUpdate();
