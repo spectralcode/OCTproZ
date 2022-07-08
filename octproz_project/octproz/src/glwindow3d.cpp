@@ -244,6 +244,10 @@ QVector<QString> GLWindow3D::getModes() {
 	return modes;
 }
 
+QColor GLWindow3D::getBackground() {
+	return this->background;
+}
+
 void GLWindow3D::initializeGL() {
 	initializeOpenGLFunctions();
 
@@ -282,7 +286,7 @@ void GLWindow3D::resizeGL(int w, int h) {
 	this->viewportSize = {static_cast<float>(this->scaledWidth()), static_cast<float>(this->scaledHeight())};
 	this->aspectRatio = static_cast<float>(this->scaledWidth()) / static_cast<float>(this->scaledHeight());
 	glViewport(0, 0, this->scaledWidth(), this->scaledHeight());
-	//this->raycastingVolume->createNoise(); //todo: bugfix! software crashes sometimes here after createNoise() is called
+	//this->raycastingVolume->createNoise(); //todo: bugfix! software crashes sometimes here after createNoise() is called. Reason for crash: texture upload for large textures takes longer and applicasion crashes if new noise data is created during upload of previous data. Maybe there is a way to wait for OpenGL texture upload? glFinish() doesn't do the trick here
 }
 
 void GLWindow3D::paintGL() {
@@ -358,7 +362,7 @@ void GLWindow3D::raycasting(const QString& shader) {
 }
 
 QPointF GLWindow3D::pixelPosToViewPos(const QPointF& p) {
-	return QPointF(2.0 * float(p.x()) / width() - 1.0, 1.0 - 2.0 * float(p.y()) / height());
+	return QPointF(2.0 * static_cast<float>(p.x()) / width() - 1.0, 1.0 - 2.0 * static_cast<float>(p.y()) / height());
 }
 
 void GLWindow3D::mouseDoubleClickEvent(QMouseEvent *event) {

@@ -55,16 +55,14 @@
 #include <algorithm>
 #include <cmath>
 #include <QOpenGLTexture>
+#include <QRandomGenerator>
 
 
-/*!
- * \brief Create a two-unit cube mesh as the bounding box for the volume.
- */
-RayCastVolume::RayCastVolume(void)
-	: m_volume_texture {0}
-	, m_noise_texture {0}
+RayCastVolume::RayCastVolume()
+	: volumeTexture {0}
+	, noiseTexture {0}
 	, lutTexture {0}
-	, m_cube_vao {
+	, cubeVao {
 		  {
 			  -1.0f, -1.0f,  1.0f,
 			   1.0f, -1.0f,  1.0f,
@@ -97,19 +95,15 @@ RayCastVolume::RayCastVolume(void)
 		  }
 	  }
 {
-	m_spacing.setX(1.0);
-	m_spacing.setY(1.0);
-	m_spacing.setZ(1.0);
+	this->spacing.setX(1.0);
+	this->spacing.setY(1.0);
+	this->spacing.setZ(1.0);
 
 	initializeOpenGLFunctions();
-	//this->generateTestVolume();
-	std::srand(std::time(nullptr)); //random numbers are used in createNoise()
 }
 
 
-/*!
- * \brief Destructor.
- */
+
 RayCastVolume::~RayCastVolume()
 {
 }
@@ -132,9 +126,9 @@ void RayCastVolume::generateTestVolume() {
 	float x = 512/8;
 	float y = 512/8;
 	float z = 512/8;
-	m_size = QVector3D(x, y, z);
-	m_origin = QVector3D(0, 0, 0);
-	m_spacing = QVector3D(1.0, 1.0, 1.0);
+	this->size = QVector3D(x, y, z);
+	this->origin = QVector3D(0, 0, 0);
+	this->spacing = QVector3D(1.0, 1.0, 1.0);
 
 	int elementsInVolume = x*y*z;
 	float* testData = (float*)malloc(elementsInVolume*sizeof(float));
@@ -143,39 +137,35 @@ void RayCastVolume::generateTestVolume() {
 		testData[i] = abs(pow(sinf(argument)/argument, 0.5));
 	}
 
-	glDeleteTextures(1, &m_volume_texture);
-	glGenTextures(1, &m_volume_texture);
-	glBindTexture(GL_TEXTURE_3D, m_volume_texture);
+	glDeleteTextures(1, &this->volumeTexture);
+	glGenTextures(1, &this->volumeTexture);
+	glBindTexture(GL_TEXTURE_3D, this->volumeTexture);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // The array on the host has 1 byte alignment
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, m_size.x(), m_size.y(), m_size.z(), 0, GL_RED, GL_FLOAT, testData);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, this->size.x(), this->size.y(), this->size.z(), 0, GL_RED, GL_FLOAT, testData);
 	glBindTexture(GL_TEXTURE_3D, 0);
 
 	free(testData);
 }
 
-
-/*!
- * \brief Create a noise texture with the size of the viewport.
- */
-void RayCastVolume::createNoise(){
+void RayCastVolume::createNoise() {
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	int width = viewport[2];
-	int height = viewport[3];
+	int width = qMin(qMax(viewport[2], 128), GL_MAX_TEXTURE_SIZE);
+	int height = qMin(qMax(viewport[3], 128), GL_MAX_TEXTURE_SIZE);
 
 	QVector<unsigned char>* noiseData = new QVector<unsigned char>(width*height);
 	for(int i = 0; i<noiseData->size(); i++){
-		(*noiseData)[i] = static_cast<unsigned char>(std::rand() % 256);
+		(*noiseData)[i] = static_cast<unsigned char>(QRandomGenerator::global()->generate() % 256);
 	}
 
-	glDeleteTextures(1, &m_noise_texture);
-	glGenTextures(1, &m_noise_texture);
-	glBindTexture(GL_TEXTURE_2D, m_noise_texture);
+	glDeleteTextures(1, &this->noiseTexture);
+	glGenTextures(1, &this->noiseTexture);
+	glBindTexture(GL_TEXTURE_2D, this->noiseTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -186,41 +176,60 @@ void RayCastVolume::createNoise(){
 	delete noiseData;
 }
 
+void RayCastVolume::paint() {
+	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_3D, this->volumeTexture);
+	glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, this->noiseTexture);
 
-/*!
- * \brief Render the bounding box.
- */
-void RayCastVolume::paint(void) {
-	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_3D, m_volume_texture);
-	glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, m_noise_texture);
-
-	m_cube_vao.paint();
+	this->cubeVao.paint();
 }
 
+QVector3D RayCastVolume::extent() {
+	auto e = this->size * this->spacing;
+	return e / std::max({e.x(), e.y(), e.z()});
+}
 
-/*!
- * \brief Scale factor to model space.
- *
- * Scale the bounding box such that the longest side equals 1.
- */
-float RayCastVolume::scale_factor(void) {
-	auto e = m_size * m_spacing;
+QMatrix4x4 RayCastVolume::modelMatrix(bool shift) {
+	QMatrix4x4 modelMatrix;
+	if (shift) {
+		modelMatrix.translate(-this->origin / this->getScaleFactor());
+	}
+	modelMatrix.scale(0.5f * extent());
+	return modelMatrix;
+}
+
+QVector3D RayCastVolume::top(bool shift) {
+	auto t = extent() / 2.0;
+	if (shift) {
+		t -= this->origin / this->getScaleFactor();
+	}
+	return t;
+}
+
+QVector3D RayCastVolume::bottom(bool shift) {
+	auto b = -extent() / 2.0;
+	if (shift) {
+		b -= this->origin / this->getScaleFactor();
+	}
+	return b;
+}
+
+float RayCastVolume::getScaleFactor() {
+	auto e = this->size * this->spacing;
 	return std::max({e.x(), e.y(), e.z()});
 }
 
-
 void RayCastVolume::changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth){
-	m_size = {static_cast<float>(height), static_cast<float>(depth), static_cast<float>(width)};
-	m_origin = {0, 0, 0};
+	this->size = {static_cast<float>(height), static_cast<float>(depth), static_cast<float>(width)};
+	this->origin = {0, 0, 0};
 
-	glDeleteTextures(1, &m_volume_texture);
-	glGenTextures(1, &m_volume_texture);
-	glBindTexture(GL_TEXTURE_3D, m_volume_texture);
+	glDeleteTextures(1, &this->volumeTexture);
+	glGenTextures(1, &this->volumeTexture);
+	glBindTexture(GL_TEXTURE_3D, this->volumeTexture);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, m_size.x(), m_size.y(), m_size.z(), 0, GL_RED, GL_FLOAT, NULL);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, this->size.x(), this->size.y(), this->size.z(), 0, GL_RED, GL_FLOAT, NULL);
 	glBindTexture(GL_TEXTURE_3D, 0);
 }

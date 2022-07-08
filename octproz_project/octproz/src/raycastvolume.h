@@ -49,14 +49,15 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#pragma once
+
+#ifndef RAYCASTVOLUME_H
+#define RAYCASTVOLUME_H
 
 #include <QMatrix4x4>
 #include <QOpenGLExtraFunctions>
 #include <QVector3D>
 
 #include "mesh.h"
-#include <ctime>
 
 /*!
  * \brief Class for a raycasting volume.
@@ -64,14 +65,33 @@
 class RayCastVolume : protected QOpenGLExtraFunctions
 {
 public:
-	RayCastVolume(void);
+	/*!
+	 * \brief Create a two-unit cube mesh as the bounding box for the volume.
+	 */
+	RayCastVolume();
+
+	/*!
+	* \brief Destructor.
+	*/
 	virtual ~RayCastVolume();
 
+	/*!
+	* \brief Sets the lookup table that can be used by the shaders.
+	* \param image RGB image that should be used as lookup table
+	*/
 	void setLUT(QImage image);
-	void generateTestVolume();
-	void createNoise();
-	void paint();
 
+	/*!
+	* \brief Create a test volume that can be used to display some volume data without loading and processing OCT data first.
+	*/
+	void generateTestVolume();
+
+	/*!
+	* \brief Create a noise texture with the size of the viewport.
+	*/
+	void createNoise();
+
+	void paint();
 
 	/*!
 	 * \brief Get the extent of the volume.
@@ -80,10 +100,7 @@ public:
 	 * The extent is normalised such that the longest side of the bounding
 	 * box is equal to 1.
 	 */
-	QVector3D extent() {
-		auto e = m_size * m_spacing;
-		return e / std::max({e.x(), e.y(), e.z()});
-	}
+	QVector3D extent();
 
 	/*!
 	 * \brief Return the model matrix for the volume.
@@ -93,62 +110,54 @@ public:
 	 * The model matrix scales a two-unit side cube to the
 	 * extent of the volume.
 	 */
-	QMatrix4x4 modelMatrix(bool shift = false) {
-		QMatrix4x4 modelMatrix;
-		if (shift) {
-			modelMatrix.translate(-m_origin / scale_factor());
-		}
-		modelMatrix.scale(0.5f * extent());
-		return modelMatrix;
-	}
+	QMatrix4x4 modelMatrix(bool shift = false);
 
 	/*!
 	 * \brief Top planes forming the AABB.
 	 * \param shift Shift the volume by its origin.
 	 * \return A vector holding the intercept of the top plane for each axis.
 	 */
-	QVector3D top(bool shift = false) {
-		auto t = extent() / 2.0;
-		if (shift) {
-			t -= m_origin / scale_factor();
-		}
-		return t;
-	}
+	QVector3D top(bool shift = false);
 
 	/*!
 	 * \brief Bottom planes forming the AABB.
 	 * \param shift Shift the volume by its origin.
 	 * \return A vector holding the intercept of the bottom plane for each axis.
 	 */
-	QVector3D bottom(bool shift = false) {
-		auto b = -extent() / 2.0;
-		if (shift) {
-			b -= m_origin / scale_factor();
-		}
-		return b;
-	}
+	QVector3D bottom(bool shift = false);
 
-
+	/*!
+	 * \brief Deletes current OpenGL texture and creates a new one with given dimensions. This needs to be done whenever the dimensions of the volume data change.
+	 * \param width Width of new texture. Usually this is the number of samples per A-scan
+	 * \param height Height of new texture. Usually this is the number of A-scans per B-scan
+	 * \param depth Depth of new texture. Usually this is the number of B-scans per Volume which is the same as B-scans per buffer * buffers per volume.
+	 */
 	void changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth);
 
 
-	void setStretch(float x, float y, float z){m_spacing.setX(x); m_spacing.setY(y); m_spacing.setZ(z);}
-	float getStretchX(){return m_spacing.x();}
-	float getStretchY(){return m_spacing.y();}
-	float getStretchZ(){return m_spacing.z();}
+	void setStretch(float x, float y, float z){this->spacing.setX(x); this->spacing.setY(y); this->spacing.setZ(z);}
+	float getStretchX(){return this->spacing.x();}
+	float getStretchY(){return this->spacing.y();}
+	float getStretchZ(){return this->spacing.z();}
 
-	GLuint getVolumeTexture(){return this->m_volume_texture;}
+	GLuint getVolumeTexture(){return this->volumeTexture;}
 
-	void setOrigin(float x, float y, float z){this->m_origin={x,y,z};}
+	void setOrigin(float x, float y, float z){this->origin={x,y,z};}
 
 private:
-	GLuint m_volume_texture;
-	GLuint m_noise_texture;
+	GLuint volumeTexture;
+	GLuint noiseTexture;
 	GLuint lutTexture;
-	Mesh m_cube_vao;
-	QVector3D m_origin;
-	QVector3D m_spacing;
-	QVector3D m_size;
+	Mesh cubeVao;
+	QVector3D origin;
+	QVector3D spacing;
+	QVector3D size;
 
-	float scale_factor();
+	/*!
+	 * \brief Scale factor to model space.
+	 *
+	 * Scale the bounding box such that the longest side equals 1.
+	 */
+	float getScaleFactor();
 };
+#endif //RAYCASTVOLUME_H

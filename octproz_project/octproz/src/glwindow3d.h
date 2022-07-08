@@ -50,7 +50,15 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#pragma once
+
+//!	GLWindow3D
+/*!	GLWindow3D is the OpenGL output window for OCT volume rendering.
+ * It has some parameters that can be changed via the control panel that appears if the mouse is hovering over the window.
+ * The main purpose of this class is to bind all volume rendering shaders and display the rendered volume.
+*/
+
+#ifndef GLWINDOW3D_H
+#define GLWINDOW3D_H
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
@@ -76,9 +84,6 @@
 #define DELAY_TIME_IN_ms 80
 
 
-/*!
- * \brief Class for a raycasting canvas widget.
- */
 class GLWindow3D : public QOpenGLWidget, protected QOpenGLExtraFunctions, public OutputWindow
 {
 	Q_OBJECT
@@ -101,9 +106,9 @@ public:
 	void setGammaCorrection(float gamma);
 	void generateTestVolume();
 
-	QVector<QString> getModes(void);
+	QVector<QString> getModes();
 
-	QColor getBackground(void){return this->background;}
+	QColor getBackground();
 
 signals:
 	void registerBufferCudaGL(unsigned int bufferId);
@@ -129,6 +134,7 @@ public slots:
 	void updateDisplayParams(GLWindow3DParams params);
 	void openLUTFromImage(QImage lut);
 	void saveSettings();
+	//void resizeNoiseTexture();
 
 protected:
 
@@ -143,13 +149,28 @@ protected:
 	void paintGL() override;
 
 	/*!
-	 * \brief Callback to handle canvas resizing.
-	 * \param w New width.
-	 * \param h New height.
+	 * \brief This function is called whenever the widget has been resized to update anything that depends on the widget's size.
+	 * \param width New width.
+	 * \param height New height.
 	 */
 	void resizeGL(int width, int height) override;
+
+	/*!
+	 * \brief This event handler receives widget context menu events and opens the context menu (usually due to a right click on the widget)
+	 * \param event Widget context menu event
+	 */
 	void contextMenuEvent(QContextMenuEvent* event) override;
+
+	/*!
+	 * \brief This event handler is used to display the control panel when the mouse hovers over the widget
+	 * \param event Widget enter event
+	 */
 	void enterEvent(QEvent* event) override;
+
+	/*!
+	 * \brief This event handler is used to hide the control panel when the mouse does not hovers over the widget anymore
+	 * \param event Widget enter event
+	 */
 	void leaveEvent(QEvent* event) override;
 
 private:
@@ -245,7 +266,4 @@ private:
 	void countFPS();
 };
 
-
-
-
-
+#endif //GLWINDOW3D_H
