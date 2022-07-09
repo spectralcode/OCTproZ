@@ -63,15 +63,11 @@
  * \brief Convert a QColor to a QVector3D.
  * \return A QVector3D holding a RGB representation of the colour.
  */
-QVector3D to_vector3d(const QColor& colour) {
+QVector3D toVector3D(const QColor& colour) {
 	return QVector3D(colour.redF(), colour.greenF(), colour.blueF());
 }
 
 
-/*!
- * \brief Constructor for the canvas.
- * \param parent Parent widget.
- */
 GLWindow3D::GLWindow3D(QWidget *parent) : QOpenGLWidget {parent}, raycastingVolume {nullptr}
 {
 	qRegisterMetaType<GLWindow3DParams >("GLWindow3DParams");
@@ -338,7 +334,7 @@ void GLWindow3D::raycasting(const QString& shader) {
 		this->shaders[shader]->setUniformValue("ray_origin", this->rayOrigin);
 		this->shaders[shader]->setUniformValue("top", raycastingVolume->top());
 		this->shaders[shader]->setUniformValue("bottom", raycastingVolume->bottom());
-		this->shaders[shader]->setUniformValue("background_colour", to_vector3d(this->background));
+		this->shaders[shader]->setUniformValue("background_colour", toVector3D(this->background));
 		this->shaders[shader]->setUniformValue("light_position", this->lightPosition);
 		this->shaders[shader]->setUniformValue("material_colour", this->diffuseMaterial);
 		this->shaders[shader]->setUniformValue("step_length", this->stepLength);
@@ -357,6 +353,7 @@ void GLWindow3D::raycasting(const QString& shader) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		raycastingVolume->paint();
+
 	}
 	this->shaders[shader]->release();
 }
