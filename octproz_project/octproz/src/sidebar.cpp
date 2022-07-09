@@ -100,7 +100,7 @@ void Sidebar::initGui() {
 	this->ui.groupBox_info->addAction(copyInfoAction);
 
 	//Tool tips
-	this->ui.groupBox_streaming->setToolTip(tr("This setting enables continuous transfer of processed OCT data to memory. This allows all plugins to access the processed OCT data. This setting must be activated if you want to display processed A-scans in the 1D plot."));
+	this->ui.groupBox_streaming->setToolTip("<html><head/><body><p>"+tr("This setting enables continuous transfer of processed OCT data to memory. This allows all plugins to access the processed OCT data. It must be activated if you want to display processed A-scans in the 1D plot.")+"</p></body></html>"); //html tags are used to enable word wrapping inside tool tip
 }
 
 void Sidebar::findGuiElements() {
