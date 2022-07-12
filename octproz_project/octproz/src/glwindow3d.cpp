@@ -444,7 +444,7 @@ void GLWindow3D::changeTextureSize(unsigned int width, unsigned int height, unsi
 	}
 
 	makeCurrent();
-	this->raycastingVolume->changeBufferAndTextureSize(width, height, depth);
+	this->raycastingVolume->changeTextureSize(width, height, depth);
 	doneCurrent();
 
 	this->panel->updateDisplayParameters();

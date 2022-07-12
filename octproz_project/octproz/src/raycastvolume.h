@@ -132,7 +132,7 @@ public:
 	 * \param height Height of new texture. Usually this is the number of A-scans per B-scan
 	 * \param depth Depth of new texture. Usually this is the number of B-scans per Volume which is the same as B-scans per buffer * buffers per volume.
 	 */
-	void changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth);
+	void changeTextureSize(unsigned int width, unsigned int height, unsigned int depth);
 
 
 	void setStretch(float x, float y, float z){this->spacing.setX(x); this->spacing.setY(y); this->spacing.setZ(z);}

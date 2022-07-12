@@ -218,7 +218,7 @@ float RayCastVolume::getScaleFactor() {
 	return std::max({e.x(), e.y(), e.z()});
 }
 
-void RayCastVolume::changeBufferAndTextureSize(unsigned int width, unsigned int height, unsigned int depth){
+void RayCastVolume::changeTextureSize(unsigned int width, unsigned int height, unsigned int depth){
 	this->size = {static_cast<float>(height), static_cast<float>(depth), static_cast<float>(width)};
 	this->origin = {0, 0, 0};
 
