@@ -8,18 +8,19 @@ OCTproZ is an open source software for optical coherence tomography (OCT) proces
 
 The output windows in the screenshot above show OCT images of a strawberry. 
 
-Screenshots
---------
-The following screenshots were captured on a Jetson Nano running Ubuntu 18.04:
-
-| Volume rendering with LUT  | Compact view including 1D plot |
-| ------------- | ------------- |
-| <img src="images/octproz_screenshot_jetson_nano_3d_cropped_shadow.png">  | <img src="images/octproz_screenshot_jetson_nano_1d_cropped_shadow.png"  >  |
-
 
 Video
 --------
 [Live OCT visualization with OCTproZ: Laser cutting a spring onion](https://www.youtube.com/watch?v=3zHdpnR9zSM)
+
+
+Screenshots
+--------
+The following screenshots were captured on a Jetson Nano running Ubuntu 18.04:
+
+| B-scan and volume rendering with LUT  | B-scan, en face view and 1D plot |
+| ------------- | ------------- |
+| <img src="images/octproz_screenshot_jetson_nano_3d_compact_cropped_shadow.png">  | <img src="images/octproz_screenshot_jetson_nano_1d_cropped_shadow.png"  >  |
 
 
 Features
