@@ -213,7 +213,7 @@ void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned in
 			for(int i = 0; i<samplesPerLine && this->rawGrabbingAllowed; i++){
 				//char
 				if(bitDepth <= 8){
-					char* bufferPointer = static_cast<char*>(buffer);
+					unsigned char* bufferPointer = static_cast<unsigned char*>(buffer);
 					this->sampleValues[i] = bufferPointer[this->line*samplesPerLine+i];
 				}
 				//ushort
