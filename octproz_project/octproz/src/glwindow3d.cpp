@@ -282,7 +282,7 @@ void GLWindow3D::resizeGL(int w, int h) {
 	this->viewportSize = {static_cast<float>(this->scaledWidth()), static_cast<float>(this->scaledHeight())};
 	this->aspectRatio = static_cast<float>(this->scaledWidth()) / static_cast<float>(this->scaledHeight());
 	glViewport(0, 0, this->scaledWidth(), this->scaledHeight());
-	//this->raycastingVolume->createNoise(); //todo: bugfix! software crashes sometimes here after createNoise() is called. Reason for crash: texture upload for large textures takes longer and applicasion crashes if new noise data is created during upload of previous data. Maybe there is a way to wait for OpenGL texture upload? glFinish() doesn't do the trick here
+	//this->raycastingVolume->createNoise();  //todo: improve noise data generation. for large display resolutions noise calculation takes so lang that it slows down the process of window resizing noticeably
 }
 
 void GLWindow3D::paintGL() {
