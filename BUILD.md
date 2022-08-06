@@ -13,7 +13,7 @@ __Linux:__ Development environment that is compatible with your CUDA version (se
 How to compile:
 1. Clone/Download the OCTproZ project. The destination path should not contain any spaces!
 2. Start Qt Creator and open [octproz_project.pro](octproz_project/octproz_project.pro)
-3. Configure project by selectig appropriate kit in Qt Creator (on Windows you need the MSVC compiler)
+3. Configure project by selecting appropriate kit in Qt Creator (on Windows you need the MSVC compiler)
 4. Change the CUDA architecture flags in [cuda.pri](octproz_project/octproz/pri/cuda.pri) if necessary for your hardware ([more info](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/))
 5. Build _octproz_project_ (_right click on _octproz_project_  -> Build_)
 6. Run OCTproZ (right click on _octproz_project_ __or__ right click on _octproz_ -> Run)
@@ -77,7 +77,7 @@ Open .bashrc with Nano:
 ```
 nano /home/$USER/.bashrc
 ```
-Now insert the cuda relevant paths as statet in the cuda installation guide at the end of the file.
+Now insert the cuda relevant paths as stated in the cuda installation guide at the end of the file.
 
 To save the file press on your keyboard
 ```
