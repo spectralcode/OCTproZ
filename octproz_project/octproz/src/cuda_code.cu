@@ -1314,7 +1314,7 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 
 	//sinusoidal scan correction
 	if(params->sinusoidalScanCorrection && d_sinusoidalScanTmpBuffer != NULL){
-		checkCudaErrors(cudaMemcpy(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/2, cudaMemcpyDeviceToDevice));
+		checkCudaErrors(cudaMemcpyAsync(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/2, cudaMemcpyDeviceToDevice, processStream));
 		sinusoidalScanCorrection<<<gridSize, blockSize, 0, processStream>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/2, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/2);
 	}
 
