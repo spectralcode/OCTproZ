@@ -39,7 +39,7 @@ Settings::Settings() {
 		if(!success){
 			emit error(tr("Could not create settings file in: ") + SETTINGS_PATH); //todo: this signal is not received by any slot since the signal is only connected after the constructor has been executed
 		}
-		QFile::setPermissions(SETTINGS_PATH, QFileDevice::WriteOther);
+		QFile::setPermissions(SETTINGS_PATH, QFileDevice::ReadUser | QFileDevice::WriteUser | QFileDevice::ReadOther | QFileDevice::WriteOther);
 	}
 }
 
