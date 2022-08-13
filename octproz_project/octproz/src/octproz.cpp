@@ -840,7 +840,7 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 
 void OCTproZ::setSystem(QString systemName) {
 	if(this->currSystemName == systemName){ //system already activated
-		emit info(tr("System is already opened."));
+		emit info(tr("System is already open."));
 		return;
 	}
 
