@@ -140,7 +140,7 @@ BibTeX:
 
 Other projects
 ----------
-OCTproZ is not the only processing software for OCT raw data. Here is a list of other project you should check out:
+OCTproZ is not the only processing software for OCT raw data. Here is a list of other projects you should check out:
 
 |Name | Info |
 |-----|-----|
