@@ -138,6 +138,17 @@ BibTeX:
 ```
 
 
+Other projects
+----------
+OCTproZ is not the only processing software for OCT raw data. Here is a list of other project you should check out:
+
+|Name | Info |
+|-----|-----|
+|[OCTSharp](https://github.com/OCTSharpImaging/OCTSharp) | Cuda, C# |
+|[myOCT](https://github.com/MyYo/myOCT) | Matlab |
+|[vortex](https://www.vortex-oct.dev/) | Cuda, C++ with Python bindings |
+
+
 License
 ----------
 OCTproZ is licensed under [GPLv3](LICENSE).</br>
