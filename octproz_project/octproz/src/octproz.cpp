@@ -464,6 +464,8 @@ void OCTproZ::loadSystemsAndExtensions() {
 					emit error(tr("Could not load Plugin"));
 				}
 			}
+		} else {
+			emit error(tr("Could not load ") + fileName);
 		}
 	}
 	if (this->extManager->getExtensions().size() > 0) {
@@ -726,7 +728,7 @@ void OCTproZ::slot_updateAcquistionParameter(AcquisitionParams newParams){
 }
 
 void OCTproZ::slot_closeOpenGLwindows() {
-#if !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN) && !defined(__aarch64__)
 	if (this->dock2D->isVisible()) {
 		this->isDock2DClosed = true;
 		this->dock2D->setVisible(false);
@@ -743,7 +745,7 @@ void OCTproZ::slot_closeOpenGLwindows() {
 }
 
 void OCTproZ::slot_reopenOpenGLwindows() {
-#if !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN) && !defined(__aarch64__)
 	if (!this->dock2D->isVisible() && this->isDock2DClosed) {
 		this->isDock2DClosed = false;
 		this->dock2D->setVisible(true);
