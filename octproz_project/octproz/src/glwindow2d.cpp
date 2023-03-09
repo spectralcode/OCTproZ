@@ -28,6 +28,8 @@
 #include "glwindow2d.h"
 #include "settings.h"
 #include <QTimer>
+#include <QToolTip>
+#include <QGuiApplication>
 
 
 GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
@@ -79,6 +81,7 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	connect(this->panel->lineEditVerticalScaleBarText, &QLineEdit::textChanged, this->verticalScaleBar, &ScaleBar::setText);
 
 	//connect(this->panel, &ControlPanel2D::settingsChanged, this, &GLWindow2D::saveSettings);
+	this->setMouseTracking(true);
 }
 
 
@@ -446,7 +449,27 @@ void GLWindow2D::mousePressEvent(QMouseEvent* event) {
 }
 
 void GLWindow2D::mouseMoveEvent(QMouseEvent* event) {
-	if(event->buttons() & Qt::LeftButton && !this->panel->underMouse()){
+	if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) && !this->panel->underMouse()){
+		qreal x = event->pos().x();
+		qreal y = event->pos().y();
+
+		qreal xWindowNorm = ((x/static_cast<qreal>(this->size().width()))) - ((1.0-this->scaleFactor*this->stretchX*this->screenWidthScaled)/(2.0));
+		x = (xWindowNorm-this->xTranslation/2.0)/this->screenWidthScaled;
+		x = x/this->scaleFactor;
+		x = x/this->stretchX;
+		x = x*this->height;
+		int xCoord = static_cast<int>(floor(x));
+
+		qreal yWindowNorm = ((y/static_cast<qreal>(this->size().height()))) - ((1.0-this->scaleFactor*this->stretchY*this->screenHeightScaled)/(2.0)); //coordinate normalization to texture
+		y = (yWindowNorm+this->yTranslation/2.0)/this->screenHeightScaled;
+		y = y/this->scaleFactor;
+		y = y/this->stretchY;
+		y = y*this->width;
+		int yCoord = static_cast<int>(floor(y));
+
+		QToolTip::showText(this->mapToGlobal(event->pos()), QString("%1 , %2").arg(xCoord).arg(yCoord));
+	}
+	if((event->buttons() & Qt::LeftButton || event->buttons() & Qt::MiddleButton) && !this->panel->underMouse()){
 		QPoint delta = (event->pos() - this->mousePos);
 		int windowWidth = this->size().width();
 		int windowHeight = this->size().height();
