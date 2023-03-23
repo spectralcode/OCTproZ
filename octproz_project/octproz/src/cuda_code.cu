@@ -674,11 +674,12 @@ __global__ void postProcessTruncateLog(float *output, const cufftComplex *input,
 		int lineIndex = index / outputAscanLength;
 		int inputArrayIndex = lineIndex *outputAscanLength + index;
 
-		//Note: log(sqrt(x*x+y*y)) == 0.5*log(x*x+y*y) --> the result here is 20*log(magnitude) and not 10*log...
+		//Note log scaling: log(sqrt(x*x+y*y)) == 0.5*log(x*x+y*y) --> the calculation in the code below is 20*log(magnitude) and not 10*log...
+		//Note fft normalization://(1/(2*outputAscanLength)) is the FFT normalization factor. In addition a multiplication by 2 is performed since the acquired OCT raw signal is a real valued signal, so (1/(2*outputAscanLength)) becomes 1/outputAscanLength. (Why multiply by 2: FFT of a real-valued signal is a complex-valued signal with a symmetric spectrum, where the positive and negative frequency components are identical in magnitude. And since the signal is truncated (negative or positive frequency components are removed), doubling of the remaining components is performed here)
 		//amplitude:
-		float realComponent = input[inputArrayIndex].x / (2.0*samples); //(1/samples) is the FFT normalization factor and multiplication by 2 is required since the acquired OCT raw signal is a real valued signal (FFT of a real-valued signal is a complex-valued signal with a symmetric spectrum, where the positive and negative frequency components are identical in magnitude. Therefore, to compute the total power of the signal, it is necessary to double the amplitude of the positive frequency components, which are returned by the FFT. This is why a multiplication by 2 is required after the FFT when processing real-valued signals)
-		float imaginaryComponent = input[inputArrayIndex].y / (2.0*samples);
-		output[index] = coeff*((((10.0f*log10f((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))) - min) / (max - min)) + addend);
+		float realComponent = input[inputArrayIndex].x;
+		float imaginaryComponent = input[inputArrayIndex].y;
+		output[index] = coeff*((((10.0f*log10f(((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength))) - min) / (max - min)) + addend);
 
 		output[index] = __saturatef(output[index]); //Clamp values to be within the interval [+0.0, 1.0].
 	}
@@ -692,9 +693,9 @@ __global__ void postProcessTruncateLin(float *output, const cufftComplex *input,
 		int inputArrayIndex = lineIndex * outputAscanLength + index;
 
 		//amplitude:
-		float realComponent = input[inputArrayIndex].x / (2.0*samples); //(1/samples) is the FFT normalization factor and multiplication by 2 is required since the acquired OCT raw signal is a real valued signal (FFT of a real-valued signal is a complex-valued signal with a symmetric spectrum, where the positive and negative frequency components are identical in magnitude. Therefore, to compute the total power of the signal, it is necessary to double the amplitude of the positive frequency components, which are returned by the FFT. This is why a multiplication by 2 is required after the FFT when processing real-valued signals)
-		float imaginaryComponent = input[inputArrayIndex].y / (2.0*samples);
-		output[index] = coeff * ((((sqrt(((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent)))) - min) / (max - min)) + addend);
+		float realComponent = input[inputArrayIndex].x;
+		float imaginaryComponent = input[inputArrayIndex].y;
+		output[index] = coeff * ((((sqrt((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength)) - min) / (max - min)) + addend);
 
 		output[index] = __saturatef(output[index]);//Clamp values to be within the interval [+0.0, 1.0].
 	}
@@ -714,7 +715,6 @@ __global__ void cuda_bscanFlip_slow(float *output, float *input, int samplesPerA
 			output[mirrorIndex] = input[index];
 			output[index] = tmp;
 		}
-
 	}
 }
 
