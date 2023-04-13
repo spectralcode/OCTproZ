@@ -114,9 +114,7 @@ sudo apt-get install qtcreator
 ```
 
 ### 2. Install build dependencies
-Enable the "Source code" option in Software and Updates > Ubuntu Software under the "Downloadable from the Internet" section.
-
-Open a terminal (ctrl + alt + t) an install the build dependencies like this
+Enable the "Source code" option in Software and Updates > Ubuntu Software under the "Downloadable from the Internet" section. Then install the build dependencies like this
 ```
 sudo apt-get build-dep qt5-default
 ```
