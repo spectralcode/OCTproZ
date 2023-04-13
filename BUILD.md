@@ -106,7 +106,14 @@ To compile and run OCTproZ on the Jetson Nano you need Qt with enabled _OpenGL d
 
 For this Qt can be built from source on the Jetson Nano:
 
-### 1. Install build dependencies
+### 1. Install build-essential package and Qt Creator:
+Open a terminal (ctrl + alt + t) and type the following commands:
+```
+sudo apt-get install build-essential
+sudo apt-get install qtcreator
+```
+
+### 2. Install build dependencies
 Enable the "Source code" option in Software and Updates > Ubuntu Software under the "Downloadable from the Internet" section.
 
 Open a terminal (ctrl + alt + t) an install the build dependencies like this
@@ -114,11 +121,11 @@ Open a terminal (ctrl + alt + t) an install the build dependencies like this
 sudo apt-get build-dep qt5-default
 ```
 
-### 2. Get the Qt source
+### 3. Get the Qt source
 ```
 git clone https://code.qt.io/qt/qt5.git
 cd qt5
-git checkout 5.12.9
+git checkout 5.12.10
 ```
 then
 ```
@@ -128,7 +135,7 @@ mkdir qt5-build
 cd qt5-build
 ```
 
-### 3. Configure and build
+### 4. Configure and build
 In this step you configure Qt for _OpenGL desktop_ (this is necessary!) and remove some packages with _-skip_ (this is optional. Removing those packages slightly reduces the build time)
 
 ```
