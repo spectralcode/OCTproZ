@@ -157,6 +157,8 @@ References:
 
 # Troubleshooting
 
+## Windows
+
 After installing Qt 5.12.11 with the offline installer, you may get the error message:
 
 ```
@@ -172,3 +174,20 @@ C:\Users\%USERNAME%\AppData\Roaming\QtProject\qtcreator\toolchains.xml
 ```
 
 After these steps reopen Qt Creator and everything should work fine.
+
+
+## Jetson Nano
+
+If you encounter the following error message after the configure step:
+```
+ERROR: Feature 'xcb' was enabled, but the pre-condition 'features.thread && features.xkbcommon && libs.xcb' failed.
+```
+it may help to install the following packages:
+```
+sudo apt-get install libx11*
+sudo apt-get install libxcb-*
+sudo apt-get install libxcb*
+sudo apt-get install libxkbcommon-dev
+sudo apt-get install libxkbcommon-x11-dev
+```
+After installing these packages you need to delete the content of the qt5-build folder and run the configure step again. (see [this discussion](https://github.com/microsoft/vcpkg/issues/15150))
