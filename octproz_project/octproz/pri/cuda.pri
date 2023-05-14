@@ -27,6 +27,11 @@ CUDA_ARCH += sm_52 \
 -gencode=arch=compute_86,code=sm_86 \
 -gencode=arch=compute_86,code=compute_86
 
+#use this for Jetson Nano with JetPack 4.6.1 (Cuda 10.2, Ubuntu 18.04)
+#CUDA_ARCH += sm_53 \
+#-gencode=arch=compute_53,code=sm_53 \
+#-gencode=arch=compute_53,code=compute_53
+
 
 #nvcc compiler options
 unix{
