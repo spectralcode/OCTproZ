@@ -74,7 +74,7 @@ GLWindow3D::GLWindow3D(QWidget *parent) : QOpenGLWidget {parent}, raycastingVolu
 	this->panel = new ControlPanel3D(this);
 
 	// Register available rendering modes here
-	QStringList modes = { "Isosurface", "MIDA", "Alpha blending", "X-ray", "DMIP", "MIP"};
+	QStringList modes = { "Isosurface", "OCT Depth", "MIDA", "Alpha blending", "X-ray", "DMIP", "MIP"};
 //	foreach(auto mode, modes){
 //		this->modes[mode] = [&]() { GLWindow3D::raycasting(mode); };  //todo: figure out why this does not work
 //	}
@@ -84,6 +84,7 @@ GLWindow3D::GLWindow3D(QWidget *parent) : QOpenGLWidget {parent}, raycastingVolu
 	this->modes["Isosurface"] = [&]() { GLWindow3D::raycasting("Isosurface"); };
 	this->modes["Alpha blending"] = [&]() { GLWindow3D::raycasting("Alpha blending"); };
 	this->modes["X-ray"] = [&]() { GLWindow3D::raycasting("X-ray"); };
+	this->modes["OCT Depth"] = [&]() { GLWindow3D::raycasting("OCT Depth"); };
 
 	this->panel->setModes(modes);
 
@@ -261,6 +262,7 @@ void GLWindow3D::initializeGL() {
 		this->addShader("DMIP", ":/shaders/depth_mip.vert", ":/shaders/depth_mip.frag");
 		this->addShader("MIDA", ":/shaders/mida.vert", ":/shaders/mida.frag");
 		this->addShader("X-ray", ":/shaders/xray.vert", ":/shaders/xray.frag");
+		this->addShader("OCT Depth", ":/shaders/oct_depth.vert", ":/shaders/oct_depth.frag");
 	}
 
 	if(this->initialized){
@@ -323,6 +325,10 @@ GLuint GLWindow3D::scaledHeight() {
 }
 
 void GLWindow3D::raycasting(const QString& shader) {
+	if(shader == "OCT Depth"){
+		this->raycastingVolume->computeDepth();
+	}
+
 	this->shaders[shader]->bind();
 	{
 		this->shaders[shader]->setUniformValue("ViewMatrix", this->viewMatrix);
@@ -348,6 +354,13 @@ void GLWindow3D::raycasting(const QString& shader) {
 		this->shaders[shader]->setUniformValue("alpha_exponent", this->alphaExponent);
 		this->shaders[shader]->setUniformValue("shading_enabled", this->shadingEnabled);
 		this->shaders[shader]->setUniformValue("lut_enabled", this->lutEnabled);
+
+		if(shader == "OCT Depth"){
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_3D, this->raycastingVolume->getDepthTexture());
+			this->shaders[shader]->setUniformValue("depthTexture", 3);
+		}
+
 
 		glClearColor(this->background.redF(), this->background.greenF(), this->background.blueF(), this->background.alphaF());
 		glClear(GL_COLOR_BUFFER_BIT);

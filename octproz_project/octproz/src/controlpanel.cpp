@@ -229,7 +229,7 @@ void ControlPanel3D::updateDisplayParameters() {
 		this->doubleSpinBoxAlphaExponent->setVisible(false);
 		this->checkBoxShading->setVisible(false);
 
-	} else if(this->params.displayMode == "MIDA" || this->params.displayMode == "Alpha blending"){
+	} else if(this->params.displayMode == "MIDA" || this->params.displayMode == "Alpha blending" || this->params.displayMode == "OCT Depth"){
 		this->labelDepthWeight->setVisible(false);
 		this->doubleSpinBoxDepthWeight->setVisible(false);
 		this->labelSmoothFactor->setVisible(false);

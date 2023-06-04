@@ -59,6 +59,8 @@
 
 #include "mesh.h"
 
+#include <QOpenGLShaderProgram>
+
 /*!
  * \brief Class for a raycasting volume.
  */
@@ -134,6 +136,11 @@ public:
 	 */
 	void changeTextureSize(unsigned int width, unsigned int height, unsigned int depth);
 
+	void updateDepthTextureSize();
+
+	void computeDepth();
+	void initDepthComputeShader();
+
 
 	void setStretch(float x, float y, float z){this->spacing.setX(x); this->spacing.setY(y); this->spacing.setZ(z);}
 	float getStretchX(){return this->spacing.x();}
@@ -141,11 +148,14 @@ public:
 	float getStretchZ(){return this->spacing.z();}
 
 	GLuint getVolumeTexture(){return this->volumeTexture;}
+	GLuint getDepthTexture(){return this->depthTexture;}
 
 	void setOrigin(float x, float y, float z){this->origin={x,y,z};}
 
 private:
+	QOpenGLShaderProgram* depthComputeShader;
 	GLuint volumeTexture;
+	GLuint depthTexture;
 	GLuint noiseTexture;
 	GLuint lutTexture;
 	Mesh cubeVao;
@@ -153,11 +163,14 @@ private:
 	QVector3D spacing;
 	QVector3D size;
 
+
 	/*!
 	 * \brief Scale factor to model space.
 	 *
 	 * Scale the bounding box such that the longest side equals 1.
 	 */
 	float getScaleFactor();
+
+
 };
 #endif //RAYCASTVOLUME_H

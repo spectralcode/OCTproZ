@@ -60,6 +60,7 @@
 
 RayCastVolume::RayCastVolume()
 	: volumeTexture {0}
+	, depthTexture {0}
 	, noiseTexture {0}
 	, lutTexture {0}
 	, cubeVao {
@@ -100,12 +101,14 @@ RayCastVolume::RayCastVolume()
 	this->spacing.setZ(1.0);
 
 	initializeOpenGLFunctions();
+	this->initDepthComputeShader();
 }
 
 
 
 RayCastVolume::~RayCastVolume()
 {
+	delete this->depthComputeShader;
 }
 
 void RayCastVolume::setLUT(QImage image) {
@@ -181,6 +184,7 @@ void RayCastVolume::paint() {
 	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_3D, this->volumeTexture);
 	glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, this->noiseTexture);
 
+
 	this->cubeVao.paint();
 }
 
@@ -233,4 +237,68 @@ void RayCastVolume::changeTextureSize(unsigned int width, unsigned int height, u
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, this->size.x(), this->size.y(), this->size.z(), 0, GL_RED, GL_FLOAT, NULL);
 	glBindTexture(GL_TEXTURE_3D, 0);
+
+	if(this->depthTexture!=0){
+		this->updateDepthTextureSize();
+	}
 }
+
+void RayCastVolume::updateDepthTextureSize(){
+	//Delete old texture and create and bind new depth texture
+	glDeleteTextures(1, &this->depthTexture);
+	glGenTextures(1, &this->depthTexture);
+	glBindTexture(GL_TEXTURE_3D, this->depthTexture);
+	//Set texture parameters and allocate memory
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, this->size.x(), this->size.y(), this->size.z(), 0, GL_RED, GL_FLOAT, NULL);
+	glBindTexture(GL_TEXTURE_3D, 0);
+}
+
+void RayCastVolume::computeDepth() {
+	if (this->depthTexture == 0) {
+		this->updateDepthTextureSize();
+	}
+
+	// Bind the depth texture as an image usable in a shader
+	glBindImageTexture(3, this->depthTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32F);
+
+	// Activate the compute shader and set uniforms
+	depthComputeShader->bind();
+
+	// Bind the volume texture as a read-only texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindImageTexture(0, this->volumeTexture, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R8);
+	depthComputeShader->setUniformValue("volume", 0);
+	depthComputeShader->setUniformValue("volumeSize", this->size);
+
+	// Run the compute shader
+	glDispatchCompute(this->size.x() / 16, this->size.y() / 16, 1);
+
+	// Ensure all writes to the depth texture have finished before we continue
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+	// Unbind the shader and texture when done
+	depthComputeShader->release();
+	glBindTexture(GL_TEXTURE_3D, 0);
+}
+
+
+void RayCastVolume::initDepthComputeShader()
+{
+	this->depthComputeShader = new QOpenGLShaderProgram();
+
+	if (!this->depthComputeShader->addShaderFromSourceFile(QOpenGLShader::Compute, ":/shaders/compute_sample_depths.glsl")) {
+		qDebug() << "Failed to load compute shader:" << this->depthComputeShader->log();
+	}
+	if (!this->depthComputeShader->link()) {
+		qDebug() << "Failed to link compute shader:" << this->depthComputeShader->log();
+	}
+}
+
+
+
+
