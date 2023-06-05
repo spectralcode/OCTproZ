@@ -167,24 +167,22 @@ void main()
 	while (ray_length > 0) {
 
 		float intensity = texture(volume, position).r;
+		float depthPosition = texture(depthTexture, position).r;
 
-		if(intensity > threshold){
+		if(intensity > threshold && depthPosition > 0.1){
 			//colour transfer function
 			vec4 c;
 			if(lut_enabled){
 				//c = texture(lut, position.b); //oct depth coloring without sample surface detection
-				c = texture(lut, texture(depthTexture, position).r); //oct depth coloring with sample surface as refernce
+				c = texture(lut, depthPosition ); //oct depth coloring with sample surface as refernce
 				c.a = pow(intensity/2, alpha_exponent);
 			} else {
-				c = colour_transfer((0.2*intensity+0.8*texture(depthTexture, position).r)/3.0, alpha_exponent);
+				c = colour_transfer((0.2*intensity+0.8*depthPosition)/2.0, alpha_exponent);
 			}
 
 			//alpha-blending
 			colour.rgb = c.a * c.rgb + (1 - c.a) * colour.a * colour.rgb;
 			colour.a = c.a + (1 - c.a) * colour.a;
-
-			//depth cue
-			//colour.rgb = colour.a*colour.rgb*(pow(2.25, (ray_length/length(ray)))/(1.75));
 
 			if(shading_enabled){
 				colour.rgb = shading(colour.rgb, position, ray);
