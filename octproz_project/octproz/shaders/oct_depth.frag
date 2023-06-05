@@ -159,13 +159,15 @@ void main()
 
 	// Random jitter
 	ray_start += step_vector * texture(jitter, gl_FragCoord.xy / viewport_size).r;
+	ray_stop += step_vector * texture(jitter, gl_FragCoord.xy / viewport_size).r;
 
 	vec3 position = ray_stop;
 	vec4 colour = vec4(0.0);
 
-	//ray march until reaching the end of the volume, or colour saturation
+	//iterate over volume
 	while (ray_length > 0) {
 
+		 //get intensity and OCT depth at current position inside volume
 		float intensity = texture(volume, position).r;
 		float depthPosition = texture(depthTexture, position).r;
 
@@ -175,7 +177,7 @@ void main()
 			if(lut_enabled){
 				//c = texture(lut, position.b); //oct depth coloring without sample surface detection
 				c = texture(lut, depthPosition ); //oct depth coloring with sample surface as refernce
-				c.a = pow(intensity/2, alpha_exponent);
+				c.a = pow(intensity, alpha_exponent);
 			} else {
 				c = colour_transfer((0.2*intensity+0.8*depthPosition)/2.0, alpha_exponent);
 			}
@@ -183,6 +185,8 @@ void main()
 			//alpha-blending
 			colour.rgb = c.a * c.rgb + (1 - c.a) * colour.a * colour.rgb;
 			colour.a = c.a + (1 - c.a) * colour.a;
+			colour.rgb = colour.rgb/colour.a;
+
 
 			if(shading_enabled){
 				colour.rgb = shading(colour.rgb, position, ray);
