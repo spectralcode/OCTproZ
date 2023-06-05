@@ -8,7 +8,8 @@ LUT_FILES += \
 	$$LUTDIR/six_shades_lut.png \
 	$$LUTDIR/sixteen_colors_lut.png \
 	$$LUTDIR/deep_red_lut.png \
-	$$LUTDIR/deep_blue_lut.png
+	$$LUTDIR/deep_blue_lut.png \
+	$$LUTDIR/depth_colors.png
 
 unix{
 	LUTEXPORTDIR = $$shell_path($$OUT_PWD/luts)
