@@ -44,7 +44,7 @@ void main()
 	}
 
 	// Initialize depth to 0
-	imageStore(depthTexture, globalID, vec4(0.0, 0.0, 0.0, 0.0));
+	//imageStore(depthTexture, globalID, vec4(0.0, 0.0, 0.0, 0.0));
 
 	float val = 0.0;
 	float depthValue = 1.0;
@@ -55,6 +55,7 @@ void main()
 			imageStore(depthTexture, ivec3(globalID.x, globalID.y, i), vec4(depthValue, 0.0, 0.0, 0.0));
 			 depthValue = depthValue - deltaDepth;
 		} else {
+			imageStore(depthTexture, ivec3(globalID.x, globalID.y, i), vec4(0.0, 0.0, 0.0, 0.0));
 			val = float(imageLoad(volume, ivec3(globalID.x, globalID.y, i)).r);
 		}
 	}
