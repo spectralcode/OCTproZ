@@ -150,6 +150,8 @@ public:
 	GLuint getVolumeTexture(){return this->volumeTexture;}
 	GLuint getDepthTexture(){return this->depthTexture;}
 
+	void setDepthIntensityThreshold(GLfloat threshold){this->depthIntensityThreshold = threshold;}
+
 	void setOrigin(float x, float y, float z){this->origin={x,y,z};}
 
 private:
@@ -162,6 +164,7 @@ private:
 	QVector3D origin;
 	QVector3D spacing;
 	QVector3D size;
+	GLfloat depthIntensityThreshold;
 
 
 	/*!

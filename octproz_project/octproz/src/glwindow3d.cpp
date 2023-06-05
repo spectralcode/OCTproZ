@@ -180,6 +180,9 @@ void GLWindow3D::setStepLength(const GLfloat step_length) {
 
 void GLWindow3D::setThreshold(const GLfloat threshold) {
 	this->threshold = threshold;
+	if(this->raycastingVolume != nullptr){
+		this->raycastingVolume->setDepthIntensityThreshold(threshold*1.5);
+	}
 	update();
 }
 

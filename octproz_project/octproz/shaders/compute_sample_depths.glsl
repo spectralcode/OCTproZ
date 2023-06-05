@@ -33,6 +33,7 @@ layout (binding = 0, r8) uniform image3D volume;
 layout (binding = 3, r32f) uniform image3D depthTexture;
 
 uniform vec3 volumeSize;
+uniform float depthIntensityThreshold;
 
 void main()
 {
@@ -45,14 +46,12 @@ void main()
 	// Initialize depth to 0
 	imageStore(depthTexture, globalID, vec4(0.0, 0.0, 0.0, 0.0));
 
-	float threshold = 0.33; //threshold for oct surface detection. todo: make this user adjustable
-
 	float val = 0.0;
 	float depthValue = 1.0;
 	float deltaDepth = 1.0/float(volumeSize.z);
 	int startPos = int(volumeSize.z-volumeSize.z/32);
 	for(int i = startPos; i > 0; i--) {
-		if(val > threshold) {
+		if(val > depthIntensityThreshold) {
 			imageStore(depthTexture, ivec3(globalID.x, globalID.y, i), vec4(depthValue, 0.0, 0.0, 0.0));
 			 depthValue = depthValue - deltaDepth;
 		} else {

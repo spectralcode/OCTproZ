@@ -102,6 +102,7 @@ RayCastVolume::RayCastVolume()
 
 	initializeOpenGLFunctions();
 	this->initDepthComputeShader();
+	this->setDepthIntensityThreshold(0.5);
 }
 
 
@@ -266,14 +267,17 @@ void RayCastVolume::computeDepth() {
 	// Bind the depth texture as an image usable in a shader
 	glBindImageTexture(3, this->depthTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32F);
 
-	// Activate the compute shader and set uniforms
+	// Activate the compute shader
 	depthComputeShader->bind();
 
 	// Bind the volume texture as a read-only texture
 	glActiveTexture(GL_TEXTURE0);
 	glBindImageTexture(0, this->volumeTexture, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R8);
+
+	// set uniforms
 	depthComputeShader->setUniformValue("volume", 0);
 	depthComputeShader->setUniformValue("volumeSize", this->size);
+	depthComputeShader->setUniformValue("depthIntensityThreshold", this->depthIntensityThreshold);
 
 	// Run the compute shader
 	glDispatchCompute(this->size.x() / 16, this->size.y() / 16, 1);
@@ -287,8 +291,7 @@ void RayCastVolume::computeDepth() {
 }
 
 
-void RayCastVolume::initDepthComputeShader()
-{
+void RayCastVolume::initDepthComputeShader() {
 	this->depthComputeShader = new QOpenGLShaderProgram();
 
 	if (!this->depthComputeShader->addShaderFromSourceFile(QOpenGLShader::Compute, ":/shaders/compute_sample_depths.glsl")) {
