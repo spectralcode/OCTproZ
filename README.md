@@ -20,10 +20,6 @@ Screenshots
 | ------------- | ------------- |
 | <img src="images/octproz_screenshot_jetson_nano_3d_compact_cropped_shadow.png">  | <img src="images/octproz_screenshot_jetson_nano_1d_cropped_shadow.png"  >  |
 
-| Different volume rendering techniques for an OCT acqisition of a fingernail |
-| ------------- |
-| <img src="images\volume_rendering_screenshots\volume_rendering_overview.png"  >  |
-
 
 Features
 --------
