@@ -163,6 +163,7 @@ void main()
 
 	vec3 position = ray_stop;
 	vec4 colour = vec4(0.0);
+	float depthPositionOld = 1.0;
 
 	//iterate over volume
 	while (ray_length > 0) {
@@ -170,16 +171,19 @@ void main()
 		 //get intensity and OCT depth at current position inside volume
 		float intensity = texture(volume, position).r;
 		float depthPosition = texture(depthTexture, position).r;
+		float depthPositionDelta = abs(depthPosition-depthPositionOld); // This is used to avoid color artifacts due to discontinuities close to the surface. The surface itself is assigned a depth value of 1.0, while the area above it is assigned a value of 0.0.
+		depthPositionOld = depthPosition;
 
-		if(intensity > threshold && depthPosition > 0.1){
+		if(intensity > threshold && intensity < 0.9 && depthPosition > 0.1 && depthPositionDelta < 1.01*step_length){
 			//colour transfer function
 			vec4 c;
 			if(lut_enabled){
 				//c = texture(lut, position.b); //oct depth coloring without sample surface detection
-				c = texture(lut, depthPosition ); //oct depth coloring with sample surface as refernce
+				c = texture(lut, depthPosition-0.05 ); //oct depth coloring with sample surface as refernce
 				c.a = pow(intensity, alpha_exponent);
 			} else {
-				c = colour_transfer((0.2*intensity+0.8*depthPosition)/2.0, alpha_exponent);
+				//c = colour_transfer((0.2*intensity+0.8*depthPosition)/2.0, alpha_exponent);
+				c = colour_transfer((depthPosition), alpha_exponent);
 			}
 
 			//alpha-blending
