@@ -16,11 +16,13 @@ Video
 
 Screenshots
 --------
-The following screenshots were captured on a Jetson Nano running Ubuntu 18.04:
-
 | B-scan and volume rendering with LUT  | B-scan, en face view and 1D plot |
 | ------------- | ------------- |
 | <img src="images/octproz_screenshot_jetson_nano_3d_compact_cropped_shadow.png">  | <img src="images/octproz_screenshot_jetson_nano_1d_cropped_shadow.png"  >  |
+
+| Different volume rendering techniques for an OCT acqisition of a fingernail |
+| ------------- |
+| <img src="images\volume_rendering_screenshots\volume_rendering_overview.png"  >  |
 
 
 Features
