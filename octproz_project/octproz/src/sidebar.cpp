@@ -175,6 +175,8 @@ void Sidebar::loadSettings() {
 	//Processing
 	this->ui.checkBox_bitshift->setChecked(this->processingSettings.value(PROC_BITSHIFT).toBool());
 	this->ui.checkBox_bscanFlip->setChecked(this->processingSettings.value(PROC_FLIP_BSCANS).toBool());
+	this->ui.groupBox_backgroundremoval->setChecked(this->processingSettings.value(PROC_REMOVEBACKGROUND).toBool());
+	this->ui.spinBox_rollingAverageWindowSize->setValue(this->processingSettings.value(PROC_REMOVEBACKGROUND_WINDOW_SIZE).toUInt());
 	this->ui.checkBox_logScaling->setChecked(this->processingSettings.value(PROC_LOG).toBool());
 	this->ui.doubleSpinBox_signalMax->setValue(this->processingSettings.value(PROC_MAX).toDouble());
 	this->ui.doubleSpinBox_signalMin->setValue(this->processingSettings.value(PROC_MIN).toDouble());
@@ -293,6 +295,8 @@ void Sidebar::updateProcessingParams() {
 	params->continuousFixedPatternNoiseDetermination = this->ui.radioButton_continuously->isChecked();
 	params->bscansForNoiseDetermination = this->ui.spinBox_bscansFixedNoise->value();
 	params->sinusoidalScanCorrection = this->ui.checkBox_sinusoidalScanCorrection->isChecked();
+	params->rollingAverageWindowSize = this->ui.spinBox_rollingAverageWindowSize->value();
+	params->backgroundRemoval = this->ui.groupBox_backgroundremoval->isChecked();
 }
 
 void Sidebar::updateStreamingParams() {
@@ -424,6 +428,10 @@ void Sidebar::slot_disableRedetermineButtion(bool disable){
 	this->ui.pushButton_redetermine->setDisabled(disable);
 }
 
+void Sidebar::slot_setMaximumRollingAverageWindowSize(unsigned int max) {
+	this->ui.spinBox_rollingAverageWindowSize->setMaximum(max);
+}
+
 void Sidebar::slot_setMaximumBscansForNoiseDetermination(unsigned int max) {
 	this->ui.spinBox_bscansFixedNoise->setMaximum(max);
 }
@@ -517,6 +525,8 @@ void Sidebar::updateSettingsMaps() {
 	//Processing
 	this->processingSettings.insert(PROC_BITSHIFT, this->ui.checkBox_bitshift->isChecked());
 	this->processingSettings.insert(PROC_FLIP_BSCANS, this->ui.checkBox_bscanFlip->isChecked());
+	this->processingSettings.insert(PROC_REMOVEBACKGROUND, this->ui.groupBox_backgroundremoval->isChecked());
+	this->processingSettings.insert(PROC_REMOVEBACKGROUND_WINDOW_SIZE, this->ui.spinBox_rollingAverageWindowSize->value());
 	this->processingSettings.insert(PROC_LOG, this->ui.checkBox_logScaling->isChecked());
 	this->processingSettings.insert(PROC_MAX, this->ui.doubleSpinBox_signalMax->value());
 	this->processingSettings.insert(PROC_MIN, this->ui.doubleSpinBox_signalMin->value());

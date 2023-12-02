@@ -724,6 +724,7 @@ void OCTproZ::slot_updateAcquistionParameter(AcquisitionParams newParams){
 	this->octParams->buffersPerVolume = newParams.buffersPerVolume;
 	this->octParams->bitDepth = newParams.bitDepth;
 	this->sidebar->slot_setMaximumBscansForNoiseDetermination(this->octParams->bscansPerBuffer);
+	this->sidebar->slot_setMaximumRollingAverageWindowSize(this->octParams->samplesPerLine);
 	this->forceUpdateProcessingParams();
 }
 

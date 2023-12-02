@@ -98,6 +98,9 @@ public:
 	float signalMultiplicator; /// User defined multiplicator. Each signal value will be multiplied with this value. 
 	float signalAddend;	/// User defined addend. This value will be added to each signal value. 
 
+	bool backgroundRemoval;
+	int rollingAverageWindowSize;
+
 	float* resampleCurve;
 	float* customResampleCurve;
 	float* resampleReferenceCurve;

@@ -146,6 +146,31 @@ inline __device__ int16_t endianSwapInt16(int16_t val) {
 	return (val << 8) | ((val >> 8) & 0xFF);
 }
 
+//todo umschreiben so dass code nicht für jedes sample durchgeführt wird sondern jeden ascan. cuda aufrufgroßen anpassen.
+__global__ void rollingAverageBackgroundRemoval(cufftComplex* out, cufftComplex* in, const int rollingAverageWindowSize, const int width, const int height, const int samplesPerFrame, const int samples) { //width: samplesPerAscan; height: ascansPerBscan,samples: total number of samples in buffer
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samples) {
+		//determine start and end index of rolling average window
+		int currentBscan = index/(samplesPerFrame);
+		int currentLine = (index/width)%height;
+		int firstIndexOfCurrentLine = currentLine*width+(samplesPerFrame*currentBscan);
+		int lastIndexOfCurrentLine = firstIndexOfCurrentLine+width-1;
+		int startIdx = max(firstIndexOfCurrentLine, index - rollingAverageWindowSize + 1);
+		int endIdx = min(lastIndexOfCurrentLine, index + rollingAverageWindowSize);
+
+		//calculate rolling average
+		float rollingAverage = 0.0;
+		for (int i = startIdx; i <= endIdx; i++) {
+			rollingAverage += in[i].x;
+		}
+		rollingAverage /= (endIdx - startIdx + 1);
+
+		//subtract rolling average
+		out[index].x = (in[index].x - rollingAverage);
+		out[index].y = 0;
+	}
+}
+
 //todo: use/evaluate cuda texture for interpolation in klinearization kernel
 __global__ void klinearization(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
@@ -225,14 +250,21 @@ inline __device__ float lanczosKernel(const float a, const float x) {
 	return 0.0f;
 }
 
+//inline __device__ float lanczosKernel8(const float x) {
+//	if(x < 0.00001f && x > -0.00001f) {
+//		return 1.0f;
+//	}
+//	if(x >= -8.0f || x < 8.0f) {
+//		return (EIGHT_OVER_PI_SQUARED*__sinf(PI*x)*__sinf(PI_OVER_8*x))/(x*x);
+//	}
+//	return 0.0f;
+//}
+
 inline __device__ float lanczosKernel8(const float x) {
-	if(x < 0.00001f && x > -0.00001f) {
-		return 1.0f;
-	}
-	if(x >= -8.0f || x < 8.0f) {
-		return (EIGHT_OVER_PI_SQUARED*__sinf(PI*x)*__sinf(PI_OVER_8*x))/(x*x);
-	}
-	return 0.0f;
+    const float absX = fabsf(x);
+    const float sincX = (absX < 0.00001f) ? 1.0f : sinf(PI*absX)/(PI*absX);
+    const float sincXOver8 = (absX < 0.00001f) ? 1.0f : sinf(PI_OVER_8*absX)/(PI_OVER_8*absX);
+    return (absX < 8.0f) ? (sincX * sincXOver8) : 0.0f;
 }
 
 __global__ void klinearizationLanczos(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
@@ -1192,6 +1224,14 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	}
 	else {
 		inputToCufftComplex<<<gridSize, blockSize, 0, processStream>>> (d_fftBuffer, procBuffer, signalLength, signalLength, params->bitDepth, samplesPerBuffer);
+	}
+
+	//rolling average background subtraction
+	if (params->backgroundRemoval){
+		rollingAverageBackgroundRemoval<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, params->rollingAverageWindowSize, signalLength, ascansPerBscan, signalLength*ascansPerBscan, samplesPerBuffer);
+		cufftComplex* tmpSwapPointer = d_inputLinearized;
+		d_inputLinearized = d_fftBuffer;
+		d_fftBuffer = tmpSwapPointer;
 	}
 
 	//update k-linearization-, dispersion- and windowing-curves if necessary

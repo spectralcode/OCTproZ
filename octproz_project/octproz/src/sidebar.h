@@ -55,6 +55,8 @@
 #define REC_DESCRIPTION "description"
 #define PROC_FLIP_BSCANS "flip_bscans"
 #define PROC_BITSHIFT "bitshift"
+#define PROC_REMOVEBACKGROUND "background_removal"
+#define PROC_REMOVEBACKGROUND_WINDOW_SIZE "background_removal_window_size"
 #define PROC_MIN "min"
 #define PROC_MAX "max"
 #define PROC_LOG "log"
@@ -142,6 +144,7 @@ public slots:
 	void slot_updateProcessingParams();
 	void slot_redetermineFixedPatternNoise();
 	void slot_disableRedetermineButtion(bool disable);
+	void slot_setMaximumRollingAverageWindowSize(unsigned int max);
 	void slot_setMaximumBscansForNoiseDetermination(unsigned int max);
 	void slot_setKLinCoeffs(double* k0, double* k1, double* k2, double* k3);
 	void slot_setDispCompCoeffs(double* d0, double* d1, double* d2, double* d3);
