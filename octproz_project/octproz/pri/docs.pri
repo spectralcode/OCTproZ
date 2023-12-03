@@ -12,10 +12,11 @@ DOC_FILES_IMAGES += \
 	$$DOCDIR/images/math_linresampling.svg \
 	$$DOCDIR/images/octproz_icon.png \
 	$$DOCDIR/images/processing_bscanflip.png \
-	$$DOCDIR/images/processing_pipeline.png \
+	$$DOCDIR/images/octproz_processing_flowchart_stations.png \
 	$$DOCDIR/images/processing_result.png \
 	$$DOCDIR/images/processing_sinusoidalcorrection.png \
 	$$DOCDIR/images/processing_interpolation.png \
+	$$DOCDIR/images/volume_rendering_overview.png \
 	$$DOCDIR/images/quickstart1.png \
 	$$DOCDIR/images/quickstart2.png \
 	$$DOCDIR/images/quickstart3.png \
