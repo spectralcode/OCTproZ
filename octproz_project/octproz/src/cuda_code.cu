@@ -146,7 +146,6 @@ inline __device__ int16_t endianSwapInt16(int16_t val) {
 	return (val << 8) | ((val >> 8) & 0xFF);
 }
 
-//todo umschreiben so dass code nicht für jedes sample durchgeführt wird sondern jeden ascan. cuda aufrufgroßen anpassen.
 __global__ void rollingAverageBackgroundRemoval(cufftComplex* out, cufftComplex* in, const int rollingAverageWindowSize, const int width, const int height, const int samplesPerFrame, const int samples) { //width: samplesPerAscan; height: ascansPerBscan,samples: total number of samples in buffer
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples) {
