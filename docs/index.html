@@ -30,7 +30,7 @@
 
 <div class="content container">
   <h1 id="octproz-user-manual"><a name="main"></a>Welcome to the OCTproZ v1.7.0 User Manual!</h1>
-  <p><small>Date: December 2, 2023 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</small></p>
+  <p><small>Date: December 7, 2023 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</small></p>
 
 
   <h1 id="id-about"><a name="about-section"></a>About</h1>
@@ -92,7 +92,7 @@
     <li>
 
     <p><strong>k-linearization</strong>  <br>
-    To convert the acquired raw OCT data into a depth profile, inverse Fourier transform is used, which relates wavenumber k and physical distance. Depending on the used hardware setup, the acquired spectral fringe pattern is usually not linear in k. In SS-OCT the temporal sampling points do not necessarily have to be spaced in k domain evenly, especially if k clocking is not used and in spectrometer based FD-OCT systems the interference signal is usually acquired linear in wavelength. The k-linearization resamples the raw data evenly in k space, which improves axial resolution. A user defined resampling curve r[j] can be specified by providing the coefficients of a third order polynomial. The resampling curve is a look up table that assigns every index j of the raw data array S<sub>raw</sub>[j] an index j', i.e. j'=r[j]. To obtain a k-linearized raw data array S<sub>k</sub>[j], the value at the index j' needs to be interpolated and remapped to the array position with index j. In the current version of OCTproZ the user can choose between linear and 3rd order polynomial interpolation for this task. The equation below describes the k-linearization with linear interpolation; &lfloor;x&rfloor; denotes the floor function that takes as input x a real number and gives as output the greatest integer less than or equal to x.
+    To convert the acquired raw OCT data into a depth profile, inverse Fourier transform is used, which relates wavenumber k and physical distance. Depending on the used hardware setup, the acquired spectral fringe pattern is usually not linear in k. In SS-OCT the temporal sampling points do not necessarily have to be spaced in k domain evenly, especially if k clocking is not used and in spectrometer based FD-OCT systems the interference signal is usually acquired linear in wavelength. The k-linearization resamples the raw data evenly in k space, which improves axial resolution. A user defined resampling curve r[j] can be specified by providing the coefficients of a third order polynomial. The resampling curve is a look up table that assigns every index j of the raw data array S<sub>raw</sub>[j] an index j', i.e. j'=r[j]. To obtain a k-linearized raw data array S<sub>k</sub>[j], the value at the index j' needs to be interpolated and remapped to the array position with index j. The equation below describes the k-linearization with linear interpolation; &lfloor;x&rfloor; denotes the floor function that takes as input x a real number and gives as output the greatest integer less than or equal to x.
     <p><img src="images/math_linresampling.svg"></a></p>
     <div class="message">Please note: The polynomial used for the resampling curve has the form <br>
       c<sub>0</sub> + (c<sub>1</sub>/N)x + (c<sub>2</sub>/N<sup>2</sup>)x<sup>2</sup> + (c<sub>3</sub>/N<sup>3</sup>)x<sup>3</sup> <br>
@@ -104,8 +104,7 @@
       <div class="message">Please note: You can use the <a href="https://github.com/spectralcode/PhaseExtractionExtension">PhaseExtractionExtension</a> for easy resampling curve determination.
      </div></p><p></p>
     
-     There are currently three interpolation methods to choose from: Linear, Cubic and Lanczos. They are a tradeoff between speed and accuracy, with Linear being the fastest and Lanczos being the most accurate.
-     The figure below shows typical interpolation artifacts that can be seen when using linear and cubic interpolation but are not present when using Lanczos interpolation:<br>
+     There are currently three interpolation methods available: Linear, Cubic Spline (Catmull-Rom Spline), and Lanczos. These methods represent a trade-off between speed and accuracy, with Linear being the fastest and Lanczos being the most accurate. The figure below shows typical interpolation artifacts that can be seen when using the different interpolation methods:<br>
     </p><p><img src="images/processing_interpolation.png"></p></a></p> <br><p></p>
     </li>
 
