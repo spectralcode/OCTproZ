@@ -78,8 +78,10 @@ public:
 	void updateResampleCurve();
 	void updateDispersionCurve();
 	void updateWindowCurve();
-	void loadCustomResampleCurve(float *externalCurve, int size);
-
+	void updatePostProcessingBackgroundCurve();
+	void loadCustomResampleCurve(float* externalCurve, int size);
+	void loadPostProcessingBackground(float* background, int size);
+	
 	//acquisition
 	unsigned int samplesPerLine;
 	unsigned int ascansPerBscan;
@@ -106,7 +108,7 @@ public:
 	float* resampleReferenceCurve;
 	float c0, c1, c2, c3;
 	int resampleCurveLength;
-	int curstomResampleCurveLength;
+	int customResampleCurveLength;
 	bool resampling;
 	bool resamplingUpdated;
 	bool useCustomResampleCurve;
@@ -129,6 +131,15 @@ public:
 	bool continuousFixedPatternNoiseDetermination;
 	bool redetermineFixedPatternNoise;
 	unsigned int bscansForNoiseDetermination;
+	
+	//post processing
+	bool postProcessBackgroundRemoval;
+	bool postProcessBackgroundRecordingRequested;
+	float postProcessBackgroundWeight;
+	float postProcessBackgroundOffset;
+	float* postProcessBackground;
+	int postProcessBackgroundLength;
+	bool postProcessBackgroundUpdated;
 
 	//visualization
 	//todo: put all visualization params in a single struct and use an enum for displayfunction
@@ -162,7 +173,6 @@ private:
 	static OctAlgorithmParameters* octAlgorithmParameters;
 
 	float* resizeCurve(float* curve, int currentSize, int newSize);
-
 
 	Polynomial* resamplingCurveCalculator;
 	Polynomial* resamplingReferenceCurveCalculator;

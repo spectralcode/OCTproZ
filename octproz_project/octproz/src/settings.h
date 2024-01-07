@@ -35,7 +35,8 @@
 
 #define SETTINGS_DIR QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
 #define SETTINGS_FILE_NAME "settings.ini"
-#define SETTINGS_PATH  SETTINGS_DIR + "/" + SETTINGS_FILE_NAME
+#define SETTINGS_PATH SETTINGS_DIR + "/" + SETTINGS_FILE_NAME
+#define SETTINGS_PATH_BACKGROUND_FILE SETTINGS_DIR + "/background.csv"
 #define TIMESTAMP "timestamp"
 
 

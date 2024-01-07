@@ -113,6 +113,8 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->sidebar, &Sidebar::error, this->console, &MessageConsole::displayError);
 	connect(this->sidebar, &Sidebar::dialogAboutToOpen, this, &OCTproZ::slot_closeOpenGLwindows); //GL windows need to be closed to avoid linux bug where QFileDialog is not usable when a GL window is opend in background
 	connect(this->sidebar, &Sidebar::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
+	connect(this->sidebar, &Sidebar::savePostProcessBackgroundRequested, this, &OCTproZ::savePostProcessBackgroundToFile);
+	connect(this->sidebar, &Sidebar::loadPostProcessBackgroundRequested, this, &OCTproZ::loadPostProcessBackgroundFromFile);
 
 	this->processingInThread = false;
 	this->signalProcessing = new Processing();
@@ -160,6 +162,8 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->processedDataNotifier = Gpu2HostNotifier::getInstance();
 	this->processedDataNotifier->moveToThread(&notifierThread);
 	connect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailible, this->plot1D, &PlotWindow1D::slot_plotProcessedData);
+	connect(this->processedDataNotifier, &Gpu2HostNotifier::backgroundRecorded, this->sidebar, &Sidebar::updateBackgroundPlot);
+	
 	connect(&notifierThread, &QThread::finished, this->processedDataNotifier, &Gpu2HostNotifier::deleteLater);
 	notifierThread.start();
 
@@ -718,11 +722,12 @@ void OCTproZ::slot_updateAcquistionParameter(AcquisitionParams newParams){
 		emit linesPerBufferChanged(newParams.ascansPerBscan * newParams.bscansPerBuffer);
 	}
 
-	this->octParams->samplesPerLine = newParams.samplesPerLine;
+	this->octParams->samplesPerLine = newParams.samplesPerLine; //todo: implement getter and setter methods for octParams. this way "updatePostProcessingBackgroundCurve" could be called automatically when setter for samplesPerLine is used
 	this->octParams->ascansPerBscan = newParams.ascansPerBscan;
 	this->octParams->bscansPerBuffer = newParams.bscansPerBuffer;
 	this->octParams->buffersPerVolume = newParams.buffersPerVolume;
 	this->octParams->bitDepth = newParams.bitDepth;
+	this->octParams->updatePostProcessingBackgroundCurve();
 	this->sidebar->slot_setMaximumBscansForNoiseDetermination(this->octParams->bscansPerBuffer);
 	this->sidebar->slot_setMaximumRollingAverageWindowSize(this->octParams->samplesPerLine);
 	this->forceUpdateProcessingParams();
@@ -917,6 +922,7 @@ void OCTproZ::reactivateSystem(AcquisitionSystem* system){
 
 void OCTproZ::forceUpdateProcessingParams() {
 	this->octParams->acquisitionParamsChanged = true;
+	this->octParams->postProcessBackgroundUpdated = true;
 	this->sidebar->slot_updateProcessingParams();
 }
 
@@ -952,9 +958,53 @@ void OCTproZ::loadResamplingCurveFromFile(QString fileName){
 		this->sidebar->slot_updateProcessingParams();
 		this->actionUseCustomKLinCurve->setEnabled(true);
 		this->actionUseCustomKLinCurve->setChecked(true);
-		emit info(tr("Custom resampling curve loaded! File used: ") + fileName);
+		emit info(tr("Custom resampling curve loaded. File used: ") + fileName);
 	}else{
 		emit error(tr("Custom resampling curve has a size of 0. Check if .csv file with resampling curve is not empty has right format."));
+	}
+}
+
+//todo: create a "parameterLoader" class that handles all loading and saving octalgorithmparameters from and to files
+void OCTproZ::loadPostProcessBackgroundFromFile(QString fileName){
+	if(fileName == ""){
+		return;
+	}
+	QFile file(fileName);
+	if(!file.exists()){
+		return;
+	}
+	
+	QVector<float> curve;
+	file.open(QIODevice::ReadOnly);
+	QTextStream txtStream(&file);
+	QString line = txtStream.readLine();
+	while (!txtStream.atEnd()){
+		line = txtStream.readLine();
+		curve.append((line.section(";", 1, 1).toFloat()));
+	}
+	file.close();
+	if(curve.size() > 0){
+		this->octParams->loadPostProcessingBackground(curve.data(), curve.size());
+		this->sidebar->updateBackgroundPlot();
+		emit info(tr("Background data for post processing loaded. File used: ") + fileName);
+	}else{
+		emit error(tr("Background data has a size of 0. Check if the .csv file with background data is not empty and has the right format."));
+	}
+}
+
+void OCTproZ::savePostProcessBackgroundToFile(QString fileName) {
+	QFile file(fileName);
+	if (file.open(QFile::WriteOnly|QFile::Truncate)) {
+		QTextStream stream(&file);
+		stream << tr("Sample Number") << ";" << tr("Sample Value") << "\n";
+		int numberOfDataPoints = this->octParams->postProcessBackgroundLength;
+		for(int i = 0; i < numberOfDataPoints; i++){
+			stream << QString::number(i) << ";" << this->octParams->postProcessBackground[i] << "\n";
+		}
+		file.close();
+		emit info(tr("Background data saved to: ") + fileName);
+	} else {
+		emit error(tr("Could not save Background data to: ") + fileName);
 	}
 }
 

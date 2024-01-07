@@ -34,57 +34,85 @@
 OctAlgorithmParameters* OctAlgorithmParameters::octAlgorithmParameters = nullptr;
 
 OctAlgorithmParameters::OctAlgorithmParameters()
+	: samplesPerLine(1024),
+	ascansPerBscan(128),
+	bscansPerBuffer(1),
+	buffersPerVolume(1),
+	bitDepth(8),
+	acquisitionParamsChanged(false),
+	bitshift(false),
+	bscanFlip(false),
+	signalLogScaling(false),
+	sinusoidalScanCorrection(false),
+	signalGrayscaleMin(0.0f),
+	signalGrayscaleMax(60.0f),
+	signalMultiplicator(1.0f),
+	signalAddend(0.0f),
+	backgroundRemoval(false),
+	rollingAverageWindowSize(1),
+	resampleCurve(nullptr),
+	customResampleCurve(nullptr),
+	resampleReferenceCurve(nullptr),
+	c0(0.0f),
+	c1(0.0f),
+	c2(0.0f),
+	c3(0.0f),
+	resampleCurveLength(0),
+	customResampleCurveLength(0),
+	resampling(false),
+	resamplingUpdated(false),
+	useCustomResampleCurve(false),
+	resamplingInterpolation(INTERPOLATION::LINEAR),
+	dispersionCurve(nullptr),
+	dispersionReferenceCurve(nullptr),
+	d0(0.0f),
+	d1(0.0f),
+	d2(0.0f),
+	d3(0.0f),
+	dispersionCompensation(false),
+	dispersionUpdated(false),
+	windowCurve(nullptr),
+	windowReferenceCurve(nullptr),
+	window(WindowFunction::Rectangular),
+	windowCenter(0.5f),
+	windowFillFactor(1.0f),
+	windowing(false),
+	windowUpdated(false),
+	fixedPatternNoiseRemoval(false),
+	continuousFixedPatternNoiseDetermination(false),
+	redetermineFixedPatternNoise(false),
+	bscansForNoiseDetermination(1),
+	postProcessBackgroundRemoval(false),
+	postProcessBackgroundRecordingRequested(false),
+	postProcessBackgroundWeight(1.0f),
+	postProcessBackgroundOffset(0.0f),
+	postProcessBackground(nullptr),
+	postProcessBackgroundLength(0),
+	postProcessBackgroundUpdated(false),
+	frameNr(0),
+	frameNrEnFaceView(0),
+	functionFramesEnFaceView(0),
+	functionFramesBscan(0),
+	displayFunctionBscan(0),
+	displayFunctionEnFaceView(0),
+	bscanViewEnabled(true),
+	enFaceViewEnabled(true),
+	volumeViewEnabled(false),
+	recParams{QString(), QString(), QString(), 0, 1, false, false, false, false, false, false},
+	streamingParamsChanged(true),
+	streamToHost(false),
+	streamingBuffersToSkip(0),
+	currentBufferNr(0),
+	resamplingCurveCalculator(new Polynomial()),
+	resamplingReferenceCurveCalculator(new Polynomial()),
+	dispersionCurveCalculator(new Polynomial()),
+	dispersionReferenceCurveCalculator(new Polynomial()),
+	windowCurveCalculator(new WindowFunction()),
+	windowReferenceCurveCalculator(new WindowFunction())
 {
-	this->acquisitionParamsChanged = false;
-	this->resampling = false;
-	this->dispersionCompensation = false;
-	this->windowing = false;
-	this->resamplingUpdated = false;
-	this->useCustomResampleCurve = false;
-	this->dispersionUpdated = false;
-	this->windowUpdated = false;
-	this->streamingParamsChanged = true;
-	this->streamToHost = false;
-	this->streamingBuffersToSkip = 0;
-	this->resampleCurveLength = 0;
-	this->curstomResampleCurveLength = 0;
-	this->resampleCurve = nullptr;
-	this->customResampleCurve = nullptr;
-	this->resampleReferenceCurve = nullptr;
-	this->dispersionCurve = nullptr;
-	this->dispersionReferenceCurve = nullptr;
-	this->windowCurve = nullptr;
-	this->windowReferenceCurve = nullptr;
-
-	this->resamplingCurveCalculator = new Polynomial();
-	this->resamplingReferenceCurveCalculator = new Polynomial();
-	this->dispersionCurveCalculator = new Polynomial();
-	this->dispersionReferenceCurveCalculator = new Polynomial();
-	this->windowCurveCalculator = new WindowFunction();
-	this->windowReferenceCurveCalculator = new WindowFunction();
-
-	this->fixedPatternNoiseRemoval = false;
-	this->continuousFixedPatternNoiseDetermination = false;
-	this->redetermineFixedPatternNoise = false;
-	this->bscansForNoiseDetermination = 1;
-	this->sinusoidalScanCorrection = false;
-
-	this->resamplingInterpolation = INTERPOLATION::LINEAR;
-	this->frameNr = 0;
-	this->frameNrEnFaceView = 0;
-	this->functionFramesEnFaceView = 0;
-	this->functionFramesBscan = 0;
-	this->displayFunctionBscan = 0;
-	this->displayFunctionEnFaceView = 0;
-	this->bscanViewEnabled = true;
-	this->enFaceViewEnabled = true;
-	this->volumeViewEnabled = false;
-
-	this->samplesPerLine = 100;
-
-	this->recParams.stopAfterRecord = false;
-	this->recParams.buffersToRecord = 1;
+	
 }
+
 
 OctAlgorithmParameters* OctAlgorithmParameters::getInstance() {
 	octAlgorithmParameters = octAlgorithmParameters != nullptr ? octAlgorithmParameters : new OctAlgorithmParameters();
@@ -130,8 +158,8 @@ void OctAlgorithmParameters::updateResampleCurve() {
 			this->resampleCurve = this->resamplingCurveCalculator->getData();
 			this->resampleCurveLength = size;
 		}else{
-			if(this->curstomResampleCurveLength != (int)this->samplesPerLine) {
-				this->customResampleCurve = this->resizeCurve(this->customResampleCurve, this->curstomResampleCurveLength, (int)this->samplesPerLine);
+			if(this->customResampleCurveLength != (int)this->samplesPerLine) {
+				this->customResampleCurve = this->resizeCurve(this->customResampleCurve, this->customResampleCurveLength, (int)this->samplesPerLine);
 			}
 			this->resampleCurve = this->customResampleCurve;
 		}
@@ -154,10 +182,23 @@ void OctAlgorithmParameters::loadCustomResampleCurve(float* externalCurve, int s
 		free(this->customResampleCurve);
 	}
 	this->customResampleCurve = (float*)malloc(size*sizeof(float));
-	this->curstomResampleCurveLength = size;
+	this->customResampleCurveLength = size;
 	for(int i = 0; i < size; i++){
 		this->customResampleCurve[i] = externalCurve[i];
 	}
+	this->resamplingUpdated = true;
+}
+
+void OctAlgorithmParameters::loadPostProcessingBackground(float* background, int size) {
+	if(this->postProcessBackground != nullptr){
+		free(this->postProcessBackground);
+	}
+	this->postProcessBackground = (float*)malloc(size*sizeof(float));
+	this->postProcessBackgroundLength = size;
+	for(int i = 0; i < size; i++){
+		this->postProcessBackground[i] = background[i];
+	}
+	this->postProcessBackgroundUpdated = true;
 }
 
 void OctAlgorithmParameters::updateDispersionCurve(){
@@ -205,7 +246,19 @@ void OctAlgorithmParameters::updateWindowCurve(){
 	}
 }
 
-float* OctAlgorithmParameters::resizeCurve(float *curve, int currentSize, int newSize) {
+void OctAlgorithmParameters::updatePostProcessingBackgroundCurve() {
+	if (this->postProcessBackgroundRemoval || this->acquisitionParamsChanged) {
+		int newSize = this->samplesPerLine/2;
+		if (newSize <= 0) { return; }
+
+		if(this->postProcessBackgroundLength != newSize) {
+			this->postProcessBackground = this->resizeCurve(this->postProcessBackground, this->postProcessBackgroundLength, newSize);
+			this->postProcessBackgroundLength = newSize;
+		}
+	}
+}
+
+float* OctAlgorithmParameters::resizeCurve(float* curve, int currentSize, int newSize) {
 	float* newCurve = (float*)realloc(curve, sizeof(float)*newSize); //todo: check if realloc failed
 	if(newSize > currentSize){
 		for(int i = currentSize; i < newSize; i++){

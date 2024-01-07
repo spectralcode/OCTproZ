@@ -76,6 +76,7 @@ unsigned int streamingBufferNumber = 0;
 cufftComplex* d_fftBuffer = NULL;
 cufftHandle d_plan;
 cufftComplex* d_meanALine = NULL;
+float* d_postProcBackgroundLine = NULL;
 
 bool cudaInitialized = false;
 bool saveToDisk = false;
@@ -671,8 +672,16 @@ extern "C" void cuda_updateWindowCurve(float* h_windowCurve, int size) {
 		checkCudaErrors(cudaMemcpyAsync(d_windowCurve, h_windowCurve, size * sizeof(float), cudaMemcpyHostToDevice, processStream));
 }
 
+extern "C" void cuda_updatePostProcessBackground(float* h_postProcessBackground, int size) {
+	if (d_postProcBackgroundLine != NULL && h_postProcessBackground != NULL)
+		checkCudaErrors(cudaMemcpyAsync(d_postProcBackgroundLine, h_postProcessBackground, size * sizeof(float), cudaMemcpyHostToDevice, processStream));
+}
 
-
+extern "C" void cuda_copyPostProcessBackgroundToHost(float* h_postProcessBackground, int size) {
+	if (d_postProcBackgroundLine != NULL && h_postProcessBackground != NULL)
+		checkCudaErrors(cudaMemcpyAsync(h_postProcessBackground, d_postProcBackgroundLine, size * sizeof(float), cudaMemcpyDeviceToHost, processStream));
+		checkCudaErrors(cudaLaunchHostFunc(processStream, Gpu2HostNotifier::backgroundSignalCallback, h_postProcessBackground));
+}
 
 extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer) {
 #ifdef __aarch64__
@@ -729,6 +738,24 @@ __global__ void postProcessTruncateLin(float *output, const cufftComplex *input,
 		output[index] = coeff * ((((sqrt((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength)) - min) / (max - min)) + addend);
 
 		output[index] = __saturatef(output[index]);//Clamp values to be within the interval [+0.0, 1.0].
+	}
+}
+
+__global__ void getPostProcessBackground(float* output, float* input, const int samplesPerAscan, const int ascansPerBuffer) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerAscan) {
+		float sum = 0;
+		for (int i = 0; i < ascansPerBuffer; i++){
+			sum += input[index+i*samplesPerAscan];
+		}
+		output[index] = sum/ascansPerBuffer;
+	}
+}
+
+__global__ void postProcessBackgroundRemoval(float* data, float* background, const float backgroundWeight, const float backgroundOffset, const int samplesPerAscan, const int samplesPerBuffer) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBuffer) {
+		data[index] = data[index] - (backgroundWeight * background[index%samplesPerAscan] + backgroundOffset);
 	}
 }
 
@@ -981,10 +1008,16 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	//allocate device memory for fixed noise removal mean A-scan
-	checkCudaErrors(cudaMalloc((void**)&d_meanALine, sizeof(cufftComplex)*signalLength/2));
-	cudaMemset(d_meanALine, 0, sizeof(cufftComplex)*signalLength/2);
+	checkCudaErrors(cudaMalloc((void**)&d_meanALine, sizeof(cufftComplex)*signalLength));
+	cudaMemset(d_meanALine, 0, sizeof(cufftComplex)*signalLength);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
+	
+	//allocate device memory for post processing background removal A-scan
+	checkCudaErrors(cudaMalloc((void**)&d_postProcBackgroundLine, sizeof(float)*signalLength/2));
+	cudaMemset(d_postProcBackgroundLine, 0, sizeof(float)*signalLength/2);
+	checkCudaErrors(cudaPeekAtLastError());
+	checkCudaErrors(cudaDeviceSynchronize());	
 
 	//register existing host memory for use by cuda to accelerate cudaMemcpy
 #ifdef __aarch64__
@@ -1025,6 +1058,7 @@ extern "C" void cleanupCuda() {
 		freeCudaMem(d_windowCurve);
 		freeCudaMem(d_fftBuffer);
 		freeCudaMem(d_meanALine);
+		freeCudaMem(d_postProcBackgroundLine);
 		freeCudaMem(d_processedBuffer);
 		freeCudaMem(d_sinusoidalScanTmpBuffer);
 		freeCudaMem(d_inputLinearized);
@@ -1354,7 +1388,21 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	//sinusoidal scan correction
 	if(params->sinusoidalScanCorrection && d_sinusoidalScanTmpBuffer != NULL){
 		checkCudaErrors(cudaMemcpy(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/2, cudaMemcpyDeviceToDevice));
-		sinusoidalScanCorrection<<<gridSize, blockSize, 0, processStream>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/2, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/2);
+		sinusoidalScanCorrection<<<gridSize/2, blockSize, 0, processStream>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/2, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/2);
+	}
+	
+	//post process background removal
+	if(params->postProcessBackgroundRemoval){
+		if(params->postProcessBackgroundRecordingRequested){
+			getPostProcessBackground<<<gridSize/2, blockSize, 0, processStream>>>(d_postProcBackgroundLine, d_currBuffer, signalLength/2, ascansPerBscan );
+			cuda_copyPostProcessBackgroundToHost(params->postProcessBackground, signalLength/2);
+			params->postProcessBackgroundRecordingRequested = false;
+		}
+		if(params->postProcessBackgroundUpdated){
+			cuda_updatePostProcessBackground(params->postProcessBackground, signalLength/2);
+			params->postProcessBackgroundUpdated = false;
+		}
+		postProcessBackgroundRemoval<<<gridSize/2, blockSize, 0, processStream>>>(d_currBuffer, d_postProcBackgroundLine, params->postProcessBackgroundWeight, params->postProcessBackgroundOffset, signalLength/2, samplesPerBuffer/2);
 	}
 
 	//capture the contents of processStream in processEvent. processEvent is used to synchronize processing and copying of processed data to ram (copying of processed data to ram takes place in the stream copyStreamD2H)

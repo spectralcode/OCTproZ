@@ -94,6 +94,9 @@ void Sidebar::initGui() {
 	connect(this->ui.pushButton_redetermine, &QPushButton::clicked, this, &Sidebar::slot_redetermineFixedPatternNoise);
 	connect(this->ui.radioButton_continuously, &QRadioButton::toggled, this, &Sidebar::slot_disableRedetermineButtion);
 	connect(this->ui.toolButton_recPath, &QToolButton::clicked, this, &Sidebar::slot_selectSaveDir);
+	connect(this->ui.pushButton_postProcRec, &QPushButton::clicked, this, &Sidebar::slot_recordPostProcessingBackground);
+	connect(this->ui.pushButton_postProcSave, &QPushButton::clicked, this, &Sidebar::slot_savePostProcessingBackground);
+	connect(this->ui.pushButton_postProcLoad, &QPushButton::clicked, this, &Sidebar::slot_loadPostProcessingBackground);
 
 	this->copyInfoAction = new QAction(tr("Copy info to clipboard"), this);
 	connect(copyInfoAction, &QAction::triggered, this, &Sidebar::copyInfoToClipboard);
@@ -201,7 +204,11 @@ void Sidebar::loadSettings() {
 	this->ui.radioButton_continuously->setChecked(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY).toBool());
 	this->ui.spinBox_bscansFixedNoise->setValue(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_BSCANS).toUInt());
 	this->ui.checkBox_sinusoidalScanCorrection->setChecked(this->processingSettings.value(PROC_SINUSOIDAL_SCAN_CORRECTION).toBool());
-
+	this->ui.groupBox_postProcessBackgroundRemoval->setChecked(this->processingSettings.value(PROC_POST_BACKGROUND_REMOVAL).toBool());
+	this->ui.doubleSpinBox_postProcessBackgroundWeight->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_WEIGHT).toDouble());
+	this->ui.doubleSpinBox_postProcessBackgroundOffset->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_OFFSET).toDouble());
+	emit loadPostProcessBackgroundRequested(SETTINGS_PATH_BACKGROUND_FILE);
+	
 	//GPU to RAM Streaming
 	this->ui.groupBox_streaming->setChecked(this->streamingSettings.value(STREAM_STREAMING).toBool());
 	this->ui.spinBox_streamingBuffersToSkip->setValue(this->streamingSettings.value(STREAM_STREAMING_SKIP).toUInt());
@@ -297,6 +304,9 @@ void Sidebar::updateProcessingParams() {
 	params->sinusoidalScanCorrection = this->ui.checkBox_sinusoidalScanCorrection->isChecked();
 	params->rollingAverageWindowSize = this->ui.spinBox_rollingAverageWindowSize->value();
 	params->backgroundRemoval = this->ui.groupBox_backgroundremoval->isChecked();
+	params->postProcessBackgroundRemoval = this->ui.groupBox_postProcessBackgroundRemoval->isChecked();
+	params->postProcessBackgroundWeight = this->ui.doubleSpinBox_postProcessBackgroundWeight->value();
+	params->postProcessBackgroundOffset = this->ui.doubleSpinBox_postProcessBackgroundOffset->value();
 }
 
 void Sidebar::updateStreamingParams() {
@@ -386,6 +396,12 @@ void Sidebar::updateWindowingParams() {
 	params->windowing = windowing;
 }
 
+void Sidebar::updateBackgroundPlot() {
+	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
+	this->ui.widget_postProcessBackgroundPlot->plotCurves(params->postProcessBackground, nullptr, params->postProcessBackgroundLength);
+	this->ui.widget_postProcessBackgroundPlot->saveCurveDataToFile(SETTINGS_PATH_BACKGROUND_FILE);
+}
+
 void Sidebar::slot_selectSaveDir() {
 	emit dialogAboutToOpen();
 	QCoreApplication::processEvents();
@@ -417,6 +433,37 @@ void Sidebar::slot_updateProcessingParams() {
 	this->updateProcessingParams();
 	this->updateRecordingParams();
 	params->acquisitionParamsChanged = false;
+}
+
+void Sidebar::slot_recordPostProcessingBackground() {
+	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
+	params->postProcessBackgroundRecordingRequested = true;
+}
+
+void Sidebar::slot_savePostProcessingBackground() {
+	emit dialogAboutToOpen();
+	QCoreApplication::processEvents();
+	QString fileName = "";
+	QString filters("CSV (*.csv)");
+	QString defaultFilter("CSV (*.csv)");
+	QString savedPath = this->recordSettings.value(REC_PATH).toString();
+	QString standardLocation = savedPath.size() == 0 ? QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) : savedPath;
+	fileName = QFileDialog::getSaveFileName(this, tr("Save background data"), QDir::currentPath(), filters, &defaultFilter);
+	emit savePostProcessBackgroundRequested(fileName);
+	emit dialogClosed();
+}
+
+void Sidebar::slot_loadPostProcessingBackground() {
+	emit dialogAboutToOpen();
+	QCoreApplication::processEvents();
+	QString fileName = "";
+	QString filters("CSV (*.csv)");
+	QString defaultFilter("CSV (*.csv)");
+	QString savedPath = this->recordSettings.value(REC_PATH).toString();
+	QString standardLocation = savedPath.size() == 0 ? QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) : savedPath;
+	fileName = QFileDialog::getOpenFileName(this, tr("Load background data"), QDir::currentPath(), filters, &defaultFilter);
+	emit loadPostProcessBackgroundRequested(fileName);
+	emit dialogClosed();
 }
 
 void Sidebar::slot_redetermineFixedPatternNoise() {
@@ -551,6 +598,9 @@ void Sidebar::updateSettingsMaps() {
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY, this->ui.radioButton_continuously->isChecked());
 	this->processingSettings.insert(PROC_FIXED_PATTERN_REMOVAL_BSCANS, this->ui.spinBox_bscansFixedNoise->value());
 	this->processingSettings.insert(PROC_SINUSOIDAL_SCAN_CORRECTION, this->ui.checkBox_sinusoidalScanCorrection->isChecked());
+	this->processingSettings.insert(PROC_POST_BACKGROUND_REMOVAL, this->ui.groupBox_postProcessBackgroundRemoval->isChecked());
+	this->processingSettings.insert(PROC_POST_BACKGROUND_WEIGHT, this->ui.doubleSpinBox_postProcessBackgroundWeight->value());
+	this->processingSettings.insert(PROC_POST_BACKGROUND_OFFSET, this->ui.doubleSpinBox_postProcessBackgroundOffset->value());
 
 	//GPU to RAM Streaming
 	this->streamingSettings.insert(STREAM_STREAMING, this->ui.groupBox_streaming->isChecked());

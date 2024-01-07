@@ -45,6 +45,7 @@ public:
 	~Gpu2HostNotifier();
 
 	static void CUDART_CB dh2StreamingCallback(cudaStream_t event, cudaError_t status, void* currStreamingBuffer);
+	static void CUDART_CB backgroundSignalCallback(void* backgroundSignal);
 
 private:
 	Gpu2HostNotifier(QObject *parent);
@@ -52,10 +53,12 @@ private:
 
 public slots:
 	void emitCurrentStreamingBuffer(void* currStreamingBuffer);
+	void emitBackgroundRecorded();
 
 signals:
 	void processedRecordDone(void* recordBuffer);
 	void newGpuDataAvailible(void* rawBuffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
+	void backgroundRecorded();
 };
 
 

@@ -132,6 +132,8 @@ private:
 	void saveSettings();
 	void updateSettingsMap();
 	void loadResamplingCurveFromFile(QString fileName);
+	void loadPostProcessBackgroundFromFile(QString fileName);
+	void savePostProcessBackgroundToFile(QString fileName);
 
 	Ui::OCTproZ *ui;
 	QVariantMap mainWindowSettings;

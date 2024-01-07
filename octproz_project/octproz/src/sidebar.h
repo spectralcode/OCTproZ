@@ -81,6 +81,10 @@
 #define PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY "fixed_pattern_removal_continuously"
 #define PROC_FIXED_PATTERN_REMOVAL_BSCANS "fixed_pattern_removal_bscans"
 #define PROC_SINUSOIDAL_SCAN_CORRECTION "sinusoidal_scan_correction"
+#define PROC_POST_BACKGROUND_REMOVAL "post_processing_background_removal"
+#define PROC_POST_BACKGROUND_WEIGHT "post_processing_background_removal_weight"
+#define PROC_POST_BACKGROUND_OFFSET "post_processing_background_removal_offset"
+
 #define STREAM_STREAMING "streaming_enabled"
 #define STREAM_STREAMING_SKIP "streaming_skip"
 
@@ -139,9 +143,13 @@ private:
 	void updateWindowingParams();
 
 public slots:
+	void updateBackgroundPlot();
 	void slot_selectSaveDir();
 	void slot_updateInfoBox(QString volumesPerSecond, QString buffersPerSecond, QString bscansPerSecond, QString ascansPerSecond, QString volumeSizeMB, QString dataThroughput);
 	void slot_updateProcessingParams();
+	void slot_recordPostProcessingBackground();
+	void slot_savePostProcessingBackground();
+	void slot_loadPostProcessingBackground();
 	void slot_redetermineFixedPatternNoise();
 	void slot_disableRedetermineButtion(bool disable);
 	void slot_setMaximumRollingAverageWindowSize(unsigned int max);
@@ -159,6 +167,8 @@ signals:
 	void dialogClosed();
 	void klinCoeffs(double k0, double k1, double k2, double k3);
 	void dispCompCoeffs(double d0, double d1, double d2, double d3);
+	void savePostProcessBackgroundRequested(QString fileName);
+	void loadPostProcessBackgroundRequested(QString fileName);
 	void error(QString);
 	void info(QString);
 };

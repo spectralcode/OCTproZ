@@ -47,8 +47,15 @@ void Gpu2HostNotifier::emitCurrentStreamingBuffer(void* streamingBuffer) {
 	emit newGpuDataAvailible(streamingBuffer, params->bitDepth, params->samplesPerLine / 2, params->ascansPerBscan, params->bscansPerBuffer, params->buffersPerVolume, params->currentBufferNr);
 }
 
-void CUDART_CB Gpu2HostNotifier::dh2StreamingCallback(cudaStream_t event, cudaError_t status, void *currStreamingBuffer) {
+void Gpu2HostNotifier::emitBackgroundRecorded() {
+	emit backgroundRecorded();
+}
+
+void CUDART_CB Gpu2HostNotifier::dh2StreamingCallback(cudaStream_t event, cudaError_t status, void* currStreamingBuffer) {
 	checkCudaErrors(status);
 	Gpu2HostNotifier::getInstance()->emitCurrentStreamingBuffer(currStreamingBuffer);
 }
 
+void CUDART_CB Gpu2HostNotifier::backgroundSignalCallback(void* backgroundSignal) {
+	Gpu2HostNotifier::getInstance()->emitBackgroundRecorded();
+}
