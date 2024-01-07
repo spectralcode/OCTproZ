@@ -42,7 +42,8 @@ SOURCES += \
 	$$SOURCEDIR/recorder.cpp \
 	$$SOURCEDIR/stringspinbox.cpp \
 	$$SOURCEDIR/controlpanel.cpp \
-	$$SOURCEDIR/extensioneventfilter.cpp
+	$$SOURCEDIR/extensioneventfilter.cpp \
+	$$SOURCEDIR/octalgorithmparametersmanager.cpp
 
 	unix{
 		SOURCES += $$SOURCEDIR/cuda_code.cu
@@ -80,7 +81,8 @@ HEADERS += \
 	$$SOURCEDIR/stringspinbox.h \
 	$$SOURCEDIR/controlpanel.h \
 	$$SOURCEDIR/extensioneventfilter.h \
-	$$SOURCEDIR/outputwindow.h
+	$$SOURCEDIR/outputwindow.h \
+	$$SOURCEDIR/octalgorithmparametersmanager.h
 
 FORMS += \
 	$$SOURCEDIR/octproz.ui \

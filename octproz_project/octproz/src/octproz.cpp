@@ -964,7 +964,7 @@ void OCTproZ::loadResamplingCurveFromFile(QString fileName){
 	}
 }
 
-//todo: create a "parameterLoader" class that handles all loading and saving octalgorithmparameters from and to files
+//todo: create a "OctAlgorithmParametersManager" class that handles all loading and saving octalgorithmparameters from and to files
 void OCTproZ::loadPostProcessBackgroundFromFile(QString fileName){
 	if(fileName == ""){
 		return;
