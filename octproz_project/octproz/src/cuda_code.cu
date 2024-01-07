@@ -261,34 +261,35 @@ inline __device__ float lanczosKernel(const float a, const float x) {
 //}
 
 inline __device__ float lanczosKernel8(const float x) {
-    const float absX = fabsf(x);
-    const float sincX = (absX < 0.00001f) ? 1.0f : sinf(PI*absX)/(PI*absX);
-    const float sincXOver8 = (absX < 0.00001f) ? 1.0f : sinf(PI_OVER_8*absX)/(PI_OVER_8*absX);
-    return (absX < 8.0f) ? (sincX * sincXOver8) : 0.0f;
+	const float absX = fabsf(x);
+	const float sincX = sinf(PI*absX)/(PI*absX);
+	const float sincXOver8 = sinf(PI_OVER_8*absX)/(PI_OVER_8*absX);
+	return (absX < 0.00001f) ? 1.0f :(sincX * sincXOver8);
 }
 
 __global__ void klinearizationLanczos(cufftComplex* out, cufftComplex *in, const float* resampleCurve, const int width, const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = index%width;
 	int offset = index-j;
+	offset = min(samples-9, max(offset, 8));
 
 	float nx = resampleCurve[j];
 	const int n0 = (int)nx;
-	int nm7 = abs(n0 - 7);
-	int nm6 = abs(n0 - 6);
-	int nm5 = abs(n0 - 5);
-	int nm4 = abs(n0 - 4);
-	int nm3 = abs(n0 - 3);
-	int nm2 = abs(n0 - 2);
-	int nm1 = abs(n0 - 1);
-	int n1 = (n0 + 1)%width;
-	int n2 = (n0 + 2)%width;
-	int n3 = (n0 + 3)%width;
-	int n4 = (n0 + 4)%width;
-	int n5 = (n0 + 5)%width;
-	int n6 = (n0 + 6)%width;
-	int n7 = (n0 + 7)%width;
-	int n8 = (n0 + 8)%width;
+	int nm7 = (n0 - 7);
+	int nm6 = (n0 - 6);
+	int nm5 = (n0 - 5);
+	int nm4 = (n0 - 4);
+	int nm3 = (n0 - 3);
+	int nm2 = (n0 - 2);
+	int nm1 = (n0 - 1);
+	int n1 = (n0 + 1);
+	int n2 = (n0 + 2);
+	int n3 = (n0 + 3);
+	int n4 = (n0 + 4);
+	int n5 = (n0 + 5);
+	int n6 = (n0 + 6);
+	int n7 = (n0 + 7);
+	int n8 = (n0 + 8);
 
 	float ym7 = in[offset + nm7].x;
 	float ym6 = in[offset + nm6].x;
@@ -378,24 +379,25 @@ __global__ void klinearizationLanczosAndWindowing(cufftComplex* out, cufftComple
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = index%width;
 	int offset = index-j;
+	offset = min(samples-9, max(offset, 8));
 
 	float nx = resampleCurve[j];
 	const int n0 = (int)nx;
-	int nm7 = abs(n0 - 7);
-	int nm6 = abs(n0 - 6);
-	int nm5 = abs(n0 - 5);
-	int nm4 = abs(n0 - 4);
-	int nm3 = abs(n0 - 3);
-	int nm2 = abs(n0 - 2);
-	int nm1 = abs(n0 - 1);
-	int n1 = (n0 + 1)%width;
-	int n2 = (n0 + 2)%width;
-	int n3 = (n0 + 3)%width;
-	int n4 = (n0 + 4)%width;
-	int n5 = (n0 + 5)%width;
-	int n6 = (n0 + 6)%width;
-	int n7 = (n0 + 7)%width;
-	int n8 = (n0 + 8)%width;
+	int nm7 = (n0 - 7);
+	int nm6 = (n0 - 6);
+	int nm5 = (n0 - 5);
+	int nm4 = (n0 - 4);
+	int nm3 = (n0 - 3);
+	int nm2 = (n0 - 2);
+	int nm1 = (n0 - 1);
+	int n1 = (n0 + 1);
+	int n2 = (n0 + 2);
+	int n3 = (n0 + 3);
+	int n4 = (n0 + 4);
+	int n5 = (n0 + 5);
+	int n6 = (n0 + 6);
+	int n7 = (n0 + 7);
+	int n8 = (n0 + 8);
 
 	float ym7 = in[offset + nm7].x;
 	float ym6 = in[offset + nm6].x;
@@ -431,7 +433,7 @@ __global__ void klinearizationLanczosAndWindowing(cufftComplex* out, cufftComple
 	float s7 = y7 * lanczosKernel8(nx-n7);
 	float s8 = y8 * lanczosKernel8(nx-n8);
 
-	out[index].x = (sm7 + sm6 + sm5 + sm4 + sm3 + sm2 + sm1 + s0+ s1 + s2 + s3 +s4 +s5 +s6 +s7 + s8) * window[j];
+	out[index].x = (sm7 + sm6 + sm5 + sm4 + sm3 + sm2 + sm1 + s0+ s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8) * window[j];
 	out[index].y = 0;
 }
 
@@ -478,24 +480,25 @@ __global__ void klinearizationLanczosAndWindowingAndDispersionCompensation(cufft
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = index%width;
 	int offset = index-j;
+	offset = min(samples-9, max(offset, 8));
 
 	float nx = resampleCurve[j];
 	const int n0 = (int)nx;
-	int nm7 = abs(n0 - 7);
-	int nm6 = abs(n0 - 6);
-	int nm5 = abs(n0 - 5);
-	int nm4 = abs(n0 - 4);
-	int nm3 = abs(n0 - 3);
-	int nm2 = abs(n0 - 2);
-	int nm1 = abs(n0 - 1);
-	int n1 = (n0 + 1)%width;
-	int n2 = (n0 + 2)%width;
-	int n3 = (n0 + 3)%width;
-	int n4 = (n0 + 4)%width;
-	int n5 = (n0 + 5)%width;
-	int n6 = (n0 + 6)%width;
-	int n7 = (n0 + 7)%width;
-	int n8 = (n0 + 8)%width;
+	int nm7 = (n0 - 7);
+	int nm6 = (n0 - 6);
+	int nm5 = (n0 - 5);
+	int nm4 = (n0 - 4);
+	int nm3 = (n0 - 3);
+	int nm2 = (n0 - 2);
+	int nm1 = (n0 - 1);
+	int n1 = (n0 + 1);
+	int n2 = (n0 + 2);
+	int n3 = (n0 + 3);
+	int n4 = (n0 + 4);
+	int n5 = (n0 + 5);
+	int n6 = (n0 + 6);
+	int n7 = (n0 + 7);
+	int n8 = (n0 + 8);
 
 	float ym7 = in[offset + nm7].x;
 	float ym6 = in[offset + nm6].x;
@@ -531,7 +534,7 @@ __global__ void klinearizationLanczosAndWindowingAndDispersionCompensation(cufft
 	float s7 = y7 * lanczosKernel8(nx-n7);
 	float s8 = y8 * lanczosKernel8(nx-n8);
 
-	float linearizedAndWindowedInX = (sm7 + sm6 + sm5 + sm4 + sm3 + sm2 + sm1 + s0+ s1 + s2 + s3 +s4 +s5 +s6 +s7 + s8) * window[j];
+	float linearizedAndWindowedInX = (sm7 + sm6 + sm5 + sm4 + sm3 + sm2 + sm1 + s0+ s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8) * window[j];
 	out[index].x = linearizedAndWindowedInX * phaseComplex[j].x;
 	out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
 }
@@ -755,7 +758,7 @@ __global__ void getPostProcessBackground(float* output, float* input, const int 
 __global__ void postProcessBackgroundRemoval(float* data, float* background, const float backgroundWeight, const float backgroundOffset, const int samplesPerAscan, const int samplesPerBuffer) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samplesPerBuffer) {
-		data[index] = data[index] - (backgroundWeight * background[index%samplesPerAscan] + backgroundOffset);
+		data[index] = __saturatef(data[index] - (backgroundWeight * background[index%samplesPerAscan] + backgroundOffset));
 	}
 }
 
