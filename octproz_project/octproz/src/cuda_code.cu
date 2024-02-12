@@ -1044,7 +1044,7 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	fixedPatternNoiseDetermined = false;
 
 	//todo: find a way to automatically determine optimal blockSize and optimal gridSize
-	blockSize = 256;
+	blockSize = 128;
 	gridSize = samplesPerBuffer / blockSize;
 	currStream = 0;
 	currBuffer = 0;
