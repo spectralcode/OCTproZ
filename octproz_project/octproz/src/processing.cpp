@@ -124,12 +124,11 @@ void Processing::slot_start(AcquisitionSystem* system){
 					//emit rawData signal to record raw data if recorder is enabled
 					this->currBufferNr = (this->currBufferNr+1)%buffersPerVolume;
 					emit rawData(buffer->bufferArray[bufferPos], bitDepth, width, height, depth, buffersPerVolume, this->currBufferNr);
-					//QCoreApplication::processEvents(); //todo: check if processEvents is needed here (two cases: processing in gui thread, processing in extra thread)
+					QCoreApplication::processEvents();
 
 					//make OpenGL context current and process raw data on GPU
 					this->context->makeCurrent(this->surface);
 					octCudaPipeline(buffer->bufferArray[bufferPos]); //todo: wrap cuda functions in extra class such that oct processing implementations with other gpu/multi threading frameworks (OpenCL, OpenMP, C++ AMP) can be used interchangeably
-					this->context->swapBuffers(this->surface);
 					this->context->doneCurrent();
 
 					//set bufferReadyArray flag to false to indicate that acquisition system is allowed to reuse this buffer
