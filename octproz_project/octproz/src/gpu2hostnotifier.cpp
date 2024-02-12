@@ -51,8 +51,8 @@ void Gpu2HostNotifier::emitBackgroundRecorded() {
 	emit backgroundRecorded();
 }
 
-void CUDART_CB Gpu2HostNotifier::dh2StreamingCallback(cudaStream_t event, cudaError_t status, void* currStreamingBuffer) {
-	checkCudaErrors(status);
+
+void CUDART_CB Gpu2HostNotifier::dh2StreamingCallback(void* currStreamingBuffer) {
 	Gpu2HostNotifier::getInstance()->emitCurrentStreamingBuffer(currStreamingBuffer);
 }
 

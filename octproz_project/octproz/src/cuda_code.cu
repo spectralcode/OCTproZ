@@ -37,24 +37,23 @@
 
 int blockSize;
 int gridSize;
+const int nStreams = 8;
+int currStream = 0;
 
 surface<void, cudaSurfaceType3D> surfaceWrite;
 
-cudaStream_t copyStream;
-cudaStream_t copyStreamD2H;
-cudaStream_t streamingStreamD2H;
-cudaStream_t processStream;
-cudaStream_t displayStream;
+cudaStream_t stream[nStreams];
 cudaStream_t userRequestStream;
 
-cudaEvent_t processEvent;
+cudaEvent_t syncEvent;
 
 cudaGraphicsResource* cuBufHandleBscan = NULL;
 cudaGraphicsResource* cuBufHandleEnFaceView = NULL;
 cudaGraphicsResource* cuBufHandleVolumeView = NULL;
 
-void* d_inputBuffer1;
-void* d_inputBuffer2;
+const int nBuffers = 1;
+int currBuffer = 0;
+void* d_inputBuffer[nBuffers];
 void* d_outputBuffer;
 
 void* host_buffer1 = NULL;
@@ -93,7 +92,6 @@ float* d_processedBuffer = NULL;
 float* d_sinusoidalScanTmpBuffer = NULL;
 OctAlgorithmParameters* params = NULL;
 
-bool firstRun = true;
 unsigned int processedBuffers;
 unsigned int streamedBuffers;
 
@@ -665,25 +663,25 @@ __global__ void fillDispersivePhase(cufftComplex* phaseComplex, const float* pha
 	}
 }
 
-extern "C" void cuda_updateDispersionCurve(float* h_dispersionCurve, int size) {
+extern "C" void cuda_updateDispersionCurve(float* h_dispersionCurve, int size, cudaStream_t stream) {
 	if (d_dispersionCurve != NULL && h_dispersionCurve != NULL)
-		checkCudaErrors(cudaMemcpyAsync(d_dispersionCurve, h_dispersionCurve, size * sizeof(float), cudaMemcpyHostToDevice, processStream));
+		checkCudaErrors(cudaMemcpyAsync(d_dispersionCurve, h_dispersionCurve, size * sizeof(float), cudaMemcpyHostToDevice, stream));
 }
 
-extern "C" void cuda_updateWindowCurve(float* h_windowCurve, int size) {
+extern "C" void cuda_updateWindowCurve(float* h_windowCurve, int size, cudaStream_t stream) {
 	if (d_windowCurve != NULL && h_windowCurve != NULL)
-		checkCudaErrors(cudaMemcpyAsync(d_windowCurve, h_windowCurve, size * sizeof(float), cudaMemcpyHostToDevice, processStream));
+		checkCudaErrors(cudaMemcpyAsync(d_windowCurve, h_windowCurve, size * sizeof(float), cudaMemcpyHostToDevice, stream));
 }
 
-extern "C" void cuda_updatePostProcessBackground(float* h_postProcessBackground, int size) {
+extern "C" void cuda_updatePostProcessBackground(float* h_postProcessBackground, int size, cudaStream_t stream) {
 	if (d_postProcBackgroundLine != NULL && h_postProcessBackground != NULL)
-		checkCudaErrors(cudaMemcpyAsync(d_postProcBackgroundLine, h_postProcessBackground, size * sizeof(float), cudaMemcpyHostToDevice, processStream));
+		checkCudaErrors(cudaMemcpyAsync(d_postProcBackgroundLine, h_postProcessBackground, size * sizeof(float), cudaMemcpyHostToDevice, stream));
 }
 
-extern "C" void cuda_copyPostProcessBackgroundToHost(float* h_postProcessBackground, int size) {
+extern "C" void cuda_copyPostProcessBackgroundToHost(float* h_postProcessBackground, int size, cudaStream_t stream) {
 	if (d_postProcBackgroundLine != NULL && h_postProcessBackground != NULL)
-		checkCudaErrors(cudaMemcpyAsync(h_postProcessBackground, d_postProcBackgroundLine, size * sizeof(float), cudaMemcpyDeviceToHost, processStream));
-		checkCudaErrors(cudaLaunchHostFunc(processStream, Gpu2HostNotifier::backgroundSignalCallback, h_postProcessBackground));
+		checkCudaErrors(cudaMemcpyAsync(h_postProcessBackground, d_postProcBackgroundLine, size * sizeof(float), cudaMemcpyDeviceToHost, stream));
+		checkCudaErrors(cudaLaunchHostFunc(stream, Gpu2HostNotifier::backgroundSignalCallback, h_postProcessBackground));
 }
 
 extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer) {
@@ -925,9 +923,9 @@ __global__ void floatToOutput(void *output, const float *input, const int output
 	}
 }
 
-extern "C" void cuda_updateResampleCurve(float* h_resampleCurve, int size) {
+extern "C" void cuda_updateResampleCurve(float* h_resampleCurve, int size, cudaStream_t stream) {
 	if (d_resampleCurve != NULL && h_resampleCurve != NULL && size > 0 && size <= (int)signalLength){
-		checkCudaErrors(cudaMemcpyAsync(d_resampleCurve, h_resampleCurve, size * sizeof(float), cudaMemcpyHostToDevice, processStream));
+		checkCudaErrors(cudaMemcpyAsync(d_resampleCurve, h_resampleCurve, size * sizeof(float), cudaMemcpyHostToDevice, stream));
 	}
 }
 
@@ -943,15 +941,15 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	params = parameters;
 	bytesPerSample = ceil((double)(parameters->bitDepth) / 8.0);
 
-	checkCudaErrors(cudaStreamCreate(&processStream));
-	checkCudaErrors(cudaStreamCreate(&copyStream));
-	checkCudaErrors(cudaStreamCreate(&copyStreamD2H));
-	checkCudaErrors(cudaStreamCreate(&streamingStreamD2H));
-	checkCudaErrors(cudaStreamCreate(&displayStream));
 	checkCudaErrors(cudaStreamCreate(&userRequestStream));
 
-	checkCudaErrors(cudaEventCreateWithFlags(&processEvent, cudaEventDisableTiming)); //this event is used for synchronization via cudaStreamWaitEvent() to synchronize processing and copying of processed data to ram. timing data is not necessary. Events created with this flag (cudaEventDisableTiming) specified and the cudaEventBlockingSync flag not specified will provide the best performance when used with cudaStreamWaitEvent()
+	for (int i = 0; i < nStreams; i++)
+	{
+		checkCudaErrors(cudaStreamCreateWithFlags(&stream[i], cudaStreamNonBlocking));
+	}
 
+	checkCudaErrors(cudaEventCreateWithFlags(&syncEvent, cudaEventBlockingSync));
+	
 	cudaError_t err = cudaGetLastError();
 	if (err != cudaSuccess) {
 		printf("Cuda error: %s\n", cudaGetErrorString(err));
@@ -967,32 +965,33 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 
 	//sinusoidal resample curve for sinusoidal scan correction
 	checkCudaErrors(cudaMalloc((void**)&d_sinusoidalResampleCurve, sizeof(float)*ascansPerBscan));
-	fillSinusoidalScanCorrectionCurve<<<ascansPerBscan, 1, 0, processStream>>> (d_sinusoidalResampleCurve, ascansPerBscan);
+	fillSinusoidalScanCorrectionCurve<<<ascansPerBscan, 1, 0, stream[0]>>> (d_sinusoidalResampleCurve, ascansPerBscan);
 
 	//window curve
 	checkCudaErrors(cudaMalloc((void**)&d_windowCurve, sizeof(float)*signalLength));
 
-	//allocate device memory for raw signal
-	checkCudaErrors(cudaMalloc((void**)&d_inputBuffer1, bytesPerSample*samplesPerBuffer));
-	cudaMemset(d_inputBuffer1, 0, bytesPerSample*samplesPerBuffer);
-	checkCudaErrors(cudaMalloc((void**)&d_inputBuffer2, bytesPerSample*samplesPerBuffer));
-	cudaMemset(d_inputBuffer2, 0, bytesPerSample*samplesPerBuffer);
-	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());
+	//allocate device memory for raw signal	
+	for (int i = 0; i < nBuffers; i++)
+	{
+		checkCudaErrors(cudaMalloc((void**)&d_inputBuffer[i], bytesPerSample*samplesPerBuffer));
+		cudaMemsetAsync(d_inputBuffer[i], 0, bytesPerSample*samplesPerBuffer, stream[0]);
+		checkCudaErrors(cudaPeekAtLastError());
+		checkCudaErrors(cudaDeviceSynchronize());
+	}
 
 	//allocate device memory for streaming processed signal
 	checkCudaErrors(cudaMalloc((void**)&d_outputBuffer, bytesPerSample*samplesPerBuffer/2));
-	cudaMemset(d_outputBuffer, 0, bytesPerSample*samplesPerBuffer/2);
+	cudaMemsetAsync(d_outputBuffer, 0, bytesPerSample*samplesPerBuffer/2, stream[0]);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	//allocate device memory for k-linearized signal
 	checkCudaErrors(cudaMalloc((void**)&d_inputLinearized, sizeof(cufftComplex)*samplesPerBuffer));
-	cudaMemset(d_inputLinearized, 0, sizeof(cufftComplex)*samplesPerBuffer);
+	cudaMemsetAsync(d_inputLinearized, 0, sizeof(cufftComplex)*samplesPerBuffer, stream[0]);
 
 	//allocate device memory for dispersion compensation phase
 	checkCudaErrors(cudaMalloc((void**)&d_phaseCartesian, sizeof(cufftComplex)*signalLength));
-	cudaMemset(d_phaseCartesian, 0, sizeof(cufftComplex)*signalLength);
+	cudaMemsetAsync(d_phaseCartesian, 0, sizeof(cufftComplex)*signalLength, stream[0]);
 
 	//allocate device memory for processed signal
 	checkCudaErrors(cudaMalloc((void**)&d_processedBuffer, sizeof(float)*samplesPerVolume/2));
@@ -1006,21 +1005,21 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 
 	//allocate device memory for fft buffer
 	checkCudaErrors(cudaMalloc((void**)&d_fftBuffer, sizeof(cufftComplex)*samplesPerBuffer));
-	cudaMemset(d_fftBuffer, 0, sizeof(cufftComplex)*samplesPerBuffer);
+	cudaMemsetAsync(d_fftBuffer, 0, sizeof(cufftComplex)*samplesPerBuffer, stream[0]);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	//allocate device memory for fixed noise removal mean A-scan
 	checkCudaErrors(cudaMalloc((void**)&d_meanALine, sizeof(cufftComplex)*signalLength));
-	cudaMemset(d_meanALine, 0, sizeof(cufftComplex)*signalLength);
+	cudaMemsetAsync(d_meanALine, 0, sizeof(cufftComplex)*signalLength, stream[0]);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 	
 	//allocate device memory for post processing background removal A-scan
 	checkCudaErrors(cudaMalloc((void**)&d_postProcBackgroundLine, sizeof(float)*signalLength/2));
-	cudaMemset(d_postProcBackgroundLine, 0, sizeof(float)*signalLength/2);
+	cudaMemsetAsync(d_postProcBackgroundLine, 0, sizeof(float)*signalLength/2, stream[0]);
 	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());	
+	checkCudaErrors(cudaDeviceSynchronize());
 
 	//register existing host memory for use by cuda to accelerate cudaMemcpy
 #ifdef __aarch64__
@@ -1035,12 +1034,8 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	cufftPlan1d(&d_plan, signalLength, CUFFT_C2C, ascansPerBscan*bscansPerBuffer);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
-	cufftSetStream(d_plan, processStream);
-	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());
 
 	cudaInitialized = true;
-	firstRun = true;
 	bufferNumber = 0;
 	bufferNumberInVolume = params->buffersPerVolume-1;
 	streamingBufferNumber = 0;
@@ -1049,14 +1044,18 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	fixedPatternNoiseDetermined = false;
 
 	//todo: find a way to automatically determine optimal blockSize and optimal gridSize
-	blockSize = 128;
+	blockSize = 256;
 	gridSize = samplesPerBuffer / blockSize;
+	currStream = 0;
+	currBuffer = 0;
 }
 
 extern "C" void cleanupCuda() {
 	if (cudaInitialized) {
-		freeCudaMem(d_inputBuffer1);
-		freeCudaMem(d_inputBuffer2);
+		for (int i = 0; i < nBuffers; i++)
+		{
+			freeCudaMem(d_inputBuffer[i]);
+		}
 		freeCudaMem(d_outputBuffer);
 		freeCudaMem(d_windowCurve);
 		freeCudaMem(d_fftBuffer);
@@ -1072,14 +1071,14 @@ extern "C" void cleanupCuda() {
 
 		cufftDestroy(d_plan);
 
-		checkCudaErrors(cudaStreamDestroy(processStream));
-		checkCudaErrors(cudaStreamDestroy(copyStream));
-		checkCudaErrors(cudaStreamDestroy(copyStreamD2H));
-		checkCudaErrors(cudaStreamDestroy(streamingStreamD2H));
-		checkCudaErrors(cudaStreamDestroy(displayStream));
 		checkCudaErrors(cudaStreamDestroy(userRequestStream));
+		
+		for (int i = 0; i < nStreams; i++)
+		{
+			checkCudaErrors(cudaStreamDestroy(stream[i]));
+		}
 
-		checkCudaErrors(cudaEventDestroy(processEvent));
+		checkCudaErrors(cudaEventDestroy(syncEvent));
 
 		if (host_buffer1 != NULL) {
 			cudaHostUnregister(host_buffer1);
@@ -1089,7 +1088,6 @@ extern "C" void cleanupCuda() {
 		}
 
 		cudaInitialized = false;
-		firstRun = true;
 		fixedPatternNoiseDetermined = false;
 	}
 }
@@ -1142,10 +1140,10 @@ extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int di
 	}
 }
 
-extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction) {
+extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction, cudaStream_t stream) {
 	void* d_bscanDisplayBuffer = NULL;
 	if (cuBufHandleBscan != NULL) {
-		d_bscanDisplayBuffer = cuda_map(cuBufHandleBscan, displayStream);
+		d_bscanDisplayBuffer = cuda_map(cuBufHandleBscan, stream);
 	}
 	//update 2D b-scan display
 	int width = signalLength;
@@ -1154,17 +1152,17 @@ extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned i
 	int samplesPerFrame = width * height;
 	if (d_bscanDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < depth ? frameNr : 0;
-		updateDisplayedBscanFrame<<<gridSize/2, blockSize, 0, displayStream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / 2, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedBscanFrame<<<gridSize/2, blockSize, 0, stream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / 2, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleBscan != NULL) {
-		cuda_unmap(cuBufHandleBscan, displayStream);
+		cuda_unmap(cuBufHandleBscan, stream);
 	}
 }
 
-extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction) {
+extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction, cudaStream_t stream) {
 	void* d_enFaceViewDisplayBuffer = NULL;
 	if (cuBufHandleEnFaceView != NULL) {
-		d_enFaceViewDisplayBuffer = cuda_map(cuBufHandleEnFaceView, displayStream);
+		d_enFaceViewDisplayBuffer = cuda_map(cuBufHandleEnFaceView, stream);
 	}
 	//update 2D en face view display
 	unsigned int width = bscansPerBuffer * buffersPerVolume;
@@ -1172,18 +1170,18 @@ extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned 
 	unsigned int samplesPerFrame = width * height;
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<width, height, 0, displayStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedEnFaceViewFrame<<<width, height, 0, stream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
-		cuda_unmap(cuBufHandleEnFaceView, displayStream);
+		cuda_unmap(cuBufHandleEnFaceView, stream);
 	}
 }
 
-extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, const unsigned int currentBufferNr, const unsigned int bscansPerBuffer) {
+extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, const unsigned int currentBufferNr, const unsigned int bscansPerBuffer, cudaStream_t stream) {
 	//map graphics resource for access by cuda
 	cudaArray* d_volumeViewDisplayBuffer = NULL;
 	if (cuBufHandleVolumeView != NULL) {
-		d_volumeViewDisplayBuffer = cuda_map3dTexture(cuBufHandleVolumeView, displayStream);
+		d_volumeViewDisplayBuffer = cuda_map3dTexture(cuBufHandleVolumeView, stream);
 	}
 	//calculate dimensions of processed volume
 	unsigned int width = bscansPerBuffer * buffersPerVolume;
@@ -1199,24 +1197,23 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 
 		//write to cuda surface
 		dim3 texture_dim(height, width, depth); //todo: use consistent naming of width, height, depth, x, y, z, ...
-		updateDisplayedVolume<< <gridSize/2, blockSize, 0, displayStream>>>(d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
+		updateDisplayedVolume<< <gridSize/2, blockSize, 0, stream>>>(d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
 	}
 
 	//unmap the graphics resource
 	if (cuBufHandleVolumeView != NULL) {
-		cuda_unmap(cuBufHandleVolumeView, displayStream);
+		cuda_unmap(cuBufHandleVolumeView, stream);
 	}
 }
 
-inline void streamProcessedData(float* d_currProcessedBuffer) {
+inline void streamProcessedData(float* d_currProcessedBuffer, cudaStream_t stream) {
 	if (streamedBuffers % (params->streamingBuffersToSkip + 1) == 0) {
 		streamedBuffers = 0; //set to zero to avoid overflow
 		streamingBufferNumber = (streamingBufferNumber + 1) % 2;
 		void* hostDestBuffer = streamingBufferNumber == 0 ? host_streamingBuffer1 : host_streamingBuffer2;
-		cudaStreamWaitEvent(streamingStreamD2H, processEvent, 0); //wait for processing to be finished before starting execution of streamingStreamD2H. This just blocks the streamingStreamD2H and not the host
-		floatToOutput<<<gridSize / 2, blockSize, 0, streamingStreamD2H>>> (d_outputBuffer, d_currProcessedBuffer, params->bitDepth, samplesPerBuffer / 2);
-		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, (void*)d_outputBuffer, (samplesPerBuffer / 2) * bytesPerSample, cudaMemcpyDeviceToHost, streamingStreamD2H));
-		checkCudaErrors(cudaStreamAddCallback(streamingStreamD2H, Gpu2HostNotifier::dh2StreamingCallback, hostDestBuffer, 0));
+		floatToOutput<<<gridSize / 2, blockSize, 0, stream>>> (d_outputBuffer, d_currProcessedBuffer, params->bitDepth, samplesPerBuffer / 2);
+		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, (void*)d_outputBuffer, (samplesPerBuffer / 2) * bytesPerSample, cudaMemcpyDeviceToHost, stream));
+		checkCudaErrors(cudaLaunchHostFunc(stream, Gpu2HostNotifier::dh2StreamingCallback, hostDestBuffer));
 	}
 	streamedBuffers++;
 }
@@ -1227,44 +1224,30 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		printf("Cuda: Device buffers are not initialized!");
 		return;
 	}
-
-	//set copy und process buffer pointers
-	bufferNumber = (bufferNumber + 1) % 2;
-	void* copyBuffer = NULL;
-	void* procBuffer = NULL;
-
-	if (bufferNumber == 0) {
-		copyBuffer = d_inputBuffer1;
-		procBuffer = d_inputBuffer2;
-	}
-	else {
-		copyBuffer = d_inputBuffer2;
-		procBuffer = d_inputBuffer1;
-	}
+	
+	currStream = (currStream+1)%nStreams;
+	currBuffer = (currBuffer+1)%nBuffers;
 
 	//copy raw oct signal from host
-	if (copyBuffer != NULL && h_inputSignal != NULL) {
-		checkCudaErrors(cudaMemcpyAsync(copyBuffer, h_inputSignal, samplesPerBuffer * bytesPerSample, cudaMemcpyHostToDevice, copyStream));
-	}
-
-	//do not run processing if it's the first run. In the first iteration the processing buffer is empty.
-	if (firstRun) {
-		firstRun = false;
-		cudaStreamSynchronize(copyStream);
-		return;
+	if (h_inputSignal != NULL) {
+		checkCudaErrors(cudaMemcpyAsync(d_inputBuffer[currBuffer], h_inputSignal, samplesPerBuffer * bytesPerSample, cudaMemcpyHostToDevice, stream[currStream]));
 	}
 
 	//start processing: convert input array to cufft complex array
 	if (params->bitshift) {
-		inputToCufftComplex_and_bitshift<<<gridSize, blockSize, 0, processStream>>> (d_fftBuffer, procBuffer, signalLength,  signalLength, params->bitDepth, samplesPerBuffer);
+		inputToCufftComplex_and_bitshift<<<gridSize, blockSize, 0, stream[currStream]>>> (d_fftBuffer, d_inputBuffer[currBuffer], signalLength,  signalLength, params->bitDepth, samplesPerBuffer);
 	}
 	else {
-		inputToCufftComplex<<<gridSize, blockSize, 0, processStream>>> (d_fftBuffer, procBuffer, signalLength, signalLength, params->bitDepth, samplesPerBuffer);
+		inputToCufftComplex<<<gridSize, blockSize, 0, stream[currStream]>>> (d_fftBuffer, d_inputBuffer[currBuffer], signalLength, signalLength, params->bitDepth, samplesPerBuffer);
 	}
+	
+	//synchronization: block the host during cudaMemcpyAsync and inputToCufftComplex to prevent the data acquisition of the virtual OCT system from outpacing the processing, ensuring proper synchronization in the pipeline.
+	cudaEventRecord(syncEvent, stream[currStream]);
+	cudaEventSynchronize(syncEvent);
 
 	//rolling average background subtraction
 	if (params->backgroundRemoval){
-		rollingAverageBackgroundRemoval<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, params->rollingAverageWindowSize, signalLength, ascansPerBscan, signalLength*ascansPerBscan, samplesPerBuffer);
+		rollingAverageBackgroundRemoval<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, params->rollingAverageWindowSize, signalLength, ascansPerBscan, signalLength*ascansPerBscan, samplesPerBuffer);
 		cufftComplex* tmpSwapPointer = d_inputLinearized;
 		d_inputLinearized = d_fftBuffer;
 		d_fftBuffer = tmpSwapPointer;
@@ -1273,86 +1256,87 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	//update k-linearization-, dispersion- and windowing-curves if necessary
 	cufftComplex* d_fftBuffer2 = d_fftBuffer;
 	if (params->resampling && params->resamplingUpdated) {
-		cuda_updateResampleCurve(params->resampleCurve, params->resampleCurveLength);
+		cuda_updateResampleCurve(params->resampleCurve, params->resampleCurveLength, stream[currStream]);
 		params->resamplingUpdated = false;
 	}
 	if (params->dispersionCompensation && params->dispersionUpdated) {
-		cuda_updateDispersionCurve(params->dispersionCurve, signalLength);
-		fillDispersivePhase<<<signalLength, 1, 0, processStream>>> (d_phaseCartesian, d_dispersionCurve, 1.0, signalLength, 1);
+		cuda_updateDispersionCurve(params->dispersionCurve, signalLength, stream[currStream]);
+		fillDispersivePhase<<<signalLength, 1, 0, stream[currStream]>>> (d_phaseCartesian, d_dispersionCurve, 1.0, signalLength, 1);
 		params->dispersionUpdated = false;
 	}
 	if (params->windowing && params->windowUpdated) {
-		cuda_updateWindowCurve(params->windowCurve, signalLength);
+		cuda_updateWindowCurve(params->windowCurve, signalLength, stream[currStream]);
 		params->windowUpdated = false;
 	}
 
 	//k-linearization and windowing
 	if (d_inputLinearized != NULL && params->resampling && params->windowing && !params->dispersionCompensation) {
 		if(params->resamplingInterpolation == INTERPOLATION::CUBIC) {
-			klinearizationCubicAndWindowing<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
+			klinearizationCubicAndWindowing<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
 		}
 		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
-			klinearizationAndWindowing<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
+			klinearizationAndWindowing<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
 		}
 		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
-			klinearizationLanczosAndWindowing<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
+			klinearizationLanczosAndWindowing<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
 	} else
 		//k-linearization and windowing and dispersion compensation
 	if (d_inputLinearized != NULL && params->resampling && params->windowing && params->dispersionCompensation) {
 		if(params->resamplingInterpolation == INTERPOLATION::CUBIC){
-			klinearizationCubicAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
+			klinearizationCubicAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
 		}
 		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
-			klinearizationAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
+			klinearizationAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
 		}
 		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
-			klinearizationLanczosAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
+			klinearizationLanczosAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
 	} else
 		//dispersion compensation and windowing
 	if (!params->resampling && params->windowing && params->dispersionCompensation) {
-		dispersionCompensationAndWindowing<<<gridSize, blockSize, 0, processStream>>>(d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, d_windowCurve, signalLength, samplesPerBuffer);
+		dispersionCompensationAndWindowing<<<gridSize, blockSize, 0, stream[currStream]>>>(d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, d_windowCurve, signalLength, samplesPerBuffer);
 	} else
 		//just k-linearization
 	if (d_inputLinearized != NULL && params->resampling && !params->windowing && !params->dispersionCompensation) {
 		if(params->resamplingInterpolation == INTERPOLATION::CUBIC){
-			klinearizationCubic<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
+			klinearizationCubic<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
-			klinearization<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
+			klinearization<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
-			klinearizationLanczos<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
+			klinearizationLanczos<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
 	} else
 		//just windowing
 	if (!params->resampling && params->windowing && !params->dispersionCompensation) {
-		windowing<<<gridSize, blockSize, 0, processStream>>>(d_fftBuffer2, d_fftBuffer2, d_windowCurve, signalLength, samplesPerBuffer);
+		windowing<<<gridSize, blockSize, 0, stream[currStream]>>>(d_fftBuffer2, d_fftBuffer2, d_windowCurve, signalLength, samplesPerBuffer);
 	} else
 		//just dispersion compensation
 	if (!params->resampling && !params->windowing && params->dispersionCompensation) {
-		dispersionCompensation<<<gridSize, blockSize, 0, processStream>>> (d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, signalLength, samplesPerBuffer);
+		dispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>> (d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, signalLength, samplesPerBuffer);
 	} else
 		//k-linearization and dispersion compensation. nobody will use this in a serious manner, so an optimized "klinearizationAndDispersionCompensation" kernel is not necessary
 	if (d_inputLinearized != NULL && params->resampling && !params->windowing && params->dispersionCompensation) {
 		if(params->resamplingInterpolation == INTERPOLATION::CUBIC) {
-			klinearizationCubic<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
+			klinearizationCubic<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
-			klinearization<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
+			klinearization<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
-			klinearizationLanczos<<<gridSize, blockSize, 0, processStream>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
+			klinearizationLanczos<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
-		dispersionCompensation<<<gridSize, blockSize, 0, processStream>>> (d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, signalLength, samplesPerBuffer);
+		dispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>> (d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, signalLength, samplesPerBuffer);
 	}
-
+	
 	//IFFT
+	cufftSetStream(d_plan, stream[currStream]);
 	checkCudaErrors(cufftExecC2C(d_plan, d_fftBuffer2, d_fftBuffer2, CUFFT_INVERSE));
 
 	//Fixed-pattern noise removal
@@ -1360,11 +1344,11 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		int width = signalLength;
 		int height = params->bscansForNoiseDetermination*ascansPerBscan;//ascansPerBscan*bscansPerBuffer;
 		if((!params->continuousFixedPatternNoiseDetermination && !fixedPatternNoiseDetermined) || params->continuousFixedPatternNoiseDetermination || params->redetermineFixedPatternNoise){
-			getMinimumVarianceMean<<<gridSize, blockSize, 0, processStream>>>(d_meanALine, d_fftBuffer2, width, height, FIXED_PATTERN_NOISE_REMOVAL_SEGMENTS);
+			getMinimumVarianceMean<<<gridSize, blockSize, 0, stream[currStream]>>>(d_meanALine, d_fftBuffer2, width, height, FIXED_PATTERN_NOISE_REMOVAL_SEGMENTS);
 			fixedPatternNoiseDetermined = true;
 			params->redetermineFixedPatternNoise = false;
 		}
-		meanALineSubtraction<<<gridSize/2, blockSize, 0, processStream>>>(d_fftBuffer2, d_meanALine, width/2, samplesPerBuffer/2); //here mean a-scan line subtraction of half volume is enough, because in the next step the volume gets truncated anyway
+		meanALineSubtraction<<<gridSize/2, blockSize, 0, stream[currStream]>>>(d_fftBuffer2, d_meanALine, width/2, samplesPerBuffer/2); //here mean a-scan line subtraction of half volume is enough, because in the next step the volume gets truncated anyway
 	}
 
 	//get current buffer number in volume (a volume may consist of one or more buffers)
@@ -1377,50 +1361,46 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 
 	//postProcessTruncate contains: Mirror artefact removal, Log, Magnitude, Copy to output buffer.
 	if (params->signalLogScaling) {
-		postProcessTruncateLog<<<gridSize/2, blockSize, 0, processStream>>> (d_currBuffer, d_fftBuffer2, signalLength / 2, samplesPerBuffer, bufferNumberInVolume, params->signalGrayscaleMax, params->signalGrayscaleMin, params->signalAddend, params->signalMultiplicator);
+		postProcessTruncateLog<<<gridSize/2, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_fftBuffer2, signalLength / 2, samplesPerBuffer, bufferNumberInVolume, params->signalGrayscaleMax, params->signalGrayscaleMin, params->signalAddend, params->signalMultiplicator);
 	}
 	else {
-		postProcessTruncateLin<<<gridSize/2, blockSize, 0, processStream>>> (d_currBuffer, d_fftBuffer2, signalLength / 2, samplesPerBuffer, params->signalGrayscaleMax, params->signalGrayscaleMin, params->signalAddend, params->signalMultiplicator);
+		postProcessTruncateLin<<<gridSize/2, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_fftBuffer2, signalLength / 2, samplesPerBuffer, params->signalGrayscaleMax, params->signalGrayscaleMin, params->signalAddend, params->signalMultiplicator);
 	}
 
 	//flip every second bscan
 	if (params->bscanFlip) {
-		cuda_bscanFlip<<<gridSize/2, blockSize, 0, processStream>>> (d_currBuffer, d_currBuffer, signalLength / 2, ascansPerBscan, (signalLength*ascansPerBscan)/2, samplesPerBuffer/4);
+		cuda_bscanFlip<<<gridSize/2, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_currBuffer, signalLength / 2, ascansPerBscan, (signalLength*ascansPerBscan)/2, samplesPerBuffer/4);
 	}
 
 	//sinusoidal scan correction
 	if(params->sinusoidalScanCorrection && d_sinusoidalScanTmpBuffer != NULL){
-		checkCudaErrors(cudaMemcpy(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/2, cudaMemcpyDeviceToDevice));
-		sinusoidalScanCorrection<<<gridSize/2, blockSize, 0, processStream>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/2, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/2);
+		checkCudaErrors(cudaMemcpyAsync(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/2, cudaMemcpyDeviceToDevice,stream[currStream]));
+		sinusoidalScanCorrection<<<gridSize/2, blockSize, 0, stream[currStream]>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/2, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/2);
 	}
 	
 	//post process background removal
 	if(params->postProcessBackgroundRemoval){
 		if(params->postProcessBackgroundRecordingRequested){
-			getPostProcessBackground<<<gridSize/2, blockSize, 0, processStream>>>(d_postProcBackgroundLine, d_currBuffer, signalLength/2, ascansPerBscan );
-			cuda_copyPostProcessBackgroundToHost(params->postProcessBackground, signalLength/2);
+			getPostProcessBackground<<<gridSize/2, blockSize, 0, stream[currStream]>>>(d_postProcBackgroundLine, d_currBuffer, signalLength/2, ascansPerBscan );
+			cuda_copyPostProcessBackgroundToHost(params->postProcessBackground, signalLength/2, stream[currStream]);
 			params->postProcessBackgroundRecordingRequested = false;
 		}
 		if(params->postProcessBackgroundUpdated){
-			cuda_updatePostProcessBackground(params->postProcessBackground, signalLength/2);
+			cuda_updatePostProcessBackground(params->postProcessBackground, signalLength/2, stream[currStream]);
 			params->postProcessBackgroundUpdated = false;
 		}
-		postProcessBackgroundRemoval<<<gridSize/2, blockSize, 0, processStream>>>(d_currBuffer, d_postProcBackgroundLine, params->postProcessBackgroundWeight, params->postProcessBackgroundOffset, signalLength/2, samplesPerBuffer/2);
+		postProcessBackgroundRemoval<<<gridSize/2, blockSize, 0, stream[currStream]>>>(d_currBuffer, d_postProcBackgroundLine, params->postProcessBackgroundWeight, params->postProcessBackgroundOffset, signalLength/2, samplesPerBuffer/2);
 	}
-
-	//capture the contents of processStream in processEvent. processEvent is used to synchronize processing and copying of processed data to ram (copying of processed data to ram takes place in the stream copyStreamD2H)
-	cudaEventRecord(processEvent, processStream);
 
 	//update display buffers
-	cudaStreamWaitEvent(displayStream, processEvent, 0);
 	if(params->bscanViewEnabled){
-		updateBscanDisplayBuffer(params->frameNr, params->functionFramesBscan, params->displayFunctionBscan);
+		updateBscanDisplayBuffer(params->frameNr, params->functionFramesBscan, params->displayFunctionBscan, stream[currStream]);
 	}
 	if(params->enFaceViewEnabled){
-		updateEnFaceDisplayBuffer(params->frameNrEnFaceView, params->functionFramesEnFaceView, params->displayFunctionEnFaceView);
+		updateEnFaceDisplayBuffer(params->frameNrEnFaceView, params->functionFramesEnFaceView, params->displayFunctionEnFaceView, stream[currStream]);
 	}
 	if(params->volumeViewEnabled){
-		updateVolumeDisplayBuffer(d_currBuffer, bufferNumberInVolume, bscansPerBuffer);
+		updateVolumeDisplayBuffer(d_currBuffer, bufferNumberInVolume, bscansPerBuffer, stream[currStream]);
 	}
 
 	//check errors
@@ -1432,11 +1412,8 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	//Copy/Stream processed data to host continuously
 	if (params->streamToHost && !params->streamingParamsChanged) {
 		params->currentBufferNr = bufferNumberInVolume;
-		streamProcessedData(d_currBuffer);
+		streamProcessedData(d_currBuffer, stream[currStream]);
 	}
-
-	//wait for copy task (host to device) to complete to avoid race condition
-	cudaStreamSynchronize(copyStream);
 }
 
 extern "C" void cuda_registerGlBufferBscan(GLuint buf) {

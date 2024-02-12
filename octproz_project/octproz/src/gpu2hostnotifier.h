@@ -44,7 +44,7 @@ public:
 	static Gpu2HostNotifier* getInstance(QObject* parent = nullptr);
 	~Gpu2HostNotifier();
 
-	static void CUDART_CB dh2StreamingCallback(cudaStream_t event, cudaError_t status, void* currStreamingBuffer);
+	static void CUDART_CB dh2StreamingCallback(void* currStreamingBuffer);
 	static void CUDART_CB backgroundSignalCallback(void* backgroundSignal);
 
 private:

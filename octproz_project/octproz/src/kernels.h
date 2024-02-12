@@ -76,7 +76,7 @@ extern cudaArray* cuda_map3dTexture(cudaGraphicsResource* res, cudaStream_t stre
 
 extern "C" void changeDisplayedBscanFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction); ///if framerate is low user can request another bscan to be displayed from already acquired buffer with this function
 extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
-extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction); ///as soon as new buffer is acquired this function is called and the display buffer gets updated
-extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction); ///as soon as new buffer is acquired this function is called and the display buffer gets updated
+extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction, cudaStream_t stream); ///as soon as new buffer is acquired this function is called and the display buffer gets updated
+extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction, cudaStream_t stream); ///as soon as new buffer is acquired this function is called and the display buffer gets updated
 
 #endif // KERNELS_H
