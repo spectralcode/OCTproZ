@@ -916,7 +916,7 @@ __global__ void floatToOutput(void *output, const float *input, const int output
 		out[index] = (unsigned short)(input[index] * (65535.0)); //16 bit
 	}else if(outputBitdepth > 16 && outputBitdepth <= 24){
 		unsigned int* out = (unsigned int*)output;
-		out[index] = (unsigned int)(input[index] * (167772165.0f)); //24 bit
+		out[index] = (unsigned int)(input[index] * (16777215.0f)); //24 bit
 	}else{
 		unsigned int* out = (unsigned int*)output;
 		out[index] = (unsigned int)(input[index] * (4294967295.0f)); //32 bit
