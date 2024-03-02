@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2022 Miroslav Zabic
+Copyright (c) 2019-2024 Miroslav Zabic
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,7 @@ private:
 	VirtualOCTSystemSettingsDialog* systemDialog;
 	simulatorParams currParams;
 	AcquisitionBuffer* streamBuffer;
+	bool isCleanupPending ;
 
 	bool init();
 	void cleanup();

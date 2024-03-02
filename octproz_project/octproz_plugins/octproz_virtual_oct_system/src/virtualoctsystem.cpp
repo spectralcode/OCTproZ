@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2022 Miroslav Zabic
+Copyright (c) 2019-2024 Miroslav Zabic
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ VirtualOCTSystem::VirtualOCTSystem() {
 	this->name = "Virtual OCT System";
 	this->file = nullptr;
 	this->streamBuffer = nullptr;
+	this->isCleanupPending  = false;
 
 	connect(this->systemDialog, &VirtualOCTSystemSettingsDialog::settingsUpdated, this, &VirtualOCTSystem::slot_updateParams);
 	connect(this, &VirtualOCTSystem::enableGui, this->systemDialog, &VirtualOCTSystemSettingsDialog::slot_enableGui);
@@ -72,19 +73,23 @@ bool VirtualOCTSystem::init() {
 
 
 void VirtualOCTSystem::startAcquisition(){
+	//check if cleanup is pending from previous acquisition
+	if(this->isCleanupPending){
+		this->cleanup();
+	}
+
 	//init acquisition
 	bool initSuccessfull = this->init();
 	if(!initSuccessfull){
 		emit enableGui(true);
 		emit info(tr("Initialization unsuccessful. Acquisition stopped."));
-		this->buffer->releaseMemory();
 		this->cleanup();
 		emit acquisitionStopped();
 		return;
 	}
 
 	//start acquisition
-	emit info("Acquisition started");
+	emit info("Acquisition startedd");
 	if(currParams.buffersFromFile <= 2){
 		this->acqcuisitionSimulation();
 	}else if(currParams.copyFileToRam){
@@ -94,6 +99,7 @@ void VirtualOCTSystem::startAcquisition(){
 	}
 
 	//acuquisition stopped
+	this->isCleanupPending = true;
 	emit enableGui(true);
 	emit info("Acquisistion stopped!");
 	emit acquisitionStopped();
@@ -101,8 +107,8 @@ void VirtualOCTSystem::startAcquisition(){
 	QCoreApplication::processEvents();
 	QThread::msleep(500);
 	QCoreApplication::processEvents();
-	this->buffer->releaseMemory();
 	this->cleanup();
+	this->isCleanupPending = false;
 }
 
 void VirtualOCTSystem::stopAcquisition(){
@@ -112,6 +118,8 @@ void VirtualOCTSystem::stopAcquisition(){
 }
 
 void VirtualOCTSystem::cleanup() {
+	this->buffer->releaseMemory();
+
 	if(this->streamBuffer != nullptr){
 		delete this->streamBuffer;
 		this->streamBuffer = nullptr;
