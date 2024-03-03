@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -36,11 +36,13 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QCoreApplication>
+#include <QSize>
 
 #define MAX_MESSAGES 512
 
 struct MessageConsoleParams {
 	bool newestMessageAtBottom;
+	int preferredHeight;
 };
 
 class MessageConsole : public QWidget
@@ -53,6 +55,8 @@ public:
 	QDockWidget* getDock(){return this->dock;}
 	void setParams(MessageConsoleParams params);
 	MessageConsoleParams getParams(){return this->params;}
+	QSize sizeHint() const override;
+
 
 private:
 	QTextEdit* textEdit;
@@ -66,6 +70,9 @@ private:
 	QString addStringToMessageBuffer(QString message);
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void refreshMessages();
+
+protected:
+	void resizeEvent(QResizeEvent* event) override;
 
 signals:
 	void error(QString);

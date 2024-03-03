@@ -30,6 +30,7 @@
 #include <QTimer>
 #include <QToolTip>
 #include <QGuiApplication>
+#include <QSizePolicy>
 
 
 GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
@@ -41,8 +42,8 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	this->screenHeightScaled = 1.0;
 	this->xTranslation = 0.0;
 	this->yTranslation = 0.0;
-	this->setMinimumWidth(448);
-	this->setMinimumHeight(448);
+	this->setMinimumWidth(256);
+	this->setMinimumHeight(256);
 	this->initialized = false;
 	this->changeBufferSizeFlag = false;
 	this->keepAspectRatio = true;
@@ -597,12 +598,13 @@ ControlPanel2D::ControlPanel2D(QWidget *parent) : QWidget(parent) {
 	this->spinBoxFrame->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	this->doubleSpinBoxRotationAngle = new QDoubleSpinBox(this->panel);
 	this->doubleSpinBoxRotationAngle->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-	this->labelFrame = new QLabel(tr("Display frame:"), this->panel);
+	this->labelFrame = new QLabel(tr("Frame:"), this->panel);
 	this->labelRotationAngle = new QLabel(tr("Rotation:"), this->panel);
 	this->slider = new QSlider(Qt::Horizontal, this->panel);
 	this->slider->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 	this->stringBoxFunctions = new StringSpinBox(this->panel);
-	this->labelDisplayFunction = new QLabel(tr("Display mode:"), this->panel);
+	this->stringBoxFunctions->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	this->labelDisplayFunction = new QLabel(tr("Mode:"), this->panel);
 	this->labelDisplayFunctionFrames = new QLabel(tr("Frames:"), this->panel);
 
 	this->doubleSpinBoxStretchX = new QDoubleSpinBox(this->panel);
@@ -804,6 +806,27 @@ void ControlPanel2D::disconnectGuiFromSettingsChangedSignal() {
 	foreach(auto element,this->checkBoxes) {
 		disconnect(element, &QCheckBox::clicked, this, &ControlPanel2D::settingsChanged);
 	}
+}
+
+void ControlPanel2D::adjustFontSize() {
+	const int thresholdWidth = 270;
+	QFont font = this->font();
+
+	if(this->width() <= thresholdWidth){
+		font.setStretch(80);
+	} else {
+		font.setStretch(100);
+	}
+	this->setFont(font);
+
+	for (auto& widget : this->findChildren<QWidget*>()) {
+		widget->setFont(font);
+	}
+}
+
+void ControlPanel2D::resizeEvent(QResizeEvent *event) {
+	this->adjustFontSize();
+	QWidget::resizeEvent(event);
 }
 
 void ControlPanel2D::setParams(GLWindow2DParams params) {

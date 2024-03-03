@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,6 @@
 #include <QLineEdit>
 
 
-
 class StringSpinBox : public QAbstractSpinBox
 {
 	Q_OBJECT
@@ -45,6 +44,7 @@ public:
 	void setStrings(QStringList strings);
 
 	virtual void stepBy(int steps) override;
+	virtual QSize sizeHint() const override;
 	int getIndex(){return this->currentIndex;}
 	int getIndexOf(QString text);
 	void setIndex(int index);
@@ -52,18 +52,19 @@ public:
 
 
 private:
+	int getPreferredWidth() const;
 	void adjustWidth();
 
 	int currentIndex;
 	QStringList strings;
 
+
 protected:
 	virtual StepEnabled stepEnabled() const override;
+
 
 signals:
 	void indexChanged();
 };
-
-
 
 #endif  // STRINGSPINBOX_H

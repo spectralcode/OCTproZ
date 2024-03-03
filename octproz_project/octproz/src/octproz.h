@@ -65,6 +65,7 @@
 #define MAIN_STATE "main_state"
 #define MAIN_ACTIVE_SYSTEM "main_active_system"
 #define MESSAGE_CONSOLE_BOTTOM "message_console_bottom"
+#define MESSAGE_CONSOLE_HEIGHT "message_console_height"
 
 
 

@@ -288,6 +288,7 @@ private:
 	void updateParams();
 	void connectGuiToSettingsChangedSignal();
 	void disconnectGuiFromSettingsChangedSignal();
+	void adjustFontSize();
 
 	GLWindow2DParams params;
 	bool extendedView;
@@ -330,7 +331,7 @@ private:
 
 
 protected:
-
+	void resizeEvent(QResizeEvent *event) override;
 
 public slots:
 	void setParams(GLWindow2DParams params);

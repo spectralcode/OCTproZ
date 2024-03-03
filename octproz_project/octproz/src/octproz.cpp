@@ -936,6 +936,7 @@ void OCTproZ::updateSettingsMap() {
 
 	//message console
 	this->mainWindowSettings.insert(MESSAGE_CONSOLE_BOTTOM, this->console->getParams().newestMessageAtBottom);
+	this->mainWindowSettings.insert(MESSAGE_CONSOLE_HEIGHT, this->console->getParams().preferredHeight);
 }
 
 void OCTproZ::loadResamplingCurveFromFile(QString fileName){
@@ -1024,6 +1025,7 @@ void OCTproZ::loadMainWindowSettings(){
 
 	MessageConsoleParams consoleParams;
 	consoleParams.newestMessageAtBottom = this->mainWindowSettings.value(MESSAGE_CONSOLE_BOTTOM).toBool();
+	consoleParams.preferredHeight = this->mainWindowSettings.value(MESSAGE_CONSOLE_HEIGHT).toInt();
 	this->console->setParams(consoleParams);
 }
 

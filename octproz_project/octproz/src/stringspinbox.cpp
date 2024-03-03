@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 **/
 
 #include "stringspinbox.h"
+#include <QDoubleSpinBox>
 
 
 StringSpinBox::StringSpinBox(QWidget *parent) : QAbstractSpinBox(parent) {
@@ -52,6 +53,17 @@ void StringSpinBox::stepBy(int steps) {
 	emit indexChanged();
 }
 
+QSize StringSpinBox::sizeHint() const {
+	//get default height of a QDoubleSpinBox
+	QDoubleSpinBox tmpDoubleSpinBox;
+	int defaultHeight = tmpDoubleSpinBox.sizeHint().height();
+
+	//get width based on the content of the StringSpinBox
+	int preferredWidth = this->getPreferredWidth();
+
+	return QSize(preferredWidth, defaultHeight);
+}
+
 int StringSpinBox::getIndexOf(QString text) {
 	return this->strings.indexOf(text);
 }
@@ -65,7 +77,8 @@ void StringSpinBox::setIndex(int index) {
 	}
 }
 
-void StringSpinBox::adjustWidth() {
+int StringSpinBox::getPreferredWidth() const{
+	const int spinButtonsWidthEstimate = 25; //todo: get actual width of buttons
 	QString longestString = "";
 	foreach(QString string, this->strings) {
 		if (longestString.size() < string.size()) {
@@ -73,8 +86,13 @@ void StringSpinBox::adjustWidth() {
 		}
 	}
 	QFontMetrics fontMetric = this->lineEdit()->fontMetrics();
-	int w = fontMetric.boundingRect(longestString).width()+25; //todo: get actual width of buttons instead of adding 25
-	this->setMinimumWidth(w);
+	int w = fontMetric.boundingRect(longestString).width()+spinButtonsWidthEstimate;
+	return w;
+}
+
+void StringSpinBox::adjustWidth() {
+	int w = this->getPreferredWidth();
+	this->setMaximumWidth(w);
 }
 
 QAbstractSpinBox::StepEnabled StringSpinBox::stepEnabled() const {

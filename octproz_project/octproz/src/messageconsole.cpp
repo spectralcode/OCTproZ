@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -36,7 +36,8 @@ MessageConsole::MessageConsole(QWidget *parent) : QWidget(parent){
 	this->gridLayout->setMargin(0);
 	this->gridLayout->addWidget(this->textEdit, 0, 0, 1, 1);
 	this->setMinimumWidth(320);
-	this->setMinimumHeight(160);
+	this->setMinimumHeight(30);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
 	this->messages = QVector<QString>(MAX_MESSAGES);
 
@@ -46,9 +47,7 @@ MessageConsole::MessageConsole(QWidget *parent) : QWidget(parent){
 	this->messagesIndex = 0;
 
 	this->params.newestMessageAtBottom = false;
-
-
-
+	this->params.preferredHeight = 100;
 }
 
 MessageConsole::~MessageConsole(){
@@ -58,6 +57,11 @@ MessageConsole::~MessageConsole(){
 void MessageConsole::setParams(MessageConsoleParams params) {
 	this->params = params;
 	this->insertNewMessagesAtBottom(this->params.newestMessageAtBottom);
+	this->adjustSize();
+}
+
+QSize MessageConsole::sizeHint() const {
+	return QSize(QWidget::sizeHint().width(), this->params.preferredHeight);
 }
 
 //todo: rethink and redo this. there is probably a much better way than recreating the entire message string for every new message
@@ -120,6 +124,30 @@ void MessageConsole::refreshMessages() {
 		this->textEdit->moveCursor(QTextCursor::End);
 		this->textEdit->ensureCursorVisible();
 	}
+}
+
+void MessageConsole::resizeEvent(QResizeEvent *event) {
+//this code saves the console size in params to restore it on app restart.
+//however, due to a bug in Qt 5.11, the MessageConsole gets resized without user action when other docks are modified.
+//see Qt bug report:https://bugreports.qt.io/browse/QTBUG-65592.
+//this bug has been fixed for qt 5.12, see here: https://code.qt.io/cgit/qt/qtbase.git/commit/src/widgets/widgets/qdockarealayout.cpp?id=e2d79b496335e8d8666014e900930c66cf722eb6
+//the following code serves as a workaround for Qt version older than 5.12.
+#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
+	const int heightChangeThreshold = 50;
+	if (qAbs(event->oldSize().height() - event->size().height()) < heightChangeThreshold) {
+		this->params.preferredHeight = this->height();
+	} else {
+		this->displayInfo("auto");
+
+		int minHeight = this->minimumHeight();
+		this->setFixedHeight(this->params.preferredHeight);
+		this->setMinimumHeight(minHeight);
+		this->setMaximumHeight(QWIDGETSIZE_MAX);
+	}
+#else
+	this->params.preferredHeight = this->height();
+#endif
+	QWidget::resizeEvent(event);
 }
 
 void MessageConsole::insertNewMessagesAtBottom(bool enable) {
