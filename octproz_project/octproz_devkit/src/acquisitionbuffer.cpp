@@ -24,6 +24,11 @@ SOFTWARE.
 
 #include "acquisitionbuffer.h"
 
+#ifdef __aarch64__
+	#include <cuda_runtime.h>
+	#include <helper_cuda.h>
+#endif
+
 
 AcquisitionBuffer::AcquisitionBuffer() : QObject() {
 	this->bufferCnt = 0;
@@ -41,6 +46,41 @@ AcquisitionBuffer::AcquisitionBuffer() : QObject() {
 AcquisitionBuffer::~AcquisitionBuffer() {
 	releaseMemory();
 }
+
+#ifdef __aarch64__
+bool AcquisitionBuffer::allocateMemory(unsigned int bufferCnt, size_t bytesPerBuffer) {
+	this->bufferCnt = bufferCnt;
+	this->bytesPerBuffer = bytesPerBuffer;
+	this->releaseMemory();
+	this->bufferArray.clear();
+	this->bufferArray.resize(bufferCnt);
+	this->bufferReadyArray.resize(bufferCnt);
+	bool success = true;
+
+	// Allocate page aligned memory
+	for (unsigned int bufferIndex = 0; (bufferIndex < this->bufferCnt) && success; bufferIndex++) {
+		cudaError_t err = cudaHostAlloc((void**)&(bufferArray[bufferIndex]), bytesPerBuffer, cudaHostAllocMapped);
+		//cudaError_t err = cudaMallocManaged(&(bufferArray[bufferIndex]), bytesPerBuffer);
+		if (err != cudaSuccess || bufferArray[bufferIndex] == nullptr){
+			emit error(tr("Buffer memory allocation error. posix_memalign() error code: ") + QString::number(err));
+			success = false;
+		}else{
+			cudaMemset((bufferArray[bufferIndex]), 0, bytesPerBuffer);
+		}
+	}
+	return success;
+}
+
+void AcquisitionBuffer::releaseMemory() {
+	for (int i = 0; i < this->bufferArray.size(); i++) {
+		if (this->bufferArray[i] != nullptr) {
+			cudaFreeHost(this->bufferArray[i]);
+			this->bufferArray[i] = nullptr;
+			this->bufferReadyArray[i] = false;
+		}
+	}
+}
+#else
 
 bool AcquisitionBuffer::allocateMemory(unsigned int bufferCnt, size_t bytesPerBuffer) {
 	this->bufferCnt = bufferCnt;
@@ -73,3 +113,4 @@ void AcquisitionBuffer::releaseMemory() {
 		}
 	}
 }
+#endif

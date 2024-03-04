@@ -59,8 +59,8 @@ void* d_outputBuffer;
 void* host_buffer1 = NULL;
 void* host_buffer2 = NULL;
 void* host_RecordBuffer = NULL;
-void* host_streamingBuffer1;
-void* host_streamingBuffer2;
+void* host_streamingBuffer1 = NULL;
+void* host_streamingBuffer2 = NULL;
 
 cufftComplex* d_inputLinearized;
 float* d_windowCurve= NULL;
@@ -685,10 +685,7 @@ extern "C" void cuda_copyPostProcessBackgroundToHost(float* h_postProcessBackgro
 }
 
 extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer) {
-#ifdef __aarch64__
-	checkCudaErrors(cudaHostAlloc((void**)&h_streamingBuffer1, bytesPerBuffer, cudaHostAllocPortable)); //todo: check if memory is allocated twice and adjust host code such that memory allocation just happens once (cudaHostAlloc will allocate memory but the host already allocated memory)
-	checkCudaErrors(cudaHostAlloc((void**)&h_streamingBuffer2, bytesPerBuffer, cudaHostAllocPortable));
-#else
+#ifndef __aarch64__
 	checkCudaErrors(cudaHostRegister(h_streamingBuffer1, bytesPerBuffer, cudaHostRegisterPortable));
 	checkCudaErrors(cudaHostRegister(h_streamingBuffer2, bytesPerBuffer, cudaHostRegisterPortable));
 #endif
@@ -697,10 +694,7 @@ extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_
 }
 
 extern "C" void cuda_unregisterStreamingBuffers() {
-#ifdef __aarch64__
-	checkCudaErrors(cudaFreeHost(host_streamingBuffer1));
-	checkCudaErrors(cudaFreeHost(host_streamingBuffer2));
-#else
+#ifndef __aarch64__
 	checkCudaErrors(cudaHostUnregister(host_streamingBuffer1));
 	checkCudaErrors(cudaHostUnregister(host_streamingBuffer2));
 #endif
@@ -970,7 +964,9 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	//window curve
 	checkCudaErrors(cudaMalloc((void**)&d_windowCurve, sizeof(float)*signalLength));
 
-	//allocate device memory for raw signal	
+
+	//allocate device memory for the raw signal. On the Jetson Nano (__aarch64__), this allocation is skipped. The acquisition buffer is created with cudaHostAlloc with the flag cudaHostAllocMapped, this way it can be accessed by both CPU and GPU; no extra device buffer is necessary.
+#ifndef __aarch64__
 	for (int i = 0; i < nBuffers; i++)
 	{
 		checkCudaErrors(cudaMalloc((void**)&d_inputBuffer[i], bytesPerSample*samplesPerBuffer));
@@ -979,11 +975,12 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 		checkCudaErrors(cudaDeviceSynchronize());
 	}
 
-	//allocate device memory for streaming processed signal
+	//allocate device memory for streaming processed signal. On Jetson Nano (__aarch64__), this allocation is skipped because zero copy is utilized, eliminating the need for a additional output buffer in device memory for streaming.
 	checkCudaErrors(cudaMalloc((void**)&d_outputBuffer, bytesPerSample*samplesPerBuffer/2));
 	cudaMemsetAsync(d_outputBuffer, 0, bytesPerSample*samplesPerBuffer/2, stream[0]);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
+#endif
 
 	//allocate device memory for k-linearized signal
 	checkCudaErrors(cudaMalloc((void**)&d_inputLinearized, sizeof(cufftComplex)*samplesPerBuffer));
@@ -1021,11 +1018,10 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	//register existing host memory for use by cuda to accelerate cudaMemcpy
-#ifdef __aarch64__
-	checkCudaErrors(cudaHostAlloc((void**)&host_buffer1, samplesPerBuffer * bytesPerSample, cudaHostAllocPortable)); //todo: check if memory is allocated twice and adjust host code such that memory allocation just happens once (cudaHostAlloc will allocate memory but the host already allocated memory)
-	checkCudaErrors(cudaHostAlloc((void**)&host_buffer2, samplesPerBuffer * bytesPerSample, cudaHostAllocPortable));
-#else
+	//register existing host memory for use by cuda to accelerate cudaMemcpy. 
+	//this is not necessary for Jetson Nano since the acquisition buffer is created with 
+	//cudaHostAlloc and the cudaHostAllocMapped flag, which allows for zero-copy access.
+#ifndef __aarch64__
 	checkCudaErrors(cudaHostRegister(host_buffer1, samplesPerBuffer * bytesPerSample, cudaHostRegisterPortable));
 	checkCudaErrors(cudaHostRegister(host_buffer2, samplesPerBuffer * bytesPerSample, cudaHostRegisterPortable));
 #endif
@@ -1052,11 +1048,12 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 
 extern "C" void cleanupCuda() {
 	if (cudaInitialized) {
-		for (int i = 0; i < nBuffers; i++)
-		{
+#ifndef __aarch64__
+		for (int i = 0; i < nBuffers; i++){
 			freeCudaMem(d_inputBuffer[i]);
 		}
 		freeCudaMem(d_outputBuffer);
+#endif
 		freeCudaMem(d_windowCurve);
 		freeCudaMem(d_fftBuffer);
 		freeCudaMem(d_meanALine);
@@ -1073,19 +1070,20 @@ extern "C" void cleanupCuda() {
 
 		checkCudaErrors(cudaStreamDestroy(userRequestStream));
 		
-		for (int i = 0; i < nStreams; i++)
-		{
+		for (int i = 0; i < nStreams; i++) {
 			checkCudaErrors(cudaStreamDestroy(stream[i]));
 		}
 
 		checkCudaErrors(cudaEventDestroy(syncEvent));
 
+#ifndef __aarch64__
 		if (host_buffer1 != NULL) {
 			cudaHostUnregister(host_buffer1);
 		}
 		if (host_buffer2 != NULL) {
 			cudaHostUnregister(host_buffer2);
 		}
+#endif
 
 		cudaInitialized = false;
 		fixedPatternNoiseDetermined = false;
@@ -1211,8 +1209,13 @@ inline void streamProcessedData(float* d_currProcessedBuffer, cudaStream_t strea
 		streamedBuffers = 0; //set to zero to avoid overflow
 		streamingBufferNumber = (streamingBufferNumber + 1) % 2;
 		void* hostDestBuffer = streamingBufferNumber == 0 ? host_streamingBuffer1 : host_streamingBuffer2;
+#ifdef __aarch64__
+		checkCudaErrors(cudaHostGetDevicePointer((void**)&d_outputBuffer, (void*)hostDestBuffer, 0));
+#endif
 		floatToOutput<<<gridSize / 2, blockSize, 0, stream>>> (d_outputBuffer, d_currProcessedBuffer, params->bitDepth, samplesPerBuffer / 2);
+#ifndef __aarch64__
 		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, (void*)d_outputBuffer, (samplesPerBuffer / 2) * bytesPerSample, cudaMemcpyDeviceToHost, stream));
+#endif
 		checkCudaErrors(cudaLaunchHostFunc(stream, Gpu2HostNotifier::dh2StreamingCallback, hostDestBuffer));
 	}
 	streamedBuffers++;
@@ -1230,7 +1233,11 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 
 	//copy raw oct signal from host
 	if (h_inputSignal != NULL) {
+#ifdef __aarch64__		
+		checkCudaErrors(cudaHostGetDevicePointer((void**)&d_inputBuffer[currBuffer], (void*)h_inputSignal, 0));
+#else
 		checkCudaErrors(cudaMemcpyAsync(d_inputBuffer[currBuffer], h_inputSignal, samplesPerBuffer * bytesPerSample, cudaMemcpyHostToDevice, stream[currStream]));
+#endif
 	}
 
 	//start processing: convert input array to cufft complex array

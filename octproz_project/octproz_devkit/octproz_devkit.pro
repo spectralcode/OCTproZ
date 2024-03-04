@@ -98,3 +98,9 @@ win32 {
 	for(header, HEADERS):QMAKE_CLEAN += $$shell_path($$SHAREDIR/$${header})
 	QMAKE_CLEAN += $$shell_path($$SHAREDIR_LIB/$$TARGET'.'$${QMAKE_EXTENSION_STATICLIB})
 }
+
+#include cuda.pri only for Jetson Nano
+message("host architecture is: " $$QMAKE_HOST.arch)
+contains(QMAKE_HOST.arch, aarch64){
+	include(../octproz/pri/cuda.pri)
+}
