@@ -17,20 +17,20 @@ CUDA_SOURCES += $$SOURCEDIR/cuda_code.cu \
 #-gencode=arch=compute_70,code=sm_70
 
 #use this for maximum compatibility with CUDA 11.0
-CUDA_ARCH += sm_52 \
--gencode=arch=compute_52,code=sm_52 \
--gencode=arch=compute_60,code=sm_60 \
--gencode=arch=compute_61,code=sm_61 \
--gencode=arch=compute_70,code=sm_70 \
--gencode=arch=compute_75,code=sm_75 \
--gencode=arch=compute_80,code=sm_80 \
--gencode=arch=compute_86,code=sm_86 \
--gencode=arch=compute_86,code=compute_86
+#CUDA_ARCH += sm_52 \
+#-gencode=arch=compute_52,code=sm_52 \
+#-gencode=arch=compute_60,code=sm_60 \
+#-gencode=arch=compute_61,code=sm_61 \
+#-gencode=arch=compute_70,code=sm_70 \
+#-gencode=arch=compute_75,code=sm_75 \
+#-gencode=arch=compute_80,code=sm_80 \
+#-gencode=arch=compute_86,code=sm_86 \
+#-gencode=arch=compute_86,code=compute_86
 
 #use this for Jetson Nano with JetPack 4.6.1 (Cuda 10.2, Ubuntu 18.04)
-#CUDA_ARCH += sm_53 \
-#-gencode=arch=compute_53,code=sm_53 \
-#-gencode=arch=compute_53,code=compute_53
+CUDA_ARCH += sm_53 \
+-gencode=arch=compute_53,code=sm_53 \
+-gencode=arch=compute_53,code=compute_53
 
 
 #nvcc compiler options
