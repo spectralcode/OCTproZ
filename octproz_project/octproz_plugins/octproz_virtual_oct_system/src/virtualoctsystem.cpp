@@ -89,7 +89,7 @@ void VirtualOCTSystem::startAcquisition(){
 	}
 
 	//start acquisition
-	emit info("Acquisition startedd");
+	emit info("Acquisition started");
 	if(currParams.buffersFromFile <= 2){
 		this->acqcuisitionSimulation();
 	}else if(currParams.copyFileToRam){
