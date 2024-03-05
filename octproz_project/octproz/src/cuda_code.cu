@@ -54,7 +54,7 @@ cudaGraphicsResource* cuBufHandleVolumeView = NULL;
 const int nBuffers = 1;
 int currBuffer = 0;
 void* d_inputBuffer[nBuffers];
-void* d_outputBuffer;
+void* d_outputBuffer = NULL;
 
 void* host_buffer1 = NULL;
 void* host_buffer2 = NULL;
@@ -62,7 +62,7 @@ void* host_RecordBuffer = NULL;
 void* host_streamingBuffer1 = NULL;
 void* host_streamingBuffer2 = NULL;
 
-cufftComplex* d_inputLinearized;
+cufftComplex* d_inputLinearized = NULL;
 float* d_windowCurve= NULL;
 float* d_resampleCurve = NULL;
 float* d_dispersionCurve = NULL;
@@ -73,7 +73,7 @@ unsigned int bufferNumberInVolume = 0;
 unsigned int streamingBufferNumber = 0;
 
 cufftComplex* d_fftBuffer = NULL;
-cufftHandle d_plan;
+cufftHandle d_plan = NULL;
 cufftComplex* d_meanALine = NULL;
 float* d_postProcBackgroundLine = NULL;
 
@@ -923,7 +923,88 @@ extern "C" void cuda_updateResampleCurve(float* h_resampleCurve, int size, cudaS
 	}
 }
 
-extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmParameters* parameters) {
+bool allocateAndInitializeBuffer(void** d_buffer, size_t bufferSize) {
+	size_t freeMem = 0;
+	size_t totalMem = 0;
+	cudaError_t status;
+
+	//check available memory
+	status = cudaMemGetInfo(&freeMem, &totalMem);
+	if(status != cudaSuccess) {
+		printf("Cuda: Error retrieving memory info: %s\n", cudaGetErrorString(status));
+		return false;
+	}
+
+	if(freeMem >= bufferSize) {
+		//allocate memory if enough memory is available
+		status = cudaMalloc(d_buffer, bufferSize);
+		if(status != cudaSuccess) {
+			printf("cudaMalloc failed: %s\n", cudaGetErrorString(status));
+			if(*d_buffer != NULL) {
+				freeCudaMem(d_buffer); //cleanup on failure
+				*d_buffer = NULL;
+			}
+			return false;
+		}
+
+		//initialize allocated memory
+		status = cudaMemset(*d_buffer, 0, bufferSize);
+		if(status != cudaSuccess) {
+			printf("cudaMemsetAsync failed: %s\n", cudaGetErrorString(status));
+			if(*d_buffer != NULL) {
+				freeCudaMem(d_buffer); //cleanup on failure
+				*d_buffer = NULL;
+			}
+			return false;
+		}
+
+		return true;
+	} else {
+		printf("Cuda: Not enough memory available.\n");
+		return false;
+	}
+}
+
+bool createStreamsAndEvents() {
+	cudaError_t err;
+
+	err = cudaStreamCreate(&userRequestStream);
+	if (err != cudaSuccess) {
+		printf("Cuda: Failed to create stream: %s\n", cudaGetErrorString(err));
+		return false;
+	}
+
+	for (int i = 0; i < nStreams; i++) {
+		err = cudaStreamCreateWithFlags(&stream[i], cudaStreamNonBlocking);
+		if (err != cudaSuccess) {
+			printf("cuda: Failed to create stream %d: %s\n", i, cudaGetErrorString(err));
+
+			//cleanup already created streams before exiting
+			for (int j = 0; j < i; j++) {
+				cudaStreamDestroy(stream[j]);
+			}
+			cudaStreamDestroy(userRequestStream);
+			return false;
+		}
+	}
+
+	err = cudaEventCreateWithFlags(&syncEvent, cudaEventBlockingSync);
+	if (err != cudaSuccess) {
+		printf("Failed to create synchronization event: %s\n", cudaGetErrorString(err));
+
+		//cleanup all streams since creating the event failed
+		for (int i = 0; i < nStreams; i++) {
+			cudaStreamDestroy(stream[i]);
+		}
+		cudaStreamDestroy(userRequestStream);
+		return false;
+	}
+
+	return true;
+}
+
+
+extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmParameters* parameters) {
 	signalLength = parameters->samplesPerLine;
 	ascansPerBscan = parameters->ascansPerBscan;
 	bscansPerBuffer = parameters->bscansPerBuffer;
@@ -935,88 +1016,57 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	params = parameters;
 	bytesPerSample = ceil((double)(parameters->bitDepth) / 8.0);
 
-	checkCudaErrors(cudaStreamCreate(&userRequestStream));
+	createStreamsAndEvents();
 
-	for (int i = 0; i < nStreams; i++)
-	{
-		checkCudaErrors(cudaStreamCreateWithFlags(&stream[i], cudaStreamNonBlocking));
+	bool success =
+	allocateAndInitializeBuffer((void**)&d_resampleCurve, sizeof(float)*signalLength)
+	&& allocateAndInitializeBuffer((void**)&d_dispersionCurve, sizeof(float)*signalLength)
+	&& allocateAndInitializeBuffer((void**)&d_sinusoidalResampleCurve, sizeof(float)*ascansPerBscan)
+	&& allocateAndInitializeBuffer((void**)&d_windowCurve, sizeof(float)*signalLength);
+
+	if(!success){
+		releaseBuffers();
+		destroyStreamsAndEvents();
+		return false;
 	}
 
-	checkCudaErrors(cudaEventCreateWithFlags(&syncEvent, cudaEventBlockingSync));
-	
-	cudaError_t err = cudaGetLastError();
-	if (err != cudaSuccess) {
-		printf("Cuda error: %s\n", cudaGetErrorString(err));
-	}
+	fillSinusoidalScanCorrectionCurve<<<ascansPerBscan, 1, 0, stream[0]>>> (d_sinusoidalResampleCurve, ascansPerBscan);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
-
-	//resample curve
-	checkCudaErrors(cudaMalloc((void**)&d_resampleCurve, sizeof(float)*signalLength));
-
-	//dispersion curve
-	checkCudaErrors(cudaMalloc((void**)&d_dispersionCurve, sizeof(float)*signalLength));
-
-	//sinusoidal resample curve for sinusoidal scan correction
-	checkCudaErrors(cudaMalloc((void**)&d_sinusoidalResampleCurve, sizeof(float)*ascansPerBscan));
-	fillSinusoidalScanCorrectionCurve<<<ascansPerBscan, 1, 0, stream[0]>>> (d_sinusoidalResampleCurve, ascansPerBscan);
-
-	//window curve
-	checkCudaErrors(cudaMalloc((void**)&d_windowCurve, sizeof(float)*signalLength));
-
 
 	//allocate device memory for the raw signal. On the Jetson Nano (__aarch64__), this allocation is skipped. The acquisition buffer is created with cudaHostAlloc with the flag cudaHostAllocMapped, this way it can be accessed by both CPU and GPU; no extra device buffer is necessary.
 #ifndef __aarch64__
-	for (int i = 0; i < nBuffers; i++)
-	{
-		checkCudaErrors(cudaMalloc((void**)&d_inputBuffer[i], bytesPerSample*samplesPerBuffer));
-		cudaMemsetAsync(d_inputBuffer[i], 0, bytesPerSample*samplesPerBuffer, stream[0]);
-		checkCudaErrors(cudaPeekAtLastError());
-		checkCudaErrors(cudaDeviceSynchronize());
+	for (int i = 0; i < nBuffers; i++) {
+		success = allocateAndInitializeBuffer((void**)&d_inputBuffer[i], bytesPerSample * samplesPerBuffer);
+		if (!success) break;
 	}
 
-	//allocate device memory for streaming processed signal. On Jetson Nano (__aarch64__), this allocation is skipped because zero copy is utilized, eliminating the need for a additional output buffer in device memory for streaming.
-	checkCudaErrors(cudaMalloc((void**)&d_outputBuffer, bytesPerSample*samplesPerBuffer/2));
-	cudaMemsetAsync(d_outputBuffer, 0, bytesPerSample*samplesPerBuffer/2, stream[0]);
-	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());
+	if (success) {
+		success = allocateAndInitializeBuffer((void**)&d_outputBuffer, bytesPerSample * samplesPerBuffer / 2);
+	}
+
+	if(!success){
+		releaseBuffers();
+		destroyStreamsAndEvents();
+		return false;
+	}
 #endif
 
-	//allocate device memory for k-linearized signal
-	checkCudaErrors(cudaMalloc((void**)&d_inputLinearized, sizeof(cufftComplex)*samplesPerBuffer));
-	cudaMemsetAsync(d_inputLinearized, 0, sizeof(cufftComplex)*samplesPerBuffer, stream[0]);
+	if (success) {
+		success = allocateAndInitializeBuffer((void**)&d_inputLinearized, sizeof(cufftComplex) * samplesPerBuffer)
+		&& allocateAndInitializeBuffer((void**)&d_phaseCartesian, sizeof(cufftComplex) * signalLength)
+		&& allocateAndInitializeBuffer((void**)&d_processedBuffer, sizeof(float) * samplesPerVolume / 2)
+		&& allocateAndInitializeBuffer((void**)&d_sinusoidalScanTmpBuffer, sizeof(float) * samplesPerBuffer / 2)
+		&& allocateAndInitializeBuffer((void**)&d_fftBuffer, sizeof(cufftComplex) * samplesPerBuffer)
+		&& allocateAndInitializeBuffer((void**)&d_meanALine, sizeof(cufftComplex) * signalLength)
+		&& allocateAndInitializeBuffer((void**)&d_postProcBackgroundLine, sizeof(float) * signalLength / 2);;
+	}
 
-	//allocate device memory for dispersion compensation phase
-	checkCudaErrors(cudaMalloc((void**)&d_phaseCartesian, sizeof(cufftComplex)*signalLength));
-	cudaMemsetAsync(d_phaseCartesian, 0, sizeof(cufftComplex)*signalLength, stream[0]);
-
-	//allocate device memory for processed signal
-	checkCudaErrors(cudaMalloc((void**)&d_processedBuffer, sizeof(float)*samplesPerVolume/2));
-	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());
-
-	//allocate device memory for temporary buffer for sinusoidal scan correction
-	checkCudaErrors(cudaMalloc((void**)&d_sinusoidalScanTmpBuffer, sizeof(float)*samplesPerBuffer/2));
-	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());
-
-	//allocate device memory for fft buffer
-	checkCudaErrors(cudaMalloc((void**)&d_fftBuffer, sizeof(cufftComplex)*samplesPerBuffer));
-	cudaMemsetAsync(d_fftBuffer, 0, sizeof(cufftComplex)*samplesPerBuffer, stream[0]);
-	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());
-
-	//allocate device memory for fixed noise removal mean A-scan
-	checkCudaErrors(cudaMalloc((void**)&d_meanALine, sizeof(cufftComplex)*signalLength));
-	cudaMemsetAsync(d_meanALine, 0, sizeof(cufftComplex)*signalLength, stream[0]);
-	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());
-	
-	//allocate device memory for post processing background removal A-scan
-	checkCudaErrors(cudaMalloc((void**)&d_postProcBackgroundLine, sizeof(float)*signalLength/2));
-	cudaMemsetAsync(d_postProcBackgroundLine, 0, sizeof(float)*signalLength/2, stream[0]);
-	checkCudaErrors(cudaPeekAtLastError());
-	checkCudaErrors(cudaDeviceSynchronize());
+	if(!success){
+		releaseBuffers();
+		destroyStreamsAndEvents();
+		return false;
+	}
 
 	//register existing host memory for use by cuda to accelerate cudaMemcpy. 
 	//this is not necessary for Jetson Nano since the acquisition buffer is created with 
@@ -1027,7 +1077,7 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 #endif
 
 	//create fft plan and set stream
-	cufftPlan1d(&d_plan, signalLength, CUFFT_C2C, ascansPerBscan*bscansPerBuffer);
+	checkCudaErrors(cufftPlan1d(&d_plan, signalLength, CUFFT_C2C, ascansPerBscan*bscansPerBuffer));
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -1044,37 +1094,45 @@ extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	gridSize = samplesPerBuffer / blockSize;
 	currStream = 0;
 	currBuffer = 0;
+
+	return success;
 }
 
-extern "C" void cleanupCuda() {
-	if (cudaInitialized) {
+extern "C" void releaseBuffers() {
 #ifndef __aarch64__
 		for (int i = 0; i < nBuffers; i++){
-			freeCudaMem(d_inputBuffer[i]);
+			freeCudaMem((void**)&d_inputBuffer[i]);
 		}
-		freeCudaMem(d_outputBuffer);
+		freeCudaMem((void**)&d_outputBuffer);
 #endif
-		freeCudaMem(d_windowCurve);
-		freeCudaMem(d_fftBuffer);
-		freeCudaMem(d_meanALine);
-		freeCudaMem(d_postProcBackgroundLine);
-		freeCudaMem(d_processedBuffer);
-		freeCudaMem(d_sinusoidalScanTmpBuffer);
-		freeCudaMem(d_inputLinearized);
-		freeCudaMem(d_phaseCartesian);
-		freeCudaMem(d_resampleCurve);
-		freeCudaMem(d_dispersionCurve);
-		freeCudaMem(d_sinusoidalResampleCurve);
+		freeCudaMem((void**)&d_windowCurve);
+		freeCudaMem((void**)&d_fftBuffer);
+		freeCudaMem((void**)&d_meanALine);
+		freeCudaMem((void**)&d_postProcBackgroundLine);
+		freeCudaMem((void**)&d_processedBuffer);
+		freeCudaMem((void**)&d_sinusoidalScanTmpBuffer);
+		freeCudaMem((void**)&d_inputLinearized);
+		freeCudaMem((void**)&d_phaseCartesian);
+		freeCudaMem((void**)&d_resampleCurve);
+		freeCudaMem((void**)&d_dispersionCurve);
+		freeCudaMem((void**)&d_sinusoidalResampleCurve);
+}
 
-		cufftDestroy(d_plan);
-
+extern "C" void destroyStreamsAndEvents() {
 		checkCudaErrors(cudaStreamDestroy(userRequestStream));
-		
+
 		for (int i = 0; i < nStreams; i++) {
 			checkCudaErrors(cudaStreamDestroy(stream[i]));
 		}
 
 		checkCudaErrors(cudaEventDestroy(syncEvent));
+}
+
+extern "C" void cleanupCuda() {
+	if (cudaInitialized) {
+		releaseBuffers();
+		cufftDestroy(d_plan);
+		destroyStreamsAndEvents();
 
 #ifndef __aarch64__
 		if (host_buffer1 != NULL) {
@@ -1090,13 +1148,12 @@ extern "C" void cleanupCuda() {
 	}
 }
 
-extern "C" void freeCudaMem(void* data) {
-	if (data != NULL) {
-		checkCudaErrors(cudaFree(data));
-		data = NULL;
-	}
-	else {
-		printf("Cuda: Failed to free memory.");
+extern "C" void freeCudaMem(void** data) {
+	if (*data != NULL) {
+		checkCudaErrors(cudaFree(*data));
+		*data = NULL;
+	} else {
+		printf("Cuda: Failed to free memory.\n");
 	}
 }
 
@@ -1224,10 +1281,10 @@ inline void streamProcessedData(float* d_currProcessedBuffer, cudaStream_t strea
 extern "C" void octCudaPipeline(void* h_inputSignal) {
 	//check if cuda buffers are initialized
 	if (!cudaInitialized) {
-		printf("Cuda: Device buffers are not initialized!");
+		printf("Cuda: Device buffers are not initialized!\n");
 		return;
 	}
-	
+
 	currStream = (currStream+1)%nStreams;
 	currBuffer = (currBuffer+1)%nBuffers;
 

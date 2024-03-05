@@ -85,6 +85,7 @@ public slots :
 signals :
 	//void initOpenGL(QOpenGLContext** processingContext, QOffscreenSurface** processingSurface, QThread* processingThread);
 	void initializationDone();
+	void initializationFailed();
 	void initOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void initOpenGLenFaceView();
 	void initRawRecorder(RecordingParams params);

@@ -133,6 +133,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->signalProcessing, &Processing::info, this->console, &MessageConsole::displayInfo);
 	connect(this->signalProcessing, &Processing::error, this->console, &MessageConsole::displayError);
 	connect(this->signalProcessing, &Processing::initializationDone, this, &OCTproZ::slot_enableStopAction);
+	connect(this->signalProcessing, &Processing::initializationFailed, this, &OCTproZ::slot_stop);
 	connect(this->signalProcessing, &Processing::streamingBufferEnabled, this->plot1D, &PlotWindow1D::slot_enableProcessedGrabbing);
 	connect(this->signalProcessing, &Processing::rawData, this->plot1D, &PlotWindow1D::slot_plotRawData);
 	connect(this->signalProcessing, &Processing::processedRecordDone, this, &OCTproZ::slot_resetGpu2HostSettings);

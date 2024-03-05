@@ -98,7 +98,12 @@ void Processing::slot_start(AcquisitionSystem* system){
 		unsigned int bitDepth = this->octParams->bitDepth;
 		unsigned int buffersPerVolume = this->octParams->buffersPerVolume;
 		this->currBufferNr = buffersPerVolume-1;
-		initializeCuda(h_buffer1, h_buffer2, this->octParams);
+		bool gpuInitialized = initializeCuda(h_buffer1, h_buffer2, this->octParams);
+		if(!gpuInitialized){
+			emit error(tr("GPU buffer initialization failed."));
+			emit initializationFailed();
+			return;
+		}
 
 		//init streaming if streamToHost option was already checked on startup
 		if (this->octParams->streamToHost && !this->octParams->streamingParamsChanged) {
