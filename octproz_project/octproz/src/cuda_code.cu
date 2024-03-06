@@ -37,6 +37,7 @@
 
 int blockSize;
 int gridSize;
+int threadsPerBlockLimit;
 const int nStreams = 8;
 int currStream = 0;
 
@@ -1003,6 +1004,17 @@ bool createStreamsAndEvents() {
 	return true;
 }
 
+int getMaxThreadsPerBlock(){
+	//get current active device
+	int currentDevice;
+	cudaGetDevice(&currentDevice);
+
+	//get device properties
+	cudaDeviceProp deviceProp;
+	cudaGetDeviceProperties(&deviceProp, currentDevice);
+
+	return deviceProp.maxThreadsPerBlock;
+}
 
 extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmParameters* parameters) {
 	signalLength = parameters->samplesPerLine;
@@ -1092,6 +1104,7 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	//todo: find a way to automatically determine optimal blockSize and optimal gridSize
 	blockSize = 128;
 	gridSize = samplesPerBuffer / blockSize;
+	threadsPerBlockLimit = getMaxThreadsPerBlock();
 	currStream = 0;
 	currBuffer = 0;
 
@@ -1186,9 +1199,15 @@ extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int di
 	unsigned int width = bscansPerBuffer*buffersPerVolume;
 	unsigned int height = ascansPerBscan;
 	unsigned int samplesPerFrame = width * height;
+	int gridSize = width;
+	int blockSize = height;
+	if(height > threadsPerBlockLimit){
+		blockSize = threadsPerBlockLimit;
+		gridSize = (samplesPerFrame + blockSize - 1)/blockSize;
+	}
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<width, height, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedEnFaceViewFrame<<<gridSize, blockSize, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
 		cuda_unmap(cuBufHandleEnFaceView, userRequestStream);
@@ -1223,9 +1242,15 @@ extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned 
 	unsigned int width = bscansPerBuffer * buffersPerVolume;
 	unsigned int height = ascansPerBscan;
 	unsigned int samplesPerFrame = width * height;
+	int gridSize = width;
+	int blockSize = height;
+	if(height > threadsPerBlockLimit){
+		blockSize = threadsPerBlockLimit;
+		gridSize = (samplesPerFrame + blockSize - 1)/blockSize;
+	}
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<width, height, 0, stream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedEnFaceViewFrame<<<gridSize, blockSize, 0, stream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
 		cuda_unmap(cuBufHandleEnFaceView, stream);
