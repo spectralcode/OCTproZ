@@ -80,14 +80,19 @@ Processing::~Processing(){
 	qDebug() << "Processing destructor. Thread ID: " << QThread::currentThreadId();
 }
 
+void Processing::Processing::initCudaOpenGlInterop(){
+	this->context->deleteLater();
+	this->context = new QOpenGLContext();
+	emit initOpenGLenFaceView();
+	emit initOpenGL((this->context), (this->surface), this->thread());
+	QThread::msleep(250); //the processEvents() and msleep() are necessary because initOpenGL(...) triggers a signal emission in glwindow2d containing the OpenGL buffer. This buffer is subsequently registered with CUDA in a slot within this processing class. Thus, this wait time and processEvents() serve as a workaround to ensure the slot executes - meaning the OpenGL buffer gets registered with CUDA - before continuation. //todo: re-examine how the steps for int8eroperability are called, this many signal slot connections for this straight forward task are too convoluted, probably there is an easyier way for OpenGL buffer allocation --> register with cuda --> map buffer to get cuda pointer --> pass pointer to cuda kernel --> unmap pointer
+	QCoreApplication::processEvents();
+}
 
 void Processing::slot_start(AcquisitionSystem* system){
 	if (system != nullptr) {
-		//emit initOpenGL(&(this->context), &(this->surface), this->thread());
 		emit info(tr("GPU processing initialization..."));
-		emit initOpenGLenFaceView();
-		emit initOpenGL((this->context), (this->surface), this->thread());
-		QCoreApplication::processEvents();
+		this->initCudaOpenGlInterop();
 
 		AcquisitionBuffer* buffer = system->buffer;
 		void* h_buffer1 = buffer->bufferArray[0];

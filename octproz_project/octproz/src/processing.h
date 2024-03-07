@@ -58,6 +58,8 @@ public:
 
 
 private:
+	void initCudaOpenGlInterop();
+
 	qreal buffersPerSecond;
 	bool isProcessing;
 	OctAlgorithmParameters* octParams;
