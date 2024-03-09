@@ -31,6 +31,9 @@ Processing::Processing(){
 	///qRegisterMetaType is needed to enabel Qt::QueuedConnection for signal slot communication with "AcquisitionParams"
 	qRegisterMetaType<AcquisitionParams >("AcquisitionParams");
 	qRegisterMetaType<RecordingParams >("RecordingParams");
+	this->bscanGlBufferRegisteredWithCuda = false;
+	this->enfaceGlBufferRegisteredWithCuda = false;
+	this->volumeGlBufferRegisteredWithCuda = false;
 	this->buffersPerSecond = 0.0;
 	this->isProcessing = false;
 	this->recordingRawEnabled = false;
@@ -80,13 +83,41 @@ Processing::~Processing(){
 	qDebug() << "Processing destructor. Thread ID: " << QThread::currentThreadId();
 }
 
-void Processing::Processing::initCudaOpenGlInterop(){
-	this->context->deleteLater();
-	this->context = new QOpenGLContext();
+void Processing::initCudaOpenGlInterop(){
+	this->bscanGlBufferRegisteredWithCuda = false;
+	this->enfaceGlBufferRegisteredWithCuda = false;
+	this->volumeGlBufferRegisteredWithCuda = false;
+#if defined(Q_OS_LINUX)
+	this->surface->destroy(); //without destroying the surface here random segmentation faults in makeCurrent(this->surface) on Jetson Nano happen. Todo: investigate what is going on and test behavior across different operating systems.
+#endif
 	emit initOpenGLenFaceView();
 	emit initOpenGL((this->context), (this->surface), this->thread());
-	QThread::msleep(250); //the processEvents() and msleep() are necessary because initOpenGL(...) triggers a signal emission in glwindow2d containing the OpenGL buffer. This buffer is subsequently registered with CUDA in a slot within this processing class. Thus, this wait time and processEvents() serve as a workaround to ensure the slot executes - meaning the OpenGL buffer gets registered with CUDA - before continuation. //todo: re-examine how the steps for int8eroperability are called, this many signal slot connections for this straight forward task are too convoluted, probably there is an easyier way for OpenGL buffer allocation --> register with cuda --> map buffer to get cuda pointer --> pass pointer to cuda kernel --> unmap pointer
+	this->waitForCudaOpenGlInteropReady(10, 2000); //this is necessary because initOpenGL(...) triggers a signal emission in glwindow2d containing the OpenGL buffer. This buffer is subsequently registered with CUDA in a slot within this processing class. Thus, this wait time and processEvents() serve as a workaround to ensure the slot executes - meaning the OpenGL buffer gets registered with CUDA - before continuation. //todo: re-examine how the steps for interoperability are called, this many signal slot connections for this straight forward task are too convoluted, probably there is an easyier way for the sequence: create QOffscreenSurface in GUI thread --> allocate OpenGL buffer --> register with cuda --> map buffer to get cuda pointer --> pass pointer to cuda kernel --> unmap pointer
+}
+
+bool Processing::waitForCudaOpenGlInteropReady(int interval, int timeout){
+	QThread::msleep(interval);
 	QCoreApplication::processEvents();
+	QElapsedTimer timer;
+	timer.start();
+	bool everythingReady = false;
+
+	while (!(everythingReady)) {
+		QCoreApplication::processEvents();
+		if (timer.elapsed() > timeout){
+			emit error(tr("Cuda-OpenGL Interoperability initialization timeout."));
+			return false;
+		}
+		QThread::msleep(interval);
+
+		everythingReady =
+				this->bscanGlBufferRegisteredWithCuda || !this->octParams->bscanViewEnabled &&
+				this->enfaceGlBufferRegisteredWithCuda || !this->octParams->enFaceViewEnabled &&
+				this->volumeGlBufferRegisteredWithCuda || !this->octParams->volumeViewEnabled &&
+				this->context->isValid() &&
+				this->surface->isValid();
+	}
+	return true;
 }
 
 void Processing::slot_start(AcquisitionSystem* system){
@@ -177,6 +208,8 @@ void Processing::slot_start(AcquisitionSystem* system){
 
 		if (this->octParams->streamToHost) {
 			this->enableGpu2HostStreaming(false);
+
+
 		}
 		cleanupCuda();
 	}
@@ -229,21 +262,21 @@ void Processing::slot_updateDisplayedEnFaceFrame(unsigned int frameNr, unsigned 
 
 void Processing::slot_registerBscanOpenGLbufferWithCuda(unsigned int bufferId){
 	if(this->context->makeCurrent(this->surface)){
-		cuda_registerGlBufferBscan(bufferId);
+		this->bscanGlBufferRegisteredWithCuda = cuda_registerGlBufferBscan(bufferId);
 		this->context->doneCurrent();
 	}
 }
 
 void Processing::slot_registerEnFaceViewOpenGLbufferWithCuda(unsigned int bufferId){
 	if(this->context->makeCurrent(this->surface)){
-		cuda_registerGlBufferEnFaceView(bufferId);
+		this->enfaceGlBufferRegisteredWithCuda = cuda_registerGlBufferEnFaceView(bufferId);
 		this->context->doneCurrent();
 	}
 }
 
 void Processing::slot_registerVolumeViewOpenGLbufferWithCuda(unsigned int bufferId){
 	if(this->context->makeCurrent(this->surface)){
-		cuda_registerGlBufferVolumeView(bufferId);
+		this->volumeGlBufferRegisteredWithCuda = cuda_registerGlBufferVolumeView(bufferId);
 		this->context->doneCurrent();
 	}
 }

@@ -59,7 +59,11 @@ public:
 
 private:
 	void initCudaOpenGlInterop();
+	bool waitForCudaOpenGlInteropReady(int interval, int timeout);
 
+	bool bscanGlBufferRegisteredWithCuda;
+	bool enfaceGlBufferRegisteredWithCuda;
+	bool volumeGlBufferRegisteredWithCuda;
 	qreal buffersPerSecond;
 	bool isProcessing;
 	OctAlgorithmParameters* octParams;

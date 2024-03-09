@@ -1505,21 +1505,27 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	}
 }
 
-extern "C" void cuda_registerGlBufferBscan(GLuint buf) {
+extern "C" bool cuda_registerGlBufferBscan(GLuint buf) {
 	if (cudaGraphicsGLRegisterBuffer(&cuBufHandleBscan, buf, cudaGraphicsRegisterFlagsWriteDiscard) != cudaSuccess) {
 		printf("Cuda: Failed to register buffer %u\n", buf);
+		return false;
 	}
+	return true;
 }
-extern "C" void cuda_registerGlBufferEnFaceView(GLuint buf) {
+extern "C" bool cuda_registerGlBufferEnFaceView(GLuint buf) {
 	if (cudaGraphicsGLRegisterBuffer(&cuBufHandleEnFaceView, buf, cudaGraphicsRegisterFlagsWriteDiscard) != cudaSuccess) {
 		printf("Cuda: Failed to register buffer %u\n", buf);
+		return false;
 	}
+	return true;
 }
-extern "C" void cuda_registerGlBufferVolumeView(GLuint buf) {
+extern "C" bool cuda_registerGlBufferVolumeView(GLuint buf) {
 	cudaError_t err = cudaGraphicsGLRegisterImage(&cuBufHandleVolumeView, buf, GL_TEXTURE_3D, cudaGraphicsRegisterFlagsSurfaceLoadStore);
 	if (err != cudaSuccess) {
 		printf("Cuda: Failed to register buffer %u\n", buf);
+		return false;
 	}
+	return true;
 }
 
 void* cuda_map(cudaGraphicsResource* res, cudaStream_t stream) {
