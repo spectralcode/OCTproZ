@@ -60,6 +60,7 @@ public:
 private:
 	void initCudaOpenGlInterop();
 	bool waitForCudaOpenGlInteropReady(int interval, int timeout);
+	bool isCudaOpenGlInteropReady();
 
 	bool bscanGlBufferRegisteredWithCuda;
 	bool enfaceGlBufferRegisteredWithCuda;
