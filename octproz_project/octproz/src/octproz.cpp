@@ -165,6 +165,11 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailible, this->plot1D, &PlotWindow1D::slot_plotProcessedData);
 	connect(this->processedDataNotifier, &Gpu2HostNotifier::backgroundRecorded, this->sidebar, &Sidebar::updateBackgroundPlot);
 	
+	//connects to update opengl displays only when new data is written to display buffers //todo: further investigation. this seems to give hugely different results on linux vs windows. on windows this seems to lock the processing speed to max 60 Hz.
+//	connect(this->processedDataNotifier, &Gpu2HostNotifier::bscanDisplayBufferReady, this->bscanWindow, QOverload<>::of(&GLWindow2D::update));
+//	connect(this->processedDataNotifier, &Gpu2HostNotifier::enfaceDisplayBufferReady, this->enFaceViewWindow, QOverload<>::of(&GLWindow2D::update));
+//	connect(this->processedDataNotifier, &Gpu2HostNotifier::volumeDisplayBufferReady, this->volumeWindow, QOverload<>::of(&GLWindow3D::update));
+
 	connect(&notifierThread, &QThread::finished, this->processedDataNotifier, &Gpu2HostNotifier::deleteLater);
 	notifierThread.start();
 

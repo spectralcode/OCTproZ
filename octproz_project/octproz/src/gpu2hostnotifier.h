@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -46,6 +46,9 @@ public:
 
 	static void CUDART_CB dh2StreamingCallback(void* currStreamingBuffer);
 	static void CUDART_CB backgroundSignalCallback(void* backgroundSignal);
+	static void CUDART_CB bscanDisblayBufferReadySignalCallback(void* data);
+	static void CUDART_CB enfaceDisplayBufferReadySignalCallback(void* data);
+	static void CUDART_CB volumeDisblayBufferReadySignalCallback(void* data);
 
 private:
 	Gpu2HostNotifier(QObject *parent);
@@ -54,11 +57,17 @@ private:
 public slots:
 	void emitCurrentStreamingBuffer(void* currStreamingBuffer);
 	void emitBackgroundRecorded();
+	void emitBscanDisplayBufferReady(void* data);
+	void emitEnfaceDisplayBufferReady(void* data);
+	void emitVolumeDisplayBufferReady(void* data);
 
 signals:
 	void processedRecordDone(void* recordBuffer);
 	void newGpuDataAvailible(void* rawBuffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
 	void backgroundRecorded();
+	void bscanDisplayBufferReady();
+	void enfaceDisplayBufferReady();
+	void volumeDisplayBufferReady();
 };
 
 

@@ -51,6 +51,21 @@ void Gpu2HostNotifier::emitBackgroundRecorded() {
 	emit backgroundRecorded();
 }
 
+void Gpu2HostNotifier::emitBscanDisplayBufferReady(void* data) {
+	Q_UNUSED(data);
+	emit bscanDisplayBufferReady();
+}
+
+void Gpu2HostNotifier::emitEnfaceDisplayBufferReady(void* data) {
+	Q_UNUSED(data);
+	emit enfaceDisplayBufferReady();
+}
+
+void Gpu2HostNotifier::emitVolumeDisplayBufferReady(void* data) {
+	Q_UNUSED(data);
+	emit volumeDisplayBufferReady();
+}
+
 
 void CUDART_CB Gpu2HostNotifier::dh2StreamingCallback(void* currStreamingBuffer) {
 	Gpu2HostNotifier::getInstance()->emitCurrentStreamingBuffer(currStreamingBuffer);
@@ -58,4 +73,14 @@ void CUDART_CB Gpu2HostNotifier::dh2StreamingCallback(void* currStreamingBuffer)
 
 void CUDART_CB Gpu2HostNotifier::backgroundSignalCallback(void* backgroundSignal) {
 	Gpu2HostNotifier::getInstance()->emitBackgroundRecorded();
+}
+
+void CUDART_CB Gpu2HostNotifier::bscanDisblayBufferReadySignalCallback(void* data) {
+	Gpu2HostNotifier::getInstance()->emitBscanDisplayBufferReady(data);
+}
+void CUDART_CB Gpu2HostNotifier::enfaceDisplayBufferReadySignalCallback(void* data) {
+	Gpu2HostNotifier::getInstance()->emitEnfaceDisplayBufferReady(data);
+}
+void CUDART_CB Gpu2HostNotifier::volumeDisblayBufferReadySignalCallback(void* data) {
+	Gpu2HostNotifier::getInstance()->emitVolumeDisplayBufferReady(data);
 }
