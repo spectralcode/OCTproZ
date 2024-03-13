@@ -137,8 +137,6 @@ void MessageConsole::resizeEvent(QResizeEvent *event) {
 	if (qAbs(event->oldSize().height() - event->size().height()) < heightChangeThreshold) {
 		this->params.preferredHeight = this->height();
 	} else {
-		this->displayInfo("auto");
-
 		int minHeight = this->minimumHeight();
 		this->setFixedHeight(this->params.preferredHeight);
 		this->setMinimumHeight(minHeight);
