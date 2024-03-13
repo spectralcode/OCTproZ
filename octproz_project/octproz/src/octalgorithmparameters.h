@@ -52,7 +52,6 @@ struct RecordingParams {
 	bool recordProcessed;
 	bool recordScreenshot;
 	bool saveMetaData;
-
 	bool stopAfterRecord;
 };
 

@@ -6,7 +6,7 @@ OctAlgorithmParametersManager::OctAlgorithmParametersManager(QObject *parent) :
 	QObject(parent),
 	octParams(OctAlgorithmParameters::getInstance())
 {
-	
+
 }
 
 QVector<float> OctAlgorithmParametersManager::loadCurveFromFromFile(QString fileName) {

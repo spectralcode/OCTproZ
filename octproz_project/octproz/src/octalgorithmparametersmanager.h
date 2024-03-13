@@ -26,7 +26,6 @@ signals:
 	void error(QString);
 	void info(QString);
 	void backgroundDataUpdated();
-	
 };
 
 #endif // OCTALGORITHMPARAMETERSMANAGER_H
