@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@
 
 
 PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
-	this->setBackground( QColor(50, 50, 50));
+	this->setBackground(QColor(50, 50, 50));
 	this->axisRect()->setBackground(QColor(55, 55, 55));
 
-	this->setMinimumHeight(320);
-	this->setMinimumWidth(640);
+	this->setMinimumHeight(256);
+	this->setMinimumWidth(320);
 	this->addGraph();
 	this->addGraph(this->xAxis2, this->yAxis2);
 	this->processedColor = QColor(72, 99, 160);
@@ -104,6 +104,10 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 }
 
 PlotWindow1D::~PlotWindow1D(){
+}
+
+QSize PlotWindow1D::sizeHint() const {
+	return(QSize(640, 320));
 }
 
 void PlotWindow1D::setRawAxisColor(QColor color) {

@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@ class PlotWindow1D : public QCustomPlot
 public:
 	explicit PlotWindow1D(QWidget *parent = nullptr);
 	~PlotWindow1D();
+
+	QSize sizeHint() const override;
 
 	//QCustomPlot* customPlot;
 	QVector<qreal> sampleNumbers;
