@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -1105,6 +1105,7 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	blockSize = 128;
 	gridSize = samplesPerBuffer / blockSize;
 	threadsPerBlockLimit = getMaxThreadsPerBlock();
+
 	currStream = 0;
 	currBuffer = 0;
 
@@ -1199,15 +1200,15 @@ extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int di
 	unsigned int width = bscansPerBuffer*buffersPerVolume;
 	unsigned int height = ascansPerBscan;
 	unsigned int samplesPerFrame = width * height;
-	int gridSize = width;
-	int blockSize = height;
+	int gridSizeDisplay = width;
+	int blockSizeDisplay = height;
 	if(height > threadsPerBlockLimit){
-		blockSize = threadsPerBlockLimit;
-		gridSize = (samplesPerFrame + blockSize - 1)/blockSize;
+		blockSizeDisplay = threadsPerBlockLimit;
+		gridSizeDisplay = (samplesPerFrame + blockSizeDisplay - 1)/blockSizeDisplay;
 	}
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<gridSize, blockSize, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedEnFaceViewFrame<<<gridSizeDisplay, blockSizeDisplay, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
 		cuda_unmap(cuBufHandleEnFaceView, userRequestStream);
@@ -1242,15 +1243,15 @@ extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned 
 	unsigned int width = bscansPerBuffer * buffersPerVolume;
 	unsigned int height = ascansPerBscan;
 	unsigned int samplesPerFrame = width * height;
-	int gridSize = width;
-	int blockSize = height;
+	int gridSizeDisplay = width;
+	int blockSizeDisplay = height;
 	if(height > threadsPerBlockLimit){
-		blockSize = threadsPerBlockLimit;
-		gridSize = (samplesPerFrame + blockSize - 1)/blockSize;
+		blockSizeDisplay = threadsPerBlockLimit;
+		gridSizeDisplay = (samplesPerFrame + blockSizeDisplay - 1)/blockSizeDisplay;
 	}
 	if (d_enFaceViewDisplayBuffer != NULL) {
 		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<gridSize, blockSize, 0, stream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedEnFaceViewFrame<<<gridSizeDisplay, blockSizeDisplay, 0, stream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
 		cuda_unmap(cuBufHandleEnFaceView, stream);
@@ -1484,12 +1485,15 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	//update display buffers
 	if(params->bscanViewEnabled){
 		updateBscanDisplayBuffer(params->frameNr, params->functionFramesBscan, params->displayFunctionBscan, stream[currStream]);
+		//checkCudaErrors(cudaLaunchHostFunc(stream[currStream], Gpu2HostNotifier::bscanDisblayBufferReadySignalCallback, 0));
 	}
 	if(params->enFaceViewEnabled){
 		updateEnFaceDisplayBuffer(params->frameNrEnFaceView, params->functionFramesEnFaceView, params->displayFunctionEnFaceView, stream[currStream]);
+		//checkCudaErrors(cudaLaunchHostFunc(stream[currStream], Gpu2HostNotifier::enfaceDisplayBufferReadySignalCallback, 0));
 	}
 	if(params->volumeViewEnabled){
 		updateVolumeDisplayBuffer(d_currBuffer, bufferNumberInVolume, bscansPerBuffer, stream[currStream]);
+		//checkCudaErrors(cudaLaunchHostFunc(stream[currStream], Gpu2HostNotifier::volumeDisblayBufferReadySignalCallback, 0));
 	}
 
 	//check errors
