@@ -61,6 +61,8 @@ private:
 	void initCudaOpenGlInterop();
 	bool waitForCudaOpenGlInteropReady(int interval, int timeout);
 	bool isCudaOpenGlInteropReady();
+	void blockBuffersForAcquisitionSystem(AcquisitionSystem* system);
+	void unblockBuffersForAcquisitionSystem(AcquisitionSystem* system);
 
 	bool bscanGlBufferRegisteredWithCuda;
 	bool enfaceGlBufferRegisteredWithCuda;

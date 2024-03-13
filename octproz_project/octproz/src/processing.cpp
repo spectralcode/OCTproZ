@@ -116,11 +116,24 @@ bool Processing::isCudaOpenGlInteropReady(){
 		(this->enfaceGlBufferRegisteredWithCuda || !this->octParams->enFaceViewEnabled) &&
 		(this->volumeGlBufferRegisteredWithCuda || !this->octParams->volumeViewEnabled) &&
 		this->context->isValid() &&
-		this->surface->isValid();
+			this->surface->isValid();
+}
+
+void Processing::blockBuffersForAcquisitionSystem(AcquisitionSystem *system) {
+		foreach(auto flag, system->buffer->bufferReadyArray){
+			flag = true;
+		}
+}
+
+void Processing::unblockBuffersForAcquisitionSystem(AcquisitionSystem *system) {
+		foreach(auto flag, system->buffer->bufferReadyArray){
+			flag = false;
+		}
 }
 
 void Processing::slot_start(AcquisitionSystem* system){
 	if (system != nullptr) {
+		this->blockBuffersForAcquisitionSystem(system);
 		emit info(tr("GPU processing initialization..."));
 		this->initCudaOpenGlInterop();
 
@@ -155,6 +168,7 @@ void Processing::slot_start(AcquisitionSystem* system){
 
 		emit info(tr("GPU processing initialized."));
 		emit initializationDone();
+		this->unblockBuffersForAcquisitionSystem(system);
 
 		//acquisition and processing loop
 		while (system->acqusitionRunning) {
@@ -207,8 +221,6 @@ void Processing::slot_start(AcquisitionSystem* system){
 
 		if (this->octParams->streamToHost) {
 			this->enableGpu2HostStreaming(false);
-
-
 		}
 		cleanupCuda();
 	}
