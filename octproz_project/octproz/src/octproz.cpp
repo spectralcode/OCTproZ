@@ -500,6 +500,11 @@ void OCTproZ::initExtensionsMenu() {
 }
 
 void OCTproZ::slot_start() {
+	if (this->currSystem != nullptr) {
+		if(this->currSystem->acqusitionRunning){
+			return;
+		}
+	}
 	//under certain circumstances, the OpenGL windows remain black. this fixes this issue
 	this->resize(static_cast<float>(this->size().width()-1),static_cast<float>(this->size().height()-1));
 	this->resize(static_cast<float>(this->size().width()+1),static_cast<float>(this->size().height()+1));
@@ -525,6 +530,12 @@ void OCTproZ::slot_start() {
 
 	//for debugging purposes: read out thread affinity of current thread
 	qDebug() << "Main Thread ID start emit: " << QThread::currentThreadId();
+
+////this is for testing purposes only.ending and restart processing after a certain period of time
+//	this->rerunCounter++;
+//	emit info("rerun counter: " + QString::number(this->rerunCounter));
+//	qDebug() << "rerun counter: " << this->rerunCounter;
+//	QTimer::singleShot(10000, this, &OCTproZ::slot_stop);
 }
 
 void OCTproZ::slot_stop() {
@@ -542,8 +553,10 @@ void OCTproZ::slot_stop() {
 			emit stop();
 			QApplication::processEvents();
 			this->currSystem->acqusitionRunning = false; //todo: think about whether OCTproZ should really set the AcquisitionRunning flag to false here, or whether only the acquisition system itself should be responsible for setting this flag to false
+			//QTimer::singleShot(5000, this, &OCTproZ::slot_start); //this is for testing purposes only.restart processing after a certain period of time
 		}
 	}
+
 }
 
 void OCTproZ::slot_record() {

@@ -194,6 +194,8 @@ private:
 
 	QOpenGLContext *context;
 
+	int rerunCounter = 0;
+
 signals:
 	void start();
 	void stop();
