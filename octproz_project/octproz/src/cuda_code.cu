@@ -1549,7 +1549,7 @@ extern "C" bool cuda_registerGlBufferEnFaceView(GLuint buf) {
 		if (unregisterResult != cudaSuccess) {
 			printf("Cuda: Failed to unregister existing resource. Error: %s\n", cudaGetErrorString(unregisterResult));
 		}
-		cuBufHandleBscan = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
+		cuBufHandleEnFaceView = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
 	}
 	//attempt to register the new buffer
 	if (cudaGraphicsGLRegisterBuffer(&cuBufHandleEnFaceView, buf, cudaGraphicsRegisterFlagsWriteDiscard) != cudaSuccess) {
@@ -1565,7 +1565,7 @@ extern "C" bool cuda_registerGlBufferVolumeView(GLuint buf) {
 		if (unregisterResult != cudaSuccess) {
 			printf("Cuda: Failed to unregister existing resource. Error: %s\n", cudaGetErrorString(unregisterResult));
 		}
-		cuBufHandleBscan = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
+		cuBufHandleVolumeView = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
 	}
 	//attempt to register the new buffer
 	cudaError_t err = cudaGraphicsGLRegisterImage(&cuBufHandleVolumeView, buf, GL_TEXTURE_3D, cudaGraphicsRegisterFlagsSurfaceLoadStore);
