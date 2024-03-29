@@ -282,6 +282,7 @@ void GLWindow2D::changeTextureSize(unsigned int width, unsigned int height, unsi
 	glGenBuffers(1, &(this->buf));
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, this->buf);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, (this->width * this->height * sizeof(float)), 0, GL_DYNAMIC_COPY);
+
 	glBindTexture(GL_TEXTURE_2D, this->texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, this->width, this->height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	doneCurrent();
@@ -292,17 +293,16 @@ void GLWindow2D::changeTextureSize(unsigned int width, unsigned int height, unsi
 
 void GLWindow2D::createOpenGLContextForProcessing(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread) {
 	QOpenGLContext* renderContext = this->context();
-	(processingContext)->setFormat(renderContext->format());
-	(processingContext)->setShareContext(renderContext);
-	(processingContext)->create();
-	(processingContext)->moveToThread(processingThread);
-	(processingSurface)->setFormat(renderContext->format());
-	(processingSurface)->create(); //Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms, cross-platform applications must ensure that create() is only called on the main (GUI) thread
-	(processingSurface)->moveToThread(processingThread);
-	
 	this->changeTextureSize(this->width, this->height, this->depth);
-
-	//QOpenGLContext::areSharing(processingContext, renderContext) ? emit info("processingContext, renderContext: yes") : emit info("processingContext, renderContext: no");
+	if(!QOpenGLContext::areSharing(processingContext, renderContext)){
+		(processingContext)->setFormat(renderContext->format());
+		(processingContext)->setShareContext(renderContext);
+		(processingContext)->create();
+		(processingContext)->moveToThread(processingThread);
+	}
+		(processingSurface)->setFormat(renderContext->format());
+		(processingSurface)->create(); //Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms, cross-platform applications must ensure that create() is only called on the main (GUI) thread
+		(processingSurface)->moveToThread(processingThread);
 }
 
 void GLWindow2D::registerOpenGLBufferWithCuda() {
@@ -424,10 +424,13 @@ void GLWindow2D::initializeGL() {
 		this->height = 128;
 	}
 
-	glGenBuffers(1, &buf);
+	glDeleteBuffers(1, &(this->buf)); // Delete the old buffer
+	glGenBuffers(1, &(this->buf));
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, buf);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, (this->width * this->height * sizeof(float)), 0, GL_DYNAMIC_COPY);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	glDeleteTextures(1, &(this->texture)); // Delete the old texture
 	glGenTextures(1, &(this->texture));
 	glBindTexture(GL_TEXTURE_2D, this->texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, this->width, this->height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);

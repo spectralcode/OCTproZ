@@ -1510,13 +1510,34 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 }
 
 extern "C" bool cuda_registerGlBufferBscan(GLuint buf) {
-	if (cudaGraphicsGLRegisterBuffer(&cuBufHandleBscan, buf, cudaGraphicsRegisterFlagsWriteDiscard) != cudaSuccess) {
-		printf("Cuda: Failed to register buffer %u\n", buf);
+	//check if a resource is already registered, and if so, unregister it first
+	if (cuBufHandleBscan != NULL) {
+		cudaError_t unregisterResult = cudaGraphicsUnregisterResource(cuBufHandleBscan);
+		if (unregisterResult != cudaSuccess) {
+			printf("Cuda: Failed to unregister existing resource. Error: %s\n", cudaGetErrorString(unregisterResult));
+		}
+		cuBufHandleBscan = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
+	}
+	//attempt to register the new buffer
+	cudaError_t registerResult = cudaGraphicsGLRegisterBuffer(&cuBufHandleBscan, buf, cudaGraphicsRegisterFlagsWriteDiscard);
+	if (registerResult != cudaSuccess) {
+		printf("Cuda: Failed to register buffer %u. Error: %s\n", buf, cudaGetErrorString(registerResult));
 		return false;
 	}
 	return true;
 }
+
+
 extern "C" bool cuda_registerGlBufferEnFaceView(GLuint buf) {
+	//check if a resource is already registered, and if so, unregister it first
+	if (cuBufHandleEnFaceView != NULL) {
+		cudaError_t unregisterResult = cudaGraphicsUnregisterResource(cuBufHandleEnFaceView);
+		if (unregisterResult != cudaSuccess) {
+			printf("Cuda: Failed to unregister existing resource. Error: %s\n", cudaGetErrorString(unregisterResult));
+		}
+		cuBufHandleBscan = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
+	}
+	//attempt to register the new buffer
 	if (cudaGraphicsGLRegisterBuffer(&cuBufHandleEnFaceView, buf, cudaGraphicsRegisterFlagsWriteDiscard) != cudaSuccess) {
 		printf("Cuda: Failed to register buffer %u\n", buf);
 		return false;
@@ -1524,6 +1545,15 @@ extern "C" bool cuda_registerGlBufferEnFaceView(GLuint buf) {
 	return true;
 }
 extern "C" bool cuda_registerGlBufferVolumeView(GLuint buf) {
+	//check if a resource is already registered, and if so, unregister it first
+	if (cuBufHandleVolumeView != NULL) {
+		cudaError_t unregisterResult = cudaGraphicsUnregisterResource(cuBufHandleVolumeView);
+		if (unregisterResult != cudaSuccess) {
+			printf("Cuda: Failed to unregister existing resource. Error: %s\n", cudaGetErrorString(unregisterResult));
+		}
+		cuBufHandleBscan = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
+	}
+	//attempt to register the new buffer
 	cudaError_t err = cudaGraphicsGLRegisterImage(&cuBufHandleVolumeView, buf, GL_TEXTURE_3D, cudaGraphicsRegisterFlagsSurfaceLoadStore);
 	if (err != cudaSuccess) {
 		printf("Cuda: Failed to register buffer %u\n", buf);
