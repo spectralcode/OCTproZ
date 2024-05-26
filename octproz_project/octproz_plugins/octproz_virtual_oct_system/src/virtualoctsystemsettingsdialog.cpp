@@ -47,6 +47,7 @@ void VirtualOCTSystemSettingsDialog::setSettings(QVariantMap settings){
 	this->ui->spinBox_depth->setValue(settings.value(DEPTH).toInt());
 	this->ui->spinBox_buffersPerVolume->setValue(settings.value(BUFFERS_PER_VOLUME).toInt());
 	this->ui->spinBox_buffersFromFile->setValue(settings.value(BUFFERS_FROM_FILE).toInt());
+	this->ui->spinBox_bscanOffset->setValue(settings.value(BSCAN_OFFSET).toInt());
 	this->ui->spinBox_waitTime->setValue(settings.value(WAITTIME).toInt());
 	this->ui->checkBox_copyFileToRam->setChecked(settings.value(COPY_TO_RAM).toBool());
 	this->slot_apply();
@@ -60,6 +61,7 @@ void VirtualOCTSystemSettingsDialog::getSettings(QVariantMap* settings) {
 	settings->insert(DEPTH, this->ui->spinBox_depth->value());
 	settings->insert(BUFFERS_PER_VOLUME, this->ui->spinBox_buffersPerVolume->value());
 	settings->insert(BUFFERS_FROM_FILE, this->ui->spinBox_buffersFromFile->value());
+	settings->insert(BSCAN_OFFSET, this->ui->spinBox_bscanOffset->value());
 	settings->insert(WAITTIME, this->ui->spinBox_waitTime->value());
 	settings->insert(COPY_TO_RAM, this->ui->checkBox_copyFileToRam->isChecked());
 }
@@ -89,6 +91,7 @@ void VirtualOCTSystemSettingsDialog::slot_apply() {
 	this->params.depth = this->ui->spinBox_depth->value();
 	this->params.buffersPerVolume = this->ui->spinBox_buffersPerVolume->value();
 	this->params.buffersFromFile = this->ui->spinBox_buffersFromFile->value();
+	this->params.bscanOffset = this->ui->spinBox_bscanOffset->value();
 	this->params.waitTimeUs = this->ui->spinBox_waitTime->value();
 	this->params.copyFileToRam = this->ui->checkBox_copyFileToRam->isChecked();
 	emit settingsUpdated(this->params);
@@ -103,6 +106,7 @@ void VirtualOCTSystemSettingsDialog::slot_enableGui(bool enable){
 	this->ui->spinBox_depth->setEnabled(enable);
 	this->ui->spinBox_buffersPerVolume->setEnabled(enable);
 	this->ui->spinBox_buffersFromFile->setEnabled(enable);
+	this->ui->spinBox_bscanOffset->setEnabled(enable);
 	//this->ui->spinBox_waitTime->setEnabled(enable);  //waitTime does not need to be disabled. It can be safely changed during processing
 	this->ui->checkBox_copyFileToRam->setEnabled(enable);
 }
