@@ -119,6 +119,8 @@ public slots:
 	void slot_easterEgg();
 	void slot_useCustomResamplingCurve(bool use);
 	void slot_loadCustomResamplingCurve();
+	void slot_setKLinCoeffs(double* k0, double* k1, double* k2, double* k3);
+	void slot_setCustomResamplingCurve(QVector<float> resamplingCurve);
 
 
 private:

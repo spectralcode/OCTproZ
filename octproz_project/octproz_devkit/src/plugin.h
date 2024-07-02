@@ -65,6 +65,7 @@ signals:
 	void setDispCompCoeffsRequest(double* d0, double* d1, double* d2, double* d3); ///< Experimental! May be removed in future versions. This signal can be used to change the coeffs for numerical dispersion compensation. If parameter value is "nullptr" the respective coefficient will not be changed.
 	void startProcessingRequest(); ///< Experimental! May be removed in future versions. This signal can be used to start processing
 	void stopProcessingRequest(); ///< Experimental! May be removed in future versions. This signal can be used to stop processing
+	void setCustomResamplingCurveRequest(QVector<float> customCurve);
 
 };
 

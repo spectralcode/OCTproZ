@@ -26,6 +26,7 @@
 **/
 
 #include "octproz.h"
+#include "octproz.h"
 
 
 OCTproZ::OCTproZ(QWidget *parent) :
@@ -442,12 +443,13 @@ void OCTproZ::loadSystemsAndExtensions() {
 		if (plugin) {
 			Plugin* actualPlugin = (Plugin*)(plugin);
 			enum PLUGIN_TYPE type = actualPlugin->getType();
-			connect(actualPlugin, &Plugin::setKLinCoeffsRequest, this->sidebar, &Sidebar::slot_setKLinCoeffs); //Experimental! May be removed in future versions.
+			connect(actualPlugin, &Plugin::setKLinCoeffsRequest, this, &OCTproZ::slot_setKLinCoeffs); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::setDispCompCoeffsRequest, this->sidebar, &Sidebar::slot_setDispCompCoeffs); //Experimental! May be removed in future versions.
 			connect(this->sidebar, &Sidebar::klinCoeffs, actualPlugin, &Plugin::setKLinCoeffsRequestAccepted); //Experimental! May be removed in future versions.
 			connect(this->sidebar, &Sidebar::dispCompCoeffs, actualPlugin, &Plugin::setDispCompCoeffsRequestAccepted); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::startProcessingRequest, this, &OCTproZ::slot_start); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::stopProcessingRequest, this, &OCTproZ::slot_stop); //Experimental! May be removed in future versions.
+			connect(actualPlugin, &Plugin::setCustomResamplingCurveRequest, this, &OCTproZ::slot_setCustomResamplingCurve);
 			switch (type) {
 				case SYSTEM:{
 					this->sysManager->addSystem(qobject_cast<AcquisitionSystem*>(plugin));
@@ -865,6 +867,20 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 	this->loadResamplingCurveFromFile(fileName);
 }
 
+void OCTproZ::slot_setKLinCoeffs(double* k0, double* k1, double* k2, double* k3) {
+	this->sidebar->slot_setKLinCoeffs(k0, k1, k2, k3);
+	this->slot_useCustomResamplingCurve(false);
+}
+
+void OCTproZ::slot_setCustomResamplingCurve(QVector<float> curve) {
+	this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
+	this->octParams->acquisitionParamsChanged = true;
+	this->sidebar->slot_updateProcessingParams();
+	this->actionUseCustomKLinCurve->setEnabled(true);
+	this->actionUseCustomKLinCurve->setChecked(true);
+	this->slot_useCustomResamplingCurve(true);
+}
+
 void OCTproZ::setSystem(QString systemName) {
 	if(this->currSystemName == systemName){ //system already activated
 		emit info(tr("System is already open."));
@@ -973,11 +989,7 @@ void OCTproZ::loadResamplingCurveFromFile(QString fileName){
 	}
 	file.close();
 	if(curve.size() > 0){
-		this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
-		this->octParams->acquisitionParamsChanged = true;
-		this->sidebar->slot_updateProcessingParams();
-		this->actionUseCustomKLinCurve->setEnabled(true);
-		this->actionUseCustomKLinCurve->setChecked(true);
+		this->slot_setCustomResamplingCurve(curve);
 		emit info(tr("Custom resampling curve loaded. File used: ") + fileName);
 	}else{
 		emit error(tr("Custom resampling curve has a size of 0. Check if .csv file with resampling curve is not empty has right format."));
