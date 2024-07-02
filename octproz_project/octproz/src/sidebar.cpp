@@ -508,10 +508,10 @@ void Sidebar::slot_setDispCompCoeffs(double *d0, double *d1, double *d2, double 
 		this->ui.doubleSpinBox_d1->setValue(*d1);
 	}
 	if(d2 != nullptr){
-		this->ui.doubleSpinBox_c2->setValue(*d2);
+		this->ui.doubleSpinBox_d2->setValue(*d2);
 	}
 	if(d3 != nullptr){
-		this->ui.doubleSpinBox_c3->setValue(*d3);
+		this->ui.doubleSpinBox_d3->setValue(*d3);
 	}
 	QApplication::processEvents();
 	emit dispCompCoeffs(this->ui.doubleSpinBox_d0->value(), this->ui.doubleSpinBox_d1->value(), this->ui.doubleSpinBox_d2->value(), this->ui.doubleSpinBox_d3->value());
