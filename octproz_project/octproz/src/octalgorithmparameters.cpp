@@ -183,6 +183,7 @@ void OctAlgorithmParameters::loadCustomResampleCurve(float* externalCurve, int s
 	}
 	this->customResampleCurve = (float*)malloc(size*sizeof(float));
 	this->customResampleCurveLength = size;
+	this->samplesPerLine = size; //todo: Reconsider if samplesPerLine should really be modified here. This might lead to a crash if a wrong file is loaded with more or fewer samples than expected.
 	for(int i = 0; i < size; i++){
 		this->customResampleCurve[i] = externalCurve[i];
 	}

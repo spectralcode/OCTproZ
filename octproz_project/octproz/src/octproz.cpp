@@ -57,6 +57,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->currSystem = nullptr;
 	this->currSystemName = "";
 	this->octParams = OctAlgorithmParameters::getInstance();
+	this->paramsManager = new OctAlgorithmParametersManager();
 
 	this->extManager = new ExtensionManager();
 	this->plot1D = new PlotWindow1D(this);
@@ -114,8 +115,11 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->sidebar, &Sidebar::error, this->console, &MessageConsole::displayError);
 	connect(this->sidebar, &Sidebar::dialogAboutToOpen, this, &OCTproZ::slot_closeOpenGLwindows); //GL windows need to be closed to avoid linux bug where QFileDialog is not usable when a GL window is opend in background
 	connect(this->sidebar, &Sidebar::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
-	connect(this->sidebar, &Sidebar::savePostProcessBackgroundRequested, this, &OCTproZ::savePostProcessBackgroundToFile);
-	connect(this->sidebar, &Sidebar::loadPostProcessBackgroundRequested, this, &OCTproZ::loadPostProcessBackgroundFromFile);
+
+	connect(this->sidebar, &Sidebar::savePostProcessBackgroundRequested, this->paramsManager, &OctAlgorithmParametersManager::savePostProcessBackgroundToFile);
+	connect(this->paramsManager, &OctAlgorithmParametersManager::backgroundDataUpdated, this->sidebar, &Sidebar::updateBackgroundPlot);
+	connect(this->sidebar, &Sidebar::loadPostProcessBackgroundRequested, this->paramsManager, &OctAlgorithmParametersManager::loadPostProcessBackgroundFromFile);
+	connect(this->sidebar, &Sidebar::loadResamplingCurveRequested, this->paramsManager, &OctAlgorithmParametersManager::loadCustomResamplingCurveFromFile);
 
 	this->processingInThread = false;
 	this->signalProcessing = new Processing();
@@ -201,6 +205,7 @@ OCTproZ::~OCTproZ(){
 	acquisitionThread.wait();
 
 	delete ui;
+	delete this->paramsManager;
 	delete this->sysManager;
 	delete this->sysChooser;
 	delete this->extManager;
@@ -972,6 +977,14 @@ void OCTproZ::updateSettingsMap() {
 	//message console
 	this->mainWindowSettings.insert(MESSAGE_CONSOLE_BOTTOM, this->console->getParams().newestMessageAtBottom);
 	this->mainWindowSettings.insert(MESSAGE_CONSOLE_HEIGHT, this->console->getParams().preferredHeight);
+
+	//docks
+	this->mainWindowSettings.insert(DOCK_BSCAN_VISIBLE, this->dock2D->isVisible());
+	this->mainWindowSettings.insert(DOCK_BSCAN_GEOMETRY, this->dock2D->saveGeometry());
+	this->mainWindowSettings.insert(DOCK_ENFACEVIEW_VISIBLE, this->dockEnFaceView->isVisible());
+	this->mainWindowSettings.insert(DOCK_ENFACEVIEW_GEOMETRY, this->dockEnFaceView->saveGeometry());
+	this->mainWindowSettings.insert(DOCK_VOLUME_VISIBLE, this->dockVolumeView->isVisible());
+	this->mainWindowSettings.insert(DOCK_VOLUME_GEOMETRY, this->dockVolumeView->saveGeometry());
 }
 
 void OCTproZ::loadResamplingCurveFromFile(QString fileName){
@@ -996,50 +1009,6 @@ void OCTproZ::loadResamplingCurveFromFile(QString fileName){
 	}
 }
 
-//todo: create a "OctAlgorithmParametersManager" class that handles all loading and saving octalgorithmparameters from and to files
-void OCTproZ::loadPostProcessBackgroundFromFile(QString fileName){
-	if(fileName == ""){
-		return;
-	}
-	QFile file(fileName);
-	if(!file.exists()){
-		return;
-	}
-	
-	QVector<float> curve;
-	file.open(QIODevice::ReadOnly);
-	QTextStream txtStream(&file);
-	QString line = txtStream.readLine();
-	while (!txtStream.atEnd()){
-		line = txtStream.readLine();
-		curve.append((line.section(";", 1, 1).toFloat()));
-	}
-	file.close();
-	if(curve.size() > 0){
-		this->octParams->loadPostProcessingBackground(curve.data(), curve.size());
-		this->sidebar->updateBackgroundPlot();
-		emit info(tr("Background data for post processing loaded. File used: ") + fileName);
-	}else{
-		emit error(tr("Background data has a size of 0. Check if the .csv file with background data is not empty and has the right format."));
-	}
-}
-
-void OCTproZ::savePostProcessBackgroundToFile(QString fileName) {
-	QFile file(fileName);
-	if (file.open(QFile::WriteOnly|QFile::Truncate)) {
-		QTextStream stream(&file);
-		stream << tr("Sample Number") << ";" << tr("Sample Value") << "\n";
-		int numberOfDataPoints = this->octParams->postProcessBackgroundLength;
-		for(int i = 0; i < numberOfDataPoints; i++){
-			stream << QString::number(i) << ";" << this->octParams->postProcessBackground[i] << "\n";
-		}
-		file.close();
-		emit info(tr("Background data saved to: ") + fileName);
-	} else {
-		emit error(tr("Could not save Background data to: ") + fileName);
-	}
-}
-
 void OCTproZ::loadMainWindowSettings(){
 	Settings* settingsManager = Settings::getInstance();
 
@@ -1058,6 +1027,17 @@ void OCTproZ::loadMainWindowSettings(){
 	consoleParams.newestMessageAtBottom = this->mainWindowSettings.value(MESSAGE_CONSOLE_BOTTOM).toBool();
 	consoleParams.preferredHeight = this->mainWindowSettings.value(MESSAGE_CONSOLE_HEIGHT).toInt();
 	this->console->setParams(consoleParams);
+
+	QTimer::singleShot(500, this, [this]() {
+		this->dock2D->setVisible(this->mainWindowSettings.value(DOCK_BSCAN_VISIBLE).toBool());
+		this->dockEnFaceView->setVisible(this->mainWindowSettings.value(DOCK_ENFACEVIEW_VISIBLE).toBool());
+		this->dockVolumeView->setVisible(this->mainWindowSettings.value(DOCK_VOLUME_VISIBLE).toBool());
+
+//todo: this does not work as expected. the geometry of the docks is only restored as long as the control panel is not visible. maybe the geometry of the control panel also needs to be stored and loaded
+//		this->dock2D->restoreGeometry(this->mainWindowSettings.value(DOCK_BSCAN_GEOMETRY).toByteArray());
+//		this->dockEnFaceView->restoreGeometry(this->mainWindowSettings.value(DOCK_ENFACEVIEW_GEOMETRY).toByteArray());
+//		this->dockVolumeView->restoreGeometry(this->mainWindowSettings.value(DOCK_VOLUME_GEOMETRY).toByteArray());
+	});
 }
 
 void OCTproZ::saveMainWindowSettings() {
@@ -1068,6 +1048,13 @@ void OCTproZ::saveMainWindowSettings() {
 
 void OCTproZ::loadSettings(){
 	this->sidebar->loadSettings();
+	if(this->octParams->customResampleCurve != nullptr){
+		this->paramsManager->loadCustomResamplingCurveFromFile(SETTINGS_PATH_RESAMPLING_FILE);
+		this->actionUseCustomKLinCurve->setEnabled(true);
+		this->actionUseCustomKLinCurve->setChecked(this->octParams->useCustomResampleCurve);
+		this->slot_useCustomResamplingCurve(this->octParams->useCustomResampleCurve);
+		this->sidebar->slot_updateProcessingParams();
+	}
 
 	//restore main window position and size (if application was already open once)
 	this->loadMainWindowSettings();

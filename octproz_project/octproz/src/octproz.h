@@ -52,6 +52,7 @@
 #include "processing.h"
 #include "octproz_devkit.h"
 #include "octalgorithmparameters.h"
+#include "octalgorithmparametersmanager.h"
 #include "aboutdialog.h"
 
 #include "ui_octproz.h"
@@ -66,6 +67,13 @@
 #define MAIN_ACTIVE_SYSTEM "main_active_system"
 #define MESSAGE_CONSOLE_BOTTOM "message_console_bottom"
 #define MESSAGE_CONSOLE_HEIGHT "message_console_height"
+#define DOCK_BSCAN_VISIBLE "dock_bscan_visible"
+#define DOCK_BSCAN_GEOMETRY "dock_bscan_geometry"
+#define DOCK_ENFACEVIEW_VISIBLE "dock_enfaceview_visible"
+#define DOCK_ENFACEVIEW_GEOMETRY "dock_enfaceview_geometry"
+#define DOCK_VOLUME_VISIBLE "dock_volume_visible"
+#define DOCK_VOLUME_GEOMETRY "dock_volume_geometry"
+
 
 
 
@@ -135,8 +143,6 @@ private:
 	void saveSettings();
 	void updateSettingsMap();
 	void loadResamplingCurveFromFile(QString fileName);
-	void loadPostProcessBackgroundFromFile(QString fileName);
-	void savePostProcessBackgroundToFile(QString fileName);
 
 	Ui::OCTproZ *ui;
 	QVariantMap mainWindowSettings;
@@ -148,6 +154,7 @@ private:
 	ExtensionManager* extManager;
 	Processing* signalProcessing; 
 	OctAlgorithmParameters* octParams;
+	OctAlgorithmParametersManager* paramsManager;
 	Gpu2HostNotifier* processedDataNotifier;
 
 	bool processingInThread;

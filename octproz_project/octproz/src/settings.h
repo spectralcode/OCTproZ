@@ -37,6 +37,7 @@
 #define SETTINGS_FILE_NAME "settings.ini"
 #define SETTINGS_PATH SETTINGS_DIR + "/" + SETTINGS_FILE_NAME
 #define SETTINGS_PATH_BACKGROUND_FILE SETTINGS_DIR + "/background.csv"
+#define SETTINGS_PATH_RESAMPLING_FILE SETTINGS_DIR + "/resampling.csv"
 #define TIMESTAMP "timestamp"
 
 
