@@ -162,6 +162,7 @@ void OctAlgorithmParameters::updateResampleCurve() {
 				this->customResampleCurve = this->resizeCurve(this->customResampleCurve, this->customResampleCurveLength, (int)this->samplesPerLine);
 			}
 			this->resampleCurve = this->customResampleCurve;
+			this->resampleCurveLength = this->customResampleCurveLength;
 		}
 		Polynomial::clamp(this->resampleCurve, this->samplesPerLine, 0, this->samplesPerLine-3); //resampling curve values shall remain between 0 and number of samples per line - 3 (a line is a raw A-scan). If a value is outside these boundaries the resampling (k-linearization) during processing will fail with a memory access violation //todo: rethink this approach, maybe there is a better way to avoid memeory access violation during interpolation in klinerization kernels
 		this->resamplingUpdated = true;
