@@ -70,6 +70,7 @@
 #define PROC_RESAMPLING_C2 "resampling_c2"
 #define PROC_RESAMPLING_C3 "resampling_c3"
 #define PROC_CUSTOM_RESAMPLING "custom_resampling"
+#define PROC_CUSTOM_RESAMPLING_FILEPATH "custom_resampling_filepath"
 #define PROC_DISPERSION_COMPENSATION "dispersion_compensation"
 #define PROC_DISPERSION_COMPENSATION_D0 "dispersion_compensation_d0"
 #define PROC_DISPERSION_COMPENSATION_D1 "dispersion_compensation_d1"
@@ -86,6 +87,7 @@
 #define PROC_POST_BACKGROUND_REMOVAL "post_processing_background_removal"
 #define PROC_POST_BACKGROUND_WEIGHT "post_processing_background_removal_weight"
 #define PROC_POST_BACKGROUND_OFFSET "post_processing_background_removal_offset"
+#define PROC_POST_BACKGROUND_FILEPATH "post_processing_background_filepath"
 
 #define STREAM_STREAMING "streaming_enabled"
 #define STREAM_STREAMING_SKIP "streaming_skip"

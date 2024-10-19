@@ -11,7 +11,7 @@ class OctAlgorithmParametersManager : public QObject
 	Q_OBJECT
 public:
 	explicit OctAlgorithmParametersManager(QObject *parent = nullptr);
-
+	OctAlgorithmParameters* getParams(){return this->octParams;}
 	
 private:
 	OctAlgorithmParameters* octParams;

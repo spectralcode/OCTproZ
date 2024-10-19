@@ -107,6 +107,10 @@ public slots:
 	void slot_stop();
 	void slot_record();
 	void slot_selectSystem();
+	void slot_selectAndLoadSettingsFile();
+	void slot_selectAndSaveSettingsToFile();
+	void slot_loadSettingsFromFile(QString filePath);
+	void slot_saveSettingsToFile(QString filePath);
 	void slot_menuUserManual();
 	void slot_menuAbout();
 	void slot_menuApplicationSettings();
@@ -140,6 +144,7 @@ private:
 	void loadMainWindowSettings();
 	void saveMainWindowSettings();
 	void loadSettings();
+	void loadSettingsFromFile(const QString &settingsFilePath);
 	void saveSettings();
 	void updateSettingsMap();
 	void loadResamplingCurveFromFile(QString fileName);

@@ -112,6 +112,7 @@ public:
 	bool resamplingUpdated;
 	bool useCustomResampleCurve;
 	INTERPOLATION resamplingInterpolation;
+	QString customResampleCurveFilePath;
 
 	float* dispersionCurve;
 	float* dispersionReferenceCurve;

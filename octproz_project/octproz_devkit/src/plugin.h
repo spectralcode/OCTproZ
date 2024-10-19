@@ -66,6 +66,8 @@ signals:
 	void startProcessingRequest(); ///< Experimental! May be removed in future versions. This signal can be used to start processing
 	void stopProcessingRequest(); ///< Experimental! May be removed in future versions. This signal can be used to stop processing
 	void setCustomResamplingCurveRequest(QVector<float> customCurve);
+	void loadSettingsFileRequest(QString);
+	void saveSettingsFileRequest(QString);
 
 };
 

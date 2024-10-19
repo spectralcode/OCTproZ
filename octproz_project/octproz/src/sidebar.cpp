@@ -193,7 +193,12 @@ void Sidebar::loadSettings() {
 	this->ui.doubleSpinBox_c3->setValue(this->processingSettings.value(PROC_RESAMPLING_C3).toDouble());
 	//this->actionUseCustomKLinCurve->setChecked(this->processingSettings.value(PROC_CUSTOM_RESAMPLING).toBool());
 	OctAlgorithmParameters::getInstance()->useCustomResampleCurve = this->processingSettings.value(PROC_CUSTOM_RESAMPLING).toBool(); //todo: move all actions for klin from octproz to sidebar
-	emit loadResamplingCurveRequested(SETTINGS_PATH_RESAMPLING_FILE);
+	QString customResamplingFilePath = this->processingSettings.value(PROC_CUSTOM_RESAMPLING_FILEPATH).toString();
+	if (customResamplingFilePath.isEmpty() || !QFile::exists(customResamplingFilePath)) {
+		emit loadResamplingCurveRequested(SETTINGS_PATH_RESAMPLING_FILE);
+	} else {
+		emit loadResamplingCurveRequested(customResamplingFilePath);
+	}
 	this->ui.groupBox_dispersionCompensation->setChecked(this->processingSettings.value(PROC_DISPERSION_COMPENSATION).toBool());
 	this->ui.doubleSpinBox_d0->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D0).toDouble());
 	this->ui.doubleSpinBox_d1->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D1).toDouble());
@@ -596,6 +601,7 @@ void Sidebar::updateSettingsMaps() {
 	this->processingSettings.insert(PROC_RESAMPLING_C2, this->ui.doubleSpinBox_c2->value());
 	this->processingSettings.insert(PROC_RESAMPLING_C3, this->ui.doubleSpinBox_c3->value());
 	this->processingSettings.insert(PROC_CUSTOM_RESAMPLING, this->actionUseCustomKLinCurve->isChecked());
+	this->processingSettings.insert(PROC_CUSTOM_RESAMPLING_FILEPATH, OctAlgorithmParametersManager().getParams()->customResampleCurveFilePath);
 	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION, this->ui.groupBox_dispersionCompensation->isChecked());
 	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D0, this->ui.doubleSpinBox_d0->value());
 	this->processingSettings.insert(PROC_DISPERSION_COMPENSATION_D1, this->ui.doubleSpinBox_d1->value());

@@ -61,6 +61,7 @@ void OctAlgorithmParametersManager::loadCustomResamplingCurveFromFile(QString fi
 	QVector<float> curve = this->loadCurveFromFile(fileName);
 	if(curve.size() > 0){
 		this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
+		this->octParams->customResampleCurveFilePath = fileName;
 		emit resamplingCurveUpdated();
 		emit info(tr("Resampling  curve loaded. File used: ") + fileName);
 	}else{

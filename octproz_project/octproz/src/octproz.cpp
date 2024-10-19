@@ -26,7 +26,6 @@
 **/
 
 #include "octproz.h"
-#include "octproz.h"
 
 
 OCTproZ::OCTproZ(QWidget *parent) :
@@ -357,6 +356,19 @@ void OCTproZ::initMenu() {
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(this->actionSelectSystem);
 	fileMenu->addAction(this->actionSystemSettings);
+
+	//load settings from file
+	QAction *loadSettingsAction = new QAction(tr("&Load Settings from File"), this);
+	loadSettingsAction->setIcon(QIcon(":/icons/octproz_load_icon.png"));
+	connect(loadSettingsAction, &QAction::triggered, this, &OCTproZ::slot_selectAndLoadSettingsFile);
+	fileMenu->addAction(loadSettingsAction);
+
+	//save settings to file
+	QAction *saveSettingsAction = new QAction(tr("&Save Settings to File"), this);
+	saveSettingsAction->setIcon(QIcon(":/icons/octproz_save_icon.png"));
+	connect(saveSettingsAction, &QAction::triggered, this, &OCTproZ::slot_selectAndSaveSettingsToFile);
+	fileMenu->addAction(saveSettingsAction);
+
 	fileMenu->addSeparator();
 	const QIcon exitIcon = QIcon(":/icons/octproz_close_icon.png");
 	QAction *exitAct = fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
@@ -455,6 +467,8 @@ void OCTproZ::loadSystemsAndExtensions() {
 			connect(actualPlugin, &Plugin::startProcessingRequest, this, &OCTproZ::slot_start); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::stopProcessingRequest, this, &OCTproZ::slot_stop); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::setCustomResamplingCurveRequest, this, &OCTproZ::slot_setCustomResamplingCurve);
+			connect(actualPlugin, &Plugin::loadSettingsFileRequest, this, &OCTproZ::slot_loadSettingsFromFile);
+			connect(actualPlugin, &Plugin::saveSettingsFileRequest, this, &OCTproZ::slot_saveSettingsToFile);
 			switch (type) {
 				case SYSTEM:{
 					this->sysManager->addSystem(qobject_cast<AcquisitionSystem*>(plugin));
@@ -630,6 +644,46 @@ void OCTproZ::slot_record() {
 void OCTproZ::slot_selectSystem() {
 	QString selectedSystem = this->sysChooser->selectSystem(this->sysManager->getSystemNames());
 	this->setSystem(selectedSystem);
+}
+
+void OCTproZ::slot_selectAndLoadSettingsFile() {
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Select Settings File"), "", tr("Settings Files (*.ini *.txt)"));
+
+	if (!fileName.isEmpty()) {
+		this->loadSettingsFromFile(fileName);
+	}
+}
+
+void OCTproZ::slot_loadSettingsFromFile(QString fileName) {
+	this->loadSettingsFromFile(fileName);
+}
+
+void OCTproZ::slot_saveSettingsToFile(QString fileName) {
+	if (fileName.isEmpty()) {
+		emit error(tr("Settings file not saved."));
+		return;
+	}
+
+	//ensure the file has an extension. use ini as default
+	QFileInfo fileInfo(fileName);
+	if (fileInfo.suffix().isEmpty()) {
+		fileName += ".ini";
+		fileInfo.setFile(fileName);
+	}
+
+	//ensure current settings are saved before copying
+	this->saveSettings();
+
+	//save the settings by copying the existing settings file
+	Settings* settingsManager = Settings::getInstance();
+	settingsManager->copySettingsFile(fileName);
+
+	emit info(tr("Settings have been saved successfully to: ") + fileName);
+}
+
+void OCTproZ::slot_selectAndSaveSettingsToFile() {
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Settings File"), "", tr("Settings Files (*.ini *.txt);;All Files (*.*)"));
+	this->slot_saveSettingsToFile(fileName);
 }
 
 void OCTproZ::slot_menuUserManual() {
@@ -1003,6 +1057,7 @@ void OCTproZ::loadResamplingCurveFromFile(QString fileName){
 	file.close();
 	if(curve.size() > 0){
 		this->slot_setCustomResamplingCurve(curve);
+		this->octParams->customResampleCurveFilePath = fileName;
 		emit info(tr("Custom resampling curve loaded. File used: ") + fileName);
 	}else{
 		emit error(tr("Custom resampling curve has a size of 0. Check if .csv file with resampling curve is not empty has right format."));
@@ -1049,21 +1104,74 @@ void OCTproZ::saveMainWindowSettings() {
 void OCTproZ::loadSettings(){
 	this->sidebar->loadSettings();
 	if(this->octParams->customResampleCurve != nullptr){
-		this->paramsManager->loadCustomResamplingCurveFromFile(SETTINGS_PATH_RESAMPLING_FILE);
+		//this->paramsManager->loadCustomResamplingCurveFromFile(SETTINGS_PATH_RESAMPLING_FILE);
 		this->actionUseCustomKLinCurve->setEnabled(true);
 		this->actionUseCustomKLinCurve->setChecked(this->octParams->useCustomResampleCurve);
 		this->slot_useCustomResamplingCurve(this->octParams->useCustomResampleCurve);
 		this->sidebar->slot_updateProcessingParams();
 	}
 
-	//restore main window position and size (if application was already open once)
+	//restore main window position and size
 	this->loadMainWindowSettings();
 
 	//restore B-scan window and EnFaceView window settings
 	this->bscanWindow->setSettings(Settings::getInstance()->getStoredSettings(this->bscanWindow->getName()));
 	this->enFaceViewWindow->setSettings(Settings::getInstance()->getStoredSettings(this->enFaceViewWindow->getName()));
 	this->volumeWindow->setSettings(Settings::getInstance()->getStoredSettings(this->volumeWindow->getName()));
+
+	//force refresh of the console dock to fix display issues after loading settings
+	QTimer::singleShot(0, this, [this]() {
+		QSize dockSize = this->dockConsole->size();
+		int originalHeight = dockSize.height();
+		dockSize.setHeight(originalHeight + 1);
+		this->dockConsole->resize(dockSize);
+		dockSize.setHeight(originalHeight);
+		this->dockConsole->resize(dockSize);
+	});
 }
+
+void OCTproZ::loadSettingsFromFile(const QString &settingsFilePath) {
+	if (settingsFilePath.isEmpty()) {
+		emit error(tr("Invalid File: ") + tr("No settings file selected or file path is invalid."));
+		return;
+	}
+
+	//confirm with the user before overwriting the current settings
+//	QMessageBox::StandardButton reply;
+//	reply = QMessageBox::question(this, tr("Overwrite Current Settings"),
+//		tr("Loading settings from a file will overwrite your current settings. Do you want to continue?"),
+//		QMessageBox::Yes | QMessageBox::No);
+
+//	if (reply == QMessageBox::No){
+//		return;
+//	}
+
+	// Backup current settings file
+	QString backupPath = SETTINGS_PATH + ".backup";
+	QFile::remove(backupPath);  // Remove any existing backup
+	QFile::copy(SETTINGS_PATH, backupPath);
+
+	// Attempt to copy the selected settings file to the default settings path
+	if (!QFile::remove(SETTINGS_PATH)) {
+		emit error(("Failed to remove the existing settings file."));
+		return;
+	}
+
+	if (!QFile::copy(settingsFilePath, SETTINGS_PATH)) {
+		emit error(("Failed to load settings from: " + settingsFilePath));
+		QFile::copy(backupPath, SETTINGS_PATH);
+		return;
+	}
+
+	// Reload the settings
+	this->loadSettings();
+	if(!this->currSystemName.isEmpty()) {
+		emit loadPluginSettings(Settings::getInstance()->getStoredSettings(this->currSystemName));
+	}
+	// Inform the user that the settings have been loaded
+	emit info(tr("Settings have been loaded successfully from: ") + settingsFilePath);
+}
+
 
 void OCTproZ::saveSettings() {
 	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmsszzz");
