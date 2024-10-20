@@ -358,6 +358,7 @@ void OCTproZ::initMenu() {
 	fileMenu->addAction(this->actionSystemSettings);
 
 	//load settings from file
+	fileMenu->addSeparator();
 	QAction *loadSettingsAction = new QAction(tr("&Load Settings from File"), this);
 	loadSettingsAction->setIcon(QIcon(":/icons/octproz_load_icon.png"));
 	connect(loadSettingsAction, &QAction::triggered, this, &OCTproZ::slot_selectAndLoadSettingsFile);
