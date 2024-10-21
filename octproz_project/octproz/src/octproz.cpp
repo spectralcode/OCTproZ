@@ -467,6 +467,7 @@ void OCTproZ::loadSystemsAndExtensions() {
 			connect(this->sidebar, &Sidebar::dispCompCoeffs, actualPlugin, &Plugin::setDispCompCoeffsRequestAccepted); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::startProcessingRequest, this, &OCTproZ::slot_start); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::stopProcessingRequest, this, &OCTproZ::slot_stop); //Experimental! May be removed in future versions.
+			connect(actualPlugin, &Plugin::startRecordingRequest, this, &OCTproZ::slot_record);
 			connect(actualPlugin, &Plugin::setCustomResamplingCurveRequest, this, &OCTproZ::slot_setCustomResamplingCurve);
 			connect(actualPlugin, &Plugin::loadSettingsFileRequest, this, &OCTproZ::slot_loadSettingsFromFile);
 			connect(actualPlugin, &Plugin::saveSettingsFileRequest, this, &OCTproZ::slot_saveSettingsToFile);
