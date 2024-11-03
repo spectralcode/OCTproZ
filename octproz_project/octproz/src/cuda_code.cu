@@ -41,7 +41,9 @@ int threadsPerBlockLimit;
 const int nStreams = 8;
 int currStream = 0;
 
+#if __CUDACC_VER_MAJOR__ <12
 surface<void, cudaSurfaceType3D> surfaceWrite;
+#endif
 
 cudaStream_t stream[nStreams];
 cudaStream_t userRequestStream;
@@ -893,7 +895,11 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 	}
 }
 
+#if __CUDACC_VER_MAJOR__ >=12
+__global__ void updateDisplayedVolume(cudaSurfaceObject_t surfaceWrite, const float* processedBuffer, const unsigned int samplesInBuffer, const unsigned int currBufferNr, const unsigned int bscansPerBuffer, dim3 textureDim) {
+#else
 __global__ void updateDisplayedVolume(const float* processedBuffer, const unsigned int samplesInBuffer, const unsigned int currBufferNr, const unsigned int bscansPerBuffer, dim3 textureDim) {
+#endif
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < samplesInBuffer; i += blockDim.x * gridDim.x){
 		int width = textureDim.x; //Ascans per Bscan
 		//int height = textureDim.y; //Bscans per Volume
@@ -1283,6 +1289,23 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 	unsigned int height = ascansPerBscan;
 	unsigned int depth = signalLength/2;
 	if (d_volumeViewDisplayBuffer != NULL) {
+#if __CUDACC_VER_MAJOR__ >=12
+	        cudaResourceDesc surfRes;
+	        memset(&surfRes, 0, sizeof(surfRes));
+	        surfRes.resType = cudaResourceTypeArray;
+	        surfRes.res.array.array = d_volumeViewDisplayBuffer;
+	        cudaSurfaceObject_t surfaceWrite;
+	
+	        cudaError_t error_id = cudaCreateSurfaceObject(&surfaceWrite, &surfRes);
+	        if (error_id != cudaSuccess) {
+	            printf("Cuda: Failed to create surface object: %d\n-> %s\n", (int)error_id, cudaGetErrorString(error_id));
+	            return;
+	        }
+	
+	        dim3 texture_dim(height, width, depth); //todo: use consistent naming of width, height, depth, x, y, z, ...
+	        updateDisplayedVolume<< <gridSize/2, blockSize, 0, stream>>>(surfaceWrite, d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
+	        cudaDestroySurfaceObject(surfaceWrite);
+#else
 		//bind voxel array to a writable cuda surface
 		cudaError_t error_id = cudaBindSurfaceToArray(surfaceWrite, d_volumeViewDisplayBuffer);
 		if (error_id != cudaSuccess) {
@@ -1293,7 +1316,8 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 		//write to cuda surface
 		dim3 texture_dim(height, width, depth); //todo: use consistent naming of width, height, depth, x, y, z, ...
 		updateDisplayedVolume<< <gridSize/2, blockSize, 0, stream>>>(d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
-	}
+#endif
+    }
 
 	//unmap the graphics resource
 	if (cuBufHandleVolumeView != NULL) {
