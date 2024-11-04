@@ -10,6 +10,9 @@ TARGET = OCTproZ_DevKit
 TEMPLATE = lib
 CONFIG += staticlib
 
+#include build configuration macros
+include(../config.pri)
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -97,4 +100,10 @@ unix {
 win32 {
 	for(header, HEADERS):QMAKE_CLEAN += $$shell_path($$SHAREDIR/$${header})
 	QMAKE_CLEAN += $$shell_path($$SHAREDIR_LIB/$$TARGET'.'$${QMAKE_EXTENSION_STATICLIB})
+}
+
+#include cuda.pri only for Jetson Nano
+message("host architecture is: " $$QMAKE_HOST.arch)
+contains(QMAKE_HOST.arch, aarch64){
+	include(../octproz/pri/cuda.pri)
 }

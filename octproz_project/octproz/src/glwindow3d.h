@@ -81,7 +81,7 @@
 #include "controlpanel.h"
 #include "settings.h"
 
-#define DELAY_TIME_IN_ms 80
+#define REFRESH_INTERVAL_IN_ms 80
 
 
 class GLWindow3D : public QOpenGLWidget, protected QOpenGLExtraFunctions, public OutputWindow
@@ -128,6 +128,7 @@ public slots:
 
 	void saveScreenshot(QString savePath, QString fileName);
 	void openScreenshotDialog();
+	void enalbeFpsCalculation(bool enabled);
 	void changeTextureSize(unsigned int width, unsigned int height, unsigned int depth);
 	void createOpenGLContextForProcessing(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void registerOpenGLBufferWithCuda();
@@ -178,6 +179,7 @@ private:
 	bool initialized;
 	bool changeTextureSizeFlag;
 	bool updateContinuously;
+	QString baseTitle;
 	GLWindow3DParams displayParams;
 
 	unsigned int volumeWidth;
@@ -185,9 +187,11 @@ private:
 	unsigned int volumeDepth;
 	QPoint mousePos;
 	QPointF viewPos;
+
 	qreal fps;
 	QElapsedTimer timer;
 	int counter;
+	bool showFPS;
 
 	QMenu* contextMenu;
 	QAction* screenshotAction;
@@ -223,6 +227,7 @@ private:
 
 	std::map<QString, QOpenGLShaderProgram*> shaders;
 	std::map<QString, std::function<void(void)>> modes;
+	QStringList modeNames;
 	QString activeMode;
 
 	TrackBall trackBall {};	   /*!< Trackball holding the model rotation. */
@@ -261,9 +266,17 @@ private:
 	void addShader(const QString& name, const QString& vector, const QString& fragment);
 	void restoreLUTSettingsFromPreviousSession();
 
+	void initPanel();
+	void initRenderingModes();
 	void initContextMenu();
 	void delayedUpdate();
 	void countFPS();
+	QString getDockTitle();
+	QString getDockBaseTitle();
+	void setDockTitle(const QString& title);
+	void updateDockTitleWithFPS(float fps);
+
+
 };
 
 #endif //GLWINDOW3D_H

@@ -52,7 +52,6 @@ struct RecordingParams {
 	bool recordProcessed;
 	bool recordScreenshot;
 	bool saveMetaData;
-
 	bool stopAfterRecord;
 };
 
@@ -113,6 +112,7 @@ public:
 	bool resamplingUpdated;
 	bool useCustomResampleCurve;
 	INTERPOLATION resamplingInterpolation;
+	QString customResampleCurveFilePath;
 
 	float* dispersionCurve;
 	float* dispersionReferenceCurve;

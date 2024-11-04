@@ -35,6 +35,7 @@
 #include "minicurveplot.h"
 #include "settings.h"
 #include "octalgorithmparameters.h"
+#include "octalgorithmparametersmanager.h"
 #include "eventguard.h"
 
 #include "ui_sidebar.h"
@@ -68,6 +69,8 @@
 #define PROC_RESAMPLING_C1 "resampling_c1"
 #define PROC_RESAMPLING_C2 "resampling_c2"
 #define PROC_RESAMPLING_C3 "resampling_c3"
+#define PROC_CUSTOM_RESAMPLING "custom_resampling"
+#define PROC_CUSTOM_RESAMPLING_FILEPATH "custom_resampling_filepath"
 #define PROC_DISPERSION_COMPENSATION "dispersion_compensation"
 #define PROC_DISPERSION_COMPENSATION_D0 "dispersion_compensation_d0"
 #define PROC_DISPERSION_COMPENSATION_D1 "dispersion_compensation_d1"
@@ -84,6 +87,7 @@
 #define PROC_POST_BACKGROUND_REMOVAL "post_processing_background_removal"
 #define PROC_POST_BACKGROUND_WEIGHT "post_processing_background_removal_weight"
 #define PROC_POST_BACKGROUND_OFFSET "post_processing_background_removal_offset"
+#define PROC_POST_BACKGROUND_FILEPATH "post_processing_background_filepath"
 
 #define STREAM_STREAMING "streaming_enabled"
 #define STREAM_STREAMING_SKIP "streaming_skip"
@@ -128,6 +132,10 @@ private:
 	MiniCurvePlot*			windowCurvePlot;
 	unsigned int			defaultWidth;
 	QAction*				copyInfoAction;
+	QAction*				actionUseSidebarKLinCurve;
+	QAction*				actionUseCustomKLinCurve;
+	QAction*				actionSetCustomKLinCurve;
+
 	QVariantMap recordSettings;
 	QVariantMap processingSettings;
 	QVariantMap streamingSettings;
@@ -169,6 +177,8 @@ signals:
 	void dispCompCoeffs(double d0, double d1, double d2, double d3);
 	void savePostProcessBackgroundRequested(QString fileName);
 	void loadPostProcessBackgroundRequested(QString fileName);
+	void saveResamplingCurveRequested(QString fileName);
+	void loadResamplingCurveRequested(QString fileName);
 	void error(QString);
 	void info(QString);
 };

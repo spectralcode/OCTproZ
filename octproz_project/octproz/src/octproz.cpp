@@ -56,6 +56,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	this->currSystem = nullptr;
 	this->currSystemName = "";
 	this->octParams = OctAlgorithmParameters::getInstance();
+	this->paramsManager = new OctAlgorithmParametersManager();
 
 	this->extManager = new ExtensionManager();
 	this->plot1D = new PlotWindow1D(this);
@@ -113,8 +114,11 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->sidebar, &Sidebar::error, this->console, &MessageConsole::displayError);
 	connect(this->sidebar, &Sidebar::dialogAboutToOpen, this, &OCTproZ::slot_closeOpenGLwindows); //GL windows need to be closed to avoid linux bug where QFileDialog is not usable when a GL window is opend in background
 	connect(this->sidebar, &Sidebar::dialogClosed, this, &OCTproZ::slot_reopenOpenGLwindows);
-	connect(this->sidebar, &Sidebar::savePostProcessBackgroundRequested, this, &OCTproZ::savePostProcessBackgroundToFile);
-	connect(this->sidebar, &Sidebar::loadPostProcessBackgroundRequested, this, &OCTproZ::loadPostProcessBackgroundFromFile);
+
+	connect(this->sidebar, &Sidebar::savePostProcessBackgroundRequested, this->paramsManager, &OctAlgorithmParametersManager::savePostProcessBackgroundToFile);
+	connect(this->paramsManager, &OctAlgorithmParametersManager::backgroundDataUpdated, this->sidebar, &Sidebar::updateBackgroundPlot);
+	connect(this->sidebar, &Sidebar::loadPostProcessBackgroundRequested, this->paramsManager, &OctAlgorithmParametersManager::loadPostProcessBackgroundFromFile);
+	connect(this->sidebar, &Sidebar::loadResamplingCurveRequested, this->paramsManager, &OctAlgorithmParametersManager::loadCustomResamplingCurveFromFile);
 
 	this->processingInThread = false;
 	this->signalProcessing = new Processing();
@@ -133,6 +137,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->signalProcessing, &Processing::info, this->console, &MessageConsole::displayInfo);
 	connect(this->signalProcessing, &Processing::error, this->console, &MessageConsole::displayError);
 	connect(this->signalProcessing, &Processing::initializationDone, this, &OCTproZ::slot_enableStopAction);
+	connect(this->signalProcessing, &Processing::initializationFailed, this, &OCTproZ::slot_stop);
 	connect(this->signalProcessing, &Processing::streamingBufferEnabled, this->plot1D, &PlotWindow1D::slot_enableProcessedGrabbing);
 	connect(this->signalProcessing, &Processing::rawData, this->plot1D, &PlotWindow1D::slot_plotRawData);
 	connect(this->signalProcessing, &Processing::processedRecordDone, this, &OCTproZ::slot_resetGpu2HostSettings);
@@ -164,6 +169,11 @@ OCTproZ::OCTproZ(QWidget *parent) :
 	connect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailible, this->plot1D, &PlotWindow1D::slot_plotProcessedData);
 	connect(this->processedDataNotifier, &Gpu2HostNotifier::backgroundRecorded, this->sidebar, &Sidebar::updateBackgroundPlot);
 	
+	//connects to update opengl displays only when new data is written to display buffers //todo: further investigation. this seems to give hugely different results on linux vs windows. on windows this seems to lock the processing speed to max 60 Hz.
+//	connect(this->processedDataNotifier, &Gpu2HostNotifier::bscanDisplayBufferReady, this->bscanWindow, QOverload<>::of(&GLWindow2D::update));
+//	connect(this->processedDataNotifier, &Gpu2HostNotifier::enfaceDisplayBufferReady, this->enFaceViewWindow, QOverload<>::of(&GLWindow2D::update));
+//	connect(this->processedDataNotifier, &Gpu2HostNotifier::volumeDisplayBufferReady, this->volumeWindow, QOverload<>::of(&GLWindow3D::update));
+
 	connect(&notifierThread, &QThread::finished, this->processedDataNotifier, &Gpu2HostNotifier::deleteLater);
 	notifierThread.start();
 
@@ -194,6 +204,7 @@ OCTproZ::~OCTproZ(){
 	acquisitionThread.wait();
 
 	delete ui;
+	delete this->paramsManager;
 	delete this->sysManager;
 	delete this->sysChooser;
 	delete this->extManager;
@@ -345,6 +356,20 @@ void OCTproZ::initMenu() {
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(this->actionSelectSystem);
 	fileMenu->addAction(this->actionSystemSettings);
+
+	//load settings from file
+	fileMenu->addSeparator();
+	QAction *loadSettingsAction = new QAction(tr("&Load Settings from File"), this);
+	loadSettingsAction->setIcon(QIcon(":/icons/octproz_load_icon.png"));
+	connect(loadSettingsAction, &QAction::triggered, this, &OCTproZ::slot_selectAndLoadSettingsFile);
+	fileMenu->addAction(loadSettingsAction);
+
+	//save settings to file
+	QAction *saveSettingsAction = new QAction(tr("&Save Settings to File"), this);
+	saveSettingsAction->setIcon(QIcon(":/icons/octproz_save_icon.png"));
+	connect(saveSettingsAction, &QAction::triggered, this, &OCTproZ::slot_selectAndSaveSettingsToFile);
+	fileMenu->addAction(saveSettingsAction);
+
 	fileMenu->addSeparator();
 	const QIcon exitIcon = QIcon(":/icons/octproz_close_icon.png");
 	QAction *exitAct = fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
@@ -436,12 +461,16 @@ void OCTproZ::loadSystemsAndExtensions() {
 		if (plugin) {
 			Plugin* actualPlugin = (Plugin*)(plugin);
 			enum PLUGIN_TYPE type = actualPlugin->getType();
-			connect(actualPlugin, &Plugin::setKLinCoeffsRequest, this->sidebar, &Sidebar::slot_setKLinCoeffs); //Experimental! May be removed in future versions.
+			connect(actualPlugin, &Plugin::setKLinCoeffsRequest, this, &OCTproZ::slot_setKLinCoeffs); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::setDispCompCoeffsRequest, this->sidebar, &Sidebar::slot_setDispCompCoeffs); //Experimental! May be removed in future versions.
 			connect(this->sidebar, &Sidebar::klinCoeffs, actualPlugin, &Plugin::setKLinCoeffsRequestAccepted); //Experimental! May be removed in future versions.
 			connect(this->sidebar, &Sidebar::dispCompCoeffs, actualPlugin, &Plugin::setDispCompCoeffsRequestAccepted); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::startProcessingRequest, this, &OCTproZ::slot_start); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::stopProcessingRequest, this, &OCTproZ::slot_stop); //Experimental! May be removed in future versions.
+			connect(actualPlugin, &Plugin::startRecordingRequest, this, &OCTproZ::slot_record);
+			connect(actualPlugin, &Plugin::setCustomResamplingCurveRequest, this, &OCTproZ::slot_setCustomResamplingCurve);
+			connect(actualPlugin, &Plugin::loadSettingsFileRequest, this, &OCTproZ::slot_loadSettingsFromFile);
+			connect(actualPlugin, &Plugin::saveSettingsFileRequest, this, &OCTproZ::slot_saveSettingsToFile);
 			switch (type) {
 				case SYSTEM:{
 					this->sysManager->addSystem(qobject_cast<AcquisitionSystem*>(plugin));
@@ -494,6 +523,11 @@ void OCTproZ::initExtensionsMenu() {
 }
 
 void OCTproZ::slot_start() {
+	if (this->currSystem != nullptr) {
+		if(this->currSystem->acqusitionRunning){
+			return;
+		}
+	}
 	//under certain circumstances, the OpenGL windows remain black. this fixes this issue
 	this->resize(static_cast<float>(this->size().width()-1),static_cast<float>(this->size().height()-1));
 	this->resize(static_cast<float>(this->size().width()+1),static_cast<float>(this->size().height()+1));
@@ -519,6 +553,12 @@ void OCTproZ::slot_start() {
 
 	//for debugging purposes: read out thread affinity of current thread
 	qDebug() << "Main Thread ID start emit: " << QThread::currentThreadId();
+
+////this is for testing purposes only.ending and restart processing after a certain period of time
+//	this->rerunCounter++;
+//	emit info("rerun counter: " + QString::number(this->rerunCounter));
+//	qDebug() << "rerun counter: " << this->rerunCounter;
+//	QTimer::singleShot(10000, this, &OCTproZ::slot_stop);
 }
 
 void OCTproZ::slot_stop() {
@@ -536,8 +576,10 @@ void OCTproZ::slot_stop() {
 			emit stop();
 			QApplication::processEvents();
 			this->currSystem->acqusitionRunning = false; //todo: think about whether OCTproZ should really set the AcquisitionRunning flag to false here, or whether only the acquisition system itself should be responsible for setting this flag to false
+			//QTimer::singleShot(5000, this, &OCTproZ::slot_start); //this is for testing purposes only.restart processing after a certain period of time
 		}
 	}
+
 }
 
 void OCTproZ::slot_record() {
@@ -604,6 +646,46 @@ void OCTproZ::slot_record() {
 void OCTproZ::slot_selectSystem() {
 	QString selectedSystem = this->sysChooser->selectSystem(this->sysManager->getSystemNames());
 	this->setSystem(selectedSystem);
+}
+
+void OCTproZ::slot_selectAndLoadSettingsFile() {
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Select Settings File"), "", tr("Settings Files (*.ini *.txt)"));
+
+	if (!fileName.isEmpty()) {
+		this->loadSettingsFromFile(fileName);
+	}
+}
+
+void OCTproZ::slot_loadSettingsFromFile(QString fileName) {
+	this->loadSettingsFromFile(fileName);
+}
+
+void OCTproZ::slot_saveSettingsToFile(QString fileName) {
+	if (fileName.isEmpty()) {
+		emit error(tr("Settings file not saved."));
+		return;
+	}
+
+	//ensure the file has an extension. use ini as default
+	QFileInfo fileInfo(fileName);
+	if (fileInfo.suffix().isEmpty()) {
+		fileName += ".ini";
+		fileInfo.setFile(fileName);
+	}
+
+	//ensure current settings are saved before copying
+	this->saveSettings();
+
+	//save the settings by copying the existing settings file
+	Settings* settingsManager = Settings::getInstance();
+	settingsManager->copySettingsFile(fileName);
+
+	emit info(tr("Settings have been saved successfully to: ") + fileName);
+}
+
+void OCTproZ::slot_selectAndSaveSettingsToFile() {
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Settings File"), "", tr("Settings Files (*.ini *.txt);;All Files (*.*)"));
+	this->slot_saveSettingsToFile(fileName);
 }
 
 void OCTproZ::slot_menuUserManual() {
@@ -846,6 +928,20 @@ void OCTproZ::slot_loadCustomResamplingCurve() {
 	this->loadResamplingCurveFromFile(fileName);
 }
 
+void OCTproZ::slot_setKLinCoeffs(double* k0, double* k1, double* k2, double* k3) {
+	this->sidebar->slot_setKLinCoeffs(k0, k1, k2, k3);
+	this->slot_useCustomResamplingCurve(false);
+}
+
+void OCTproZ::slot_setCustomResamplingCurve(QVector<float> curve) {
+	this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
+	this->octParams->acquisitionParamsChanged = true;
+	this->sidebar->slot_updateProcessingParams();
+	this->actionUseCustomKLinCurve->setEnabled(true);
+	this->actionUseCustomKLinCurve->setChecked(true);
+	this->slot_useCustomResamplingCurve(true);
+}
+
 void OCTproZ::setSystem(QString systemName) {
 	if(this->currSystemName == systemName){ //system already activated
 		emit info(tr("System is already open."));
@@ -937,6 +1033,14 @@ void OCTproZ::updateSettingsMap() {
 	//message console
 	this->mainWindowSettings.insert(MESSAGE_CONSOLE_BOTTOM, this->console->getParams().newestMessageAtBottom);
 	this->mainWindowSettings.insert(MESSAGE_CONSOLE_HEIGHT, this->console->getParams().preferredHeight);
+
+	//docks
+	this->mainWindowSettings.insert(DOCK_BSCAN_VISIBLE, this->dock2D->isVisible());
+	this->mainWindowSettings.insert(DOCK_BSCAN_GEOMETRY, this->dock2D->saveGeometry());
+	this->mainWindowSettings.insert(DOCK_ENFACEVIEW_VISIBLE, this->dockEnFaceView->isVisible());
+	this->mainWindowSettings.insert(DOCK_ENFACEVIEW_GEOMETRY, this->dockEnFaceView->saveGeometry());
+	this->mainWindowSettings.insert(DOCK_VOLUME_VISIBLE, this->dockVolumeView->isVisible());
+	this->mainWindowSettings.insert(DOCK_VOLUME_GEOMETRY, this->dockVolumeView->saveGeometry());
 }
 
 void OCTproZ::loadResamplingCurveFromFile(QString fileName){
@@ -954,58 +1058,11 @@ void OCTproZ::loadResamplingCurveFromFile(QString fileName){
 	}
 	file.close();
 	if(curve.size() > 0){
-		this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
-		this->octParams->acquisitionParamsChanged = true;
-		this->sidebar->slot_updateProcessingParams();
-		this->actionUseCustomKLinCurve->setEnabled(true);
-		this->actionUseCustomKLinCurve->setChecked(true);
+		this->slot_setCustomResamplingCurve(curve);
+		this->octParams->customResampleCurveFilePath = fileName;
 		emit info(tr("Custom resampling curve loaded. File used: ") + fileName);
 	}else{
 		emit error(tr("Custom resampling curve has a size of 0. Check if .csv file with resampling curve is not empty has right format."));
-	}
-}
-
-//todo: create a "OctAlgorithmParametersManager" class that handles all loading and saving octalgorithmparameters from and to files
-void OCTproZ::loadPostProcessBackgroundFromFile(QString fileName){
-	if(fileName == ""){
-		return;
-	}
-	QFile file(fileName);
-	if(!file.exists()){
-		return;
-	}
-	
-	QVector<float> curve;
-	file.open(QIODevice::ReadOnly);
-	QTextStream txtStream(&file);
-	QString line = txtStream.readLine();
-	while (!txtStream.atEnd()){
-		line = txtStream.readLine();
-		curve.append((line.section(";", 1, 1).toFloat()));
-	}
-	file.close();
-	if(curve.size() > 0){
-		this->octParams->loadPostProcessingBackground(curve.data(), curve.size());
-		this->sidebar->updateBackgroundPlot();
-		emit info(tr("Background data for post processing loaded. File used: ") + fileName);
-	}else{
-		emit error(tr("Background data has a size of 0. Check if the .csv file with background data is not empty and has the right format."));
-	}
-}
-
-void OCTproZ::savePostProcessBackgroundToFile(QString fileName) {
-	QFile file(fileName);
-	if (file.open(QFile::WriteOnly|QFile::Truncate)) {
-		QTextStream stream(&file);
-		stream << tr("Sample Number") << ";" << tr("Sample Value") << "\n";
-		int numberOfDataPoints = this->octParams->postProcessBackgroundLength;
-		for(int i = 0; i < numberOfDataPoints; i++){
-			stream << QString::number(i) << ";" << this->octParams->postProcessBackground[i] << "\n";
-		}
-		file.close();
-		emit info(tr("Background data saved to: ") + fileName);
-	} else {
-		emit error(tr("Could not save Background data to: ") + fileName);
 	}
 }
 
@@ -1027,6 +1084,17 @@ void OCTproZ::loadMainWindowSettings(){
 	consoleParams.newestMessageAtBottom = this->mainWindowSettings.value(MESSAGE_CONSOLE_BOTTOM).toBool();
 	consoleParams.preferredHeight = this->mainWindowSettings.value(MESSAGE_CONSOLE_HEIGHT).toInt();
 	this->console->setParams(consoleParams);
+
+	QTimer::singleShot(500, this, [this]() {
+		this->dock2D->setVisible(this->mainWindowSettings.value(DOCK_BSCAN_VISIBLE).toBool());
+		this->dockEnFaceView->setVisible(this->mainWindowSettings.value(DOCK_ENFACEVIEW_VISIBLE).toBool());
+		this->dockVolumeView->setVisible(this->mainWindowSettings.value(DOCK_VOLUME_VISIBLE).toBool());
+
+//todo: this does not work as expected. the geometry of the docks is only restored as long as the control panel is not visible. maybe the geometry of the control panel also needs to be stored and loaded
+//		this->dock2D->restoreGeometry(this->mainWindowSettings.value(DOCK_BSCAN_GEOMETRY).toByteArray());
+//		this->dockEnFaceView->restoreGeometry(this->mainWindowSettings.value(DOCK_ENFACEVIEW_GEOMETRY).toByteArray());
+//		this->dockVolumeView->restoreGeometry(this->mainWindowSettings.value(DOCK_VOLUME_GEOMETRY).toByteArray());
+	});
 }
 
 void OCTproZ::saveMainWindowSettings() {
@@ -1037,15 +1105,75 @@ void OCTproZ::saveMainWindowSettings() {
 
 void OCTproZ::loadSettings(){
 	this->sidebar->loadSettings();
+	if(this->octParams->customResampleCurve != nullptr){
+		//this->paramsManager->loadCustomResamplingCurveFromFile(SETTINGS_PATH_RESAMPLING_FILE);
+		this->actionUseCustomKLinCurve->setEnabled(true);
+		this->actionUseCustomKLinCurve->setChecked(this->octParams->useCustomResampleCurve);
+		this->slot_useCustomResamplingCurve(this->octParams->useCustomResampleCurve);
+		this->sidebar->slot_updateProcessingParams();
+	}
 
-	//restore main window position and size (if application was already open once)
+	//restore main window position and size
 	this->loadMainWindowSettings();
 
 	//restore B-scan window and EnFaceView window settings
 	this->bscanWindow->setSettings(Settings::getInstance()->getStoredSettings(this->bscanWindow->getName()));
 	this->enFaceViewWindow->setSettings(Settings::getInstance()->getStoredSettings(this->enFaceViewWindow->getName()));
 	this->volumeWindow->setSettings(Settings::getInstance()->getStoredSettings(this->volumeWindow->getName()));
+
+	//force refresh of the console dock to fix display issues after loading settings
+	QTimer::singleShot(0, this, [this]() {
+		QSize dockSize = this->dockConsole->size();
+		int originalHeight = dockSize.height();
+		dockSize.setHeight(originalHeight + 1);
+		this->dockConsole->resize(dockSize);
+		dockSize.setHeight(originalHeight);
+		this->dockConsole->resize(dockSize);
+	});
 }
+
+void OCTproZ::loadSettingsFromFile(const QString &settingsFilePath) {
+	if (settingsFilePath.isEmpty()) {
+		emit error(tr("Invalid File: ") + tr("No settings file selected or file path is invalid."));
+		return;
+	}
+
+	//confirm with the user before overwriting the current settings
+//	QMessageBox::StandardButton reply;
+//	reply = QMessageBox::question(this, tr("Overwrite Current Settings"),
+//		tr("Loading settings from a file will overwrite your current settings. Do you want to continue?"),
+//		QMessageBox::Yes | QMessageBox::No);
+
+//	if (reply == QMessageBox::No){
+//		return;
+//	}
+
+	// Backup current settings file
+	QString backupPath = SETTINGS_PATH + ".backup";
+	QFile::remove(backupPath);  // Remove any existing backup
+	QFile::copy(SETTINGS_PATH, backupPath);
+
+	// Attempt to copy the selected settings file to the default settings path
+	if (!QFile::remove(SETTINGS_PATH)) {
+		emit error(("Failed to remove the existing settings file."));
+		return;
+	}
+
+	if (!QFile::copy(settingsFilePath, SETTINGS_PATH)) {
+		emit error(("Failed to load settings from: " + settingsFilePath));
+		QFile::copy(backupPath, SETTINGS_PATH);
+		return;
+	}
+
+	// Reload the settings
+	this->loadSettings();
+	if(!this->currSystemName.isEmpty()) {
+		emit loadPluginSettings(Settings::getInstance()->getStoredSettings(this->currSystemName));
+	}
+	// Inform the user that the settings have been loaded
+	emit info(tr("Settings have been loaded successfully from: ") + settingsFilePath);
+}
+
 
 void OCTproZ::saveSettings() {
 	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmsszzz");

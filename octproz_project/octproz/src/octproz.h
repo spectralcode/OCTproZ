@@ -52,6 +52,7 @@
 #include "processing.h"
 #include "octproz_devkit.h"
 #include "octalgorithmparameters.h"
+#include "octalgorithmparametersmanager.h"
 #include "aboutdialog.h"
 
 #include "ui_octproz.h"
@@ -66,6 +67,13 @@
 #define MAIN_ACTIVE_SYSTEM "main_active_system"
 #define MESSAGE_CONSOLE_BOTTOM "message_console_bottom"
 #define MESSAGE_CONSOLE_HEIGHT "message_console_height"
+#define DOCK_BSCAN_VISIBLE "dock_bscan_visible"
+#define DOCK_BSCAN_GEOMETRY "dock_bscan_geometry"
+#define DOCK_ENFACEVIEW_VISIBLE "dock_enfaceview_visible"
+#define DOCK_ENFACEVIEW_GEOMETRY "dock_enfaceview_geometry"
+#define DOCK_VOLUME_VISIBLE "dock_volume_visible"
+#define DOCK_VOLUME_GEOMETRY "dock_volume_geometry"
+
 
 
 
@@ -99,6 +107,10 @@ public slots:
 	void slot_stop();
 	void slot_record();
 	void slot_selectSystem();
+	void slot_selectAndLoadSettingsFile();
+	void slot_selectAndSaveSettingsToFile();
+	void slot_loadSettingsFromFile(QString filePath);
+	void slot_saveSettingsToFile(QString filePath);
 	void slot_menuUserManual();
 	void slot_menuAbout();
 	void slot_menuApplicationSettings();
@@ -119,6 +131,8 @@ public slots:
 	void slot_easterEgg();
 	void slot_useCustomResamplingCurve(bool use);
 	void slot_loadCustomResamplingCurve();
+	void slot_setKLinCoeffs(double* k0, double* k1, double* k2, double* k3);
+	void slot_setCustomResamplingCurve(QVector<float> resamplingCurve);
 
 
 private:
@@ -130,11 +144,10 @@ private:
 	void loadMainWindowSettings();
 	void saveMainWindowSettings();
 	void loadSettings();
+	void loadSettingsFromFile(const QString &settingsFilePath);
 	void saveSettings();
 	void updateSettingsMap();
 	void loadResamplingCurveFromFile(QString fileName);
-	void loadPostProcessBackgroundFromFile(QString fileName);
-	void savePostProcessBackgroundToFile(QString fileName);
 
 	Ui::OCTproZ *ui;
 	QVariantMap mainWindowSettings;
@@ -146,6 +159,7 @@ private:
 	ExtensionManager* extManager;
 	Processing* signalProcessing; 
 	OctAlgorithmParameters* octParams;
+	OctAlgorithmParametersManager* paramsManager;
 	Gpu2HostNotifier* processedDataNotifier;
 
 	bool processingInThread;
@@ -193,6 +207,8 @@ private:
 	bool isDockVolumeViewClosed;
 
 	QOpenGLContext *context;
+
+	int rerunCounter = 0;
 
 signals:
 	void start();

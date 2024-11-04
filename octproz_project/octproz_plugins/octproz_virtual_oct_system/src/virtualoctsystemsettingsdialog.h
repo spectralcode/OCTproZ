@@ -32,6 +32,7 @@ SOFTWARE.
 #define DEPTH "depth"
 #define BUFFERS_PER_VOLUME "buffers_per_volume"
 #define BUFFERS_FROM_FILE "buffers_from_file"
+#define BSCAN_OFFSET "bscan_offset"
 #define WAITTIME "wait_time"
 #define COPY_TO_RAM "copy_file_to_ram"
 
@@ -51,6 +52,7 @@ struct simulatorParams {
 	int depth;
 	int buffersPerVolume;
 	int buffersFromFile;
+	int bscanOffset;
 	int waitTimeUs;
 	bool copyFileToRam;
 };

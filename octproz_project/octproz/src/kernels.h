@@ -60,15 +60,17 @@
 
 
 //cuda_code.cu
-extern "C" void initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmParameters* dispParameters);
+extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmParameters* dispParameters);
 extern "C" void octCudaPipeline(void* h_inputSignal);
+extern "C" void releaseBuffers();
+extern "C" void destroyStreamsAndEvents();
 extern "C" void cleanupCuda();
-extern "C" void freeCudaMem(void* data);
+extern "C" void freeCudaMem(void** data);
 extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
 extern "C" void cuda_unregisterStreamingBuffers();
-extern "C" void cuda_registerGlBufferBscan(GLuint buf);
-extern "C" void cuda_registerGlBufferEnFaceView(GLuint buf);
-extern "C" void cuda_registerGlBufferVolumeView(GLuint buf);
+extern "C" bool cuda_registerGlBufferBscan(GLuint buf);
+extern "C" bool cuda_registerGlBufferEnFaceView(GLuint buf);
+extern "C" bool cuda_registerGlBufferVolumeView(GLuint buf);
 
 extern void* cuda_map(cudaGraphicsResource* res, cudaStream_t stream);
 extern void cuda_unmap(cudaGraphicsResource* res, cudaStream_t stream);

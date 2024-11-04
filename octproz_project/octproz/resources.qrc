@@ -39,5 +39,7 @@
         <file>shaders/compute_sample_depths.glsl</file>
         <file>shaders/oct_depth.frag</file>
         <file>shaders/oct_depth.vert</file>
+        <file>icons/octproz_save_icon.png</file>
+        <file>icons/octproz_load_icon.png</file>
     </qresource>
 </RCC>

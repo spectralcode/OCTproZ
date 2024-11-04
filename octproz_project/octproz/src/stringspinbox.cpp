@@ -34,7 +34,6 @@ StringSpinBox::StringSpinBox(QWidget *parent) : QAbstractSpinBox(parent) {
 	this->currentIndex = -1;
 }
 
-
 StringSpinBox::~StringSpinBox() {
 
 }
@@ -49,7 +48,7 @@ void StringSpinBox::setStrings(QStringList strings) {
 void StringSpinBox::stepBy(int steps) {
 	this->currentIndex += steps;
 	this->currentIndex = qBound(0, this->currentIndex, this->strings.size() - 1);
-	lineEdit()->setText(this->strings.at(this->currentIndex));
+	this->lineEdit()->setText(this->strings.at(this->currentIndex));
 	emit indexChanged();
 }
 
@@ -70,9 +69,9 @@ int StringSpinBox::getIndexOf(QString text) {
 
 void StringSpinBox::setIndex(int index) {
 	int elements = this->strings.size();
-	if(elements > 0 && index < elements){
+	if(elements > 0 && index < elements && index >= 0){
 		this->currentIndex = index;
-		lineEdit()->setText(this->strings.at(this->currentIndex));
+		this->lineEdit()->setText(this->strings.at(this->currentIndex));
 		emit indexChanged();
 	}
 }

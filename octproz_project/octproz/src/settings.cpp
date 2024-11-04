@@ -72,8 +72,18 @@ QVariantMap Settings::getStoredSettings(QString settingsGroupName) {
 void Settings::copySettingsFile(QString path) {
 	QString originPath = SETTINGS_PATH;
 	QString destinationPath = path;
+
+	// Remove the destination file if it exists
+	if (QFile::exists(destinationPath)) {
+		if (!QFile::remove(destinationPath)) {
+			emit error(tr("Could not overwrite existing file: ") + destinationPath);
+			return;
+		}
+	}
+
+	// Copy the settings file to the new location
 	bool success = QFile::copy(originPath, destinationPath);
-	if(!success){
+	if (!success) {
 		emit error(tr("Could not store settings file to: ") + destinationPath);
 	}
 }

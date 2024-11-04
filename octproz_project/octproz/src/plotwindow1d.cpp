@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@
 
 
 PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
-	this->setBackground( QColor(50, 50, 50));
+	this->setBackground(QColor(50, 50, 50));
 	this->axisRect()->setBackground(QColor(55, 55, 55));
 
-	this->setMinimumHeight(320);
-	this->setMinimumWidth(640);
+	this->setMinimumHeight(256);
+	this->setMinimumWidth(320);
 	this->addGraph();
 	this->addGraph(this->xAxis2, this->yAxis2);
 	this->processedColor = QColor(72, 99, 160);
@@ -104,6 +104,10 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 }
 
 PlotWindow1D::~PlotWindow1D(){
+}
+
+QSize PlotWindow1D::sizeHint() const {
+	return(QSize(640, 320));
 }
 
 void PlotWindow1D::setRawAxisColor(QColor color) {
@@ -189,10 +193,12 @@ void PlotWindow1D::mouseDoubleClickEvent(QMouseEvent *event) {
 	this->rescaleAxes();
 	this->replot();
 }
-void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){
+
+void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr) {
 	if(!this->isPlottingRaw && this->displayRaw && this->rawGrabbingAllowed){
 		this->isPlottingRaw = true;
 		this->currentRawBitdepth = bitDepth;
+
 		if(buffer != nullptr && this->isVisible()){
 			//get length of one raw line (unprocessed a-scan) and resize plot vectors if necessary
 			if(this->sampleValues.size() != samplesPerLine){
@@ -208,8 +214,11 @@ void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned in
 				this->graph(0)->setName(this->rawLineName + QString::number(this->line));
 			}
 			//copy values from buffer to plot vector
-			qreal max = -1000000000000;
-			qreal min = 1000000000000;
+			qreal max = -qInf();
+			qreal min = qInf();
+			qreal mean = 0.0;
+			qreal sumOfSquaredDiffs = 0.0;
+
 			for(int i = 0; i<samplesPerLine && this->rawGrabbingAllowed; i++){
 				//char
 				if(bitDepth <= 8){
@@ -233,14 +242,28 @@ void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned in
 
 				if (this->sampleValues[i] < min) { min = this->sampleValues[i]; }
 				if (this->sampleValues[i] > max) { max = this->sampleValues[i]; }
+
+				//Welford's method for mean and variance calculation
+				qreal delta = this->sampleValues[i] - mean;
+				mean += delta / (i + 1);
+				sumOfSquaredDiffs += delta * (this->sampleValues[i] - mean);
 			}
+
+			qreal stdDeviation = qSqrt(sumOfSquaredDiffs / samplesPerLine);
+
 			//update plot
-			this->graph(0)->setName(this->rawLineName + QString::number(this->line)+" - Min: " + QString::number(min) + "   Max: " + QString::number(max) + "\nBuffer Id: " + QString::number(currentBufferNr));
+			this->graph(0)->setName(this->rawLineName + QString::number(this->line) +
+				" - Min: " + QString::number(min) +
+				"   Max: " + QString::number(max) +
+				"   Mean: " + QString::number(mean) +
+				"   Std Dev: " + QString::number(stdDeviation) +
+				"\nBuffer Id: " + QString::number(currentBufferNr));
 			this->graph(0)->setData(this->sampleNumbers, this->sampleValues, true);
+
 			if(this->autoscaling){
 				this->graph(0)->rescaleAxes();
 			}
-			//this->graph(0)->rescaleKeyAxis(true);
+
 			this->replot();
 			QCoreApplication::processEvents();
 		}
@@ -267,8 +290,11 @@ void PlotWindow1D::slot_plotProcessedData(void* buffer, unsigned bitDepth, unsig
 				this->graph(1)->setName(this->processedLineName + QString::number(this->line));
 			}
 			//copy values from buffer to plot vector
-			qreal max = -1000000000000;
-			qreal min = 1000000000000;
+			qreal max = -qInf();
+			qreal min = qInf();
+			qreal mean = 0.0;
+			qreal sumOfSquaredDiffs = 0.0;
+
 			for(int i = 0; i<samplesPerLine && this->processedGrabbingAllowed; i++){
 				//uchar
 				if(bitDepth <= 8){
@@ -288,9 +314,22 @@ void PlotWindow1D::slot_plotProcessedData(void* buffer, unsigned bitDepth, unsig
 
 				if (this->sampleValuesProcessed[i] < min) { min = this->sampleValuesProcessed[i]; }
 				if (this->sampleValuesProcessed[i] > max) { max = this->sampleValuesProcessed[i]; }
+
+				// Welford's method for mean and variance calculation
+				qreal delta = this->sampleValuesProcessed[i] - mean;
+				mean += delta / (i + 1);
+				sumOfSquaredDiffs += delta * (this->sampleValuesProcessed[i] - mean);
 			}
+
+			qreal stdDeviation = qSqrt(sumOfSquaredDiffs / samplesPerLine);
+
 			//update plot
-			this->graph(1)->setName(this->processedLineName + QString::number(this->line)+" - Min: " + QString::number(min) + "   Max: " + QString::number(max) + "\nBuffer Id: " + QString::number(currentBufferNr));
+			this->graph(1)->setName(this->processedLineName + QString::number(this->line) +
+				" - Min: " + QString::number(min) +
+				"   Max: " + QString::number(max) +
+				"   Mean: " + QString::number(mean) +
+				"   Std Dev: " + QString::number(stdDeviation) +
+				"\nBuffer Id: " + QString::number(currentBufferNr));
 			this->graph(1)->setData(this->sampleNumbersProcessed, this->sampleValuesProcessed, true);
 			if(this->autoscaling){
 				this->graph(1)->rescaleAxes();

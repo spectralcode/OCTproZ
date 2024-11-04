@@ -126,6 +126,9 @@ unix{
 	#QMAKE_CXXFLAGS_RELEASE =-O3
 }
 
+#include build configuration macros
+include(../config.pri)
+
 #include cuda configuration
 include(pri/cuda.pri)
 

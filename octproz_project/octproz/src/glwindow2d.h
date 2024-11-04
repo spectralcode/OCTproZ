@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -74,6 +74,7 @@
 #include <QPainter>
 #include <QCheckBox>
 #include <QLineEdit>
+#include <QElapsedTimer>
 
 #include "stringspinbox.h"
 #include "outputwindow.h"
@@ -84,7 +85,7 @@
 #define DEFAULT_WIDTH  2048
 #define DEFAULT_HEIGHT 512
 
-#define DELAY_TIME_IN_ms 40
+#define REFRESH_INTERVAL_IN_ms 40
 
 
 struct LineCoordinates{
@@ -178,12 +179,22 @@ private:
 	ScaleBar* horizontalScaleBar;
 	ScaleBar* verticalScaleBar;
 
+	qreal fps;
+	QElapsedTimer timer;
+	int counter;
+	bool showFPS;
+	QString baseTitle;
+
 	void initContextMenu();
 	void displayScalebars();
 	void displayMarker();
 	void displayOrientationLine(int x, int y, int length);
+	void countFPS();
+	QString getDockTitle();
+	QString getDockBaseTitle();
+	void setDockTitle(const QString& title);
+	void updateDockTitleWithFPS(qreal fps);
 	void delayedUpdate();
-
 
 protected:
 	void initializeGL() override;
@@ -211,6 +222,7 @@ public slots:
 	void enableMarker(bool enable);
 	void setMarkerPosition(unsigned int position);
 	void saveSettings();
+	void enalbeFpsCalculation(bool enable);
 
 
 signals:

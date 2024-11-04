@@ -4,7 +4,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -67,52 +67,44 @@ QVector3D toVector3D(const QColor& colour) {
 	return QVector3D(colour.redF(), colour.greenF(), colour.blueF());
 }
 
-
-GLWindow3D::GLWindow3D(QWidget *parent) : QOpenGLWidget {parent}, raycastingVolume {nullptr}
+GLWindow3D::GLWindow3D(QWidget *parent) :
+	QOpenGLWidget(parent),
+	raycastingVolume(nullptr),
+	delayedUpdatingRunning(false),
+	initialized(false),
+	changeTextureSizeFlag(false),
+	updateContinuously(false),
+	fps(0.0),
+	counter(0),
+	showFPS(false),
+	aspectRatio(1.0f),
+	stepLength(0.01f),
+	threshold(0.25f),
+	depthWeight(0.7f),
+	alphaExponent(2.0f),
+	smoothFactor(1),
+	shadingEnabled(true),
+	lutEnabled(false),
+	background(Qt::black)
 {
-	qRegisterMetaType<GLWindow3DParams >("GLWindow3DParams");
-	this->panel = new ControlPanel3D(this);
-
-	// Register available rendering modes here
-	QStringList modes = { "Isosurface", "OCT Depth", "MIDA", "Alpha blending", "X-ray", "DMIP", "MIP"};
-//	foreach(auto mode, modes){
-//		this->modes[mode] = [&]() { GLWindow3D::raycasting(mode); };  //todo: figure out why this does not work
-//	}
-	this->modes["MIP"] = [&]() { GLWindow3D::raycasting("MIP"); };
-	this->modes["DMIP"] = [&]() { GLWindow3D::raycasting("DMIP"); };
-	this->modes["MIDA"] = [&]() { GLWindow3D::raycasting("MIDA"); };
-	this->modes["Isosurface"] = [&]() { GLWindow3D::raycasting("Isosurface"); };
-	this->modes["Alpha blending"] = [&]() { GLWindow3D::raycasting("Alpha blending"); };
-	this->modes["X-ray"] = [&]() { GLWindow3D::raycasting("X-ray"); };
-	this->modes["OCT Depth"] = [&]() { GLWindow3D::raycasting("OCT Depth"); };
-
-	this->panel->setModes(modes);
-
-	this->delayedUpdatingRunning = false;
-	this->initialized = false;
-	this->changeTextureSizeFlag = false;
-	this->updateContinuously = false;
-	this->raycastingVolume = nullptr;
-
-	//init panel
-	this->setFocusPolicy(Qt::StrongFocus);
-	this->layout = new QVBoxLayout(this);
-	this->layout->addStretch();
-	this->layout->addWidget(this->panel);
-	this->panel->setVisible(false);
-
+	qRegisterMetaType<GLWindow3DParams>("GLWindow3DParams");
+	this->initRenderingModes();
+	this->initPanel();
 	this->initContextMenu();
 
 	this->setMode("MIP");
 	this->setThreshold(0.5);
 	this->setStepLength(0.01f);
+}
 
-	this->fps = 0.0;
-	//this->timer.start();
-	this->counter = 0;
-
-	this->viewPos.setX(0);
-	this->viewPos.setY(0);
+void GLWindow3D::initPanel() {
+	this->panel = new ControlPanel3D(this);
+	this->setFocusPolicy(Qt::StrongFocus);
+	this->layout = new QVBoxLayout(this);
+	this->layout->addStretch();
+	this->layout->addWidget(this->panel);
+	this->panel->setVisible(false);
+	this->panel->setModes(this->modeNames);
 
 	connect(this->panel, &ControlPanel3D::displayParametersChanged, this, &GLWindow3D::updateDisplayParams);
 	connect(this->panel, &ControlPanel3D::lutSelected, this, &GLWindow3D::openLUTFromImage);
@@ -122,6 +114,13 @@ GLWindow3D::GLWindow3D(QWidget *parent) : QOpenGLWidget {parent}, raycastingVolu
 	connect(this->panel, &ControlPanel3D::dialogClosed, this, &GLWindow3D::dialogClosed);
 }
 
+void GLWindow3D::initRenderingModes() {
+	//register available rendering modes here
+	this->modeNames << "Isosurface" << "OCT Depth" << "MIDA" << "Alpha blending" << "X-ray" << "DMIP" << "MIP";
+	foreach(const auto& mode, modeNames) {
+		this->modes[mode] = [this, mode]() { this->raycasting(mode); };
+	}
+}
 
 GLWindow3D::~GLWindow3D()
 {
@@ -207,8 +206,12 @@ void GLWindow3D::enableShading(const GLboolean shading_enabled) {
 }
 
 void GLWindow3D::setMode(const QString &mode) {
-	this->activeMode = mode;
-	update();
+	if(this->modeNames.isEmpty()){return;}
+	if(this->modeNames.contains(mode)){
+		this->activeMode = mode;
+	} else {
+		this->activeMode = this->modeNames.last();
+	}
 }
 
 void GLWindow3D::setBackground(const QColor &colour) {
@@ -291,8 +294,6 @@ void GLWindow3D::resizeGL(int w, int h) {
 }
 
 void GLWindow3D::paintGL() {
-	//this->countFPS();
-
 	// Compute geometry
 	this->viewMatrix.setToIdentity();
 	this->viewMatrix.translate(this->viewPos.x(), this->viewPos.y(), -4.0f * qExp(this->distExp / 600.0f));
@@ -314,8 +315,12 @@ void GLWindow3D::paintGL() {
 	}else{
 		if(!this->delayedUpdatingRunning){
 			this->delayedUpdatingRunning = true;
-			QTimer::singleShot(DELAY_TIME_IN_ms, this, QOverload<>::of(&GLWindow3D::delayedUpdate)); //todo: consider using Gpu2HostNotifier to notify GLWindow3D when new volume data is available
+			QTimer::singleShot(REFRESH_INTERVAL_IN_ms, this, QOverload<>::of(&GLWindow3D::delayedUpdate)); //todo: consider using Gpu2HostNotifier to notify GLWindow3D when new volume data is available
 		}
+	}
+
+	if(this->showFPS){
+		this->countFPS();
 	}
 }
 
@@ -364,7 +369,6 @@ void GLWindow3D::raycasting(const QString& shader) {
 			this->shaders[shader]->setUniformValue("depthTexture", 3);
 		}
 
-
 		glClearColor(this->background.redF(), this->background.greenF(), this->background.blueF(), this->background.alphaF());
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -390,7 +394,6 @@ void GLWindow3D::mouseDoubleClickEvent(QMouseEvent *event) {
 void GLWindow3D::enterEvent(QEvent *event) {
 	this->panel->setVisible(true);
 }
-
 
 void GLWindow3D::leaveEvent(QEvent *event) {
 	this->panel->setVisible(false);
@@ -447,6 +450,12 @@ void GLWindow3D::initContextMenu(){
 	this->screenshotAction = new QAction(tr("&Screenshot..."), this);
 	connect(this->screenshotAction, &QAction::triggered, this, &GLWindow3D::openScreenshotDialog);
 	this->contextMenu->addAction(this->screenshotAction);
+
+	QAction* showFPSAction = new QAction(tr("Show display refresh rate"), this);
+	showFPSAction->setCheckable(true);
+	showFPSAction->setChecked(this->showFPS);
+	connect(showFPSAction, &QAction::toggled, this, &GLWindow3D::enalbeFpsCalculation);
+	contextMenu->addAction(showFPSAction);
 }
 
 void GLWindow3D::changeTextureSize(unsigned int width, unsigned int height, unsigned int depth) {
@@ -517,16 +526,54 @@ void GLWindow3D::countFPS() {
 	if(!this->timer.isValid()) {
 		this->timer.start();
 	}
-	qreal elapsedTime = timer.elapsed();
-	qreal captureInfoTime = 5000;
+	qreal elapsedTime = this->timer.elapsed();
+	qreal captureInfoTime = 2000;
 	this->counter++;
 	if (elapsedTime >= captureInfoTime) {
 		this->fps  = (qreal)counter / (elapsedTime / 1000.0);
-		emit info(QString::number(fps));
-
-	timer.restart();
-	this->counter = 0;
+		this->updateDockTitleWithFPS(this->fps);
+		this->timer.restart();
+		this->counter = 0;
 	}
+}
+
+QString GLWindow3D::getDockTitle() {
+	QDockWidget* dock = qobject_cast<QDockWidget*>(this->parentWidget());
+	if(dock){
+		return dock->windowTitle();
+	}
+	return "";
+}
+
+QString GLWindow3D::getDockBaseTitle() {
+	if(this->baseTitle == ""){
+		QString currentTitle = getDockTitle();
+		QString fpsPattern = " - FPS: ";
+		int fpsIndex = currentTitle.indexOf(fpsPattern); //find the "FPS" part in title if there is one
+		this->baseTitle = fpsIndex != -1 ? currentTitle.left(fpsIndex) : currentTitle; //remove the "FPS" part from title if there is one
+	}
+	return this->baseTitle;
+}
+
+void GLWindow3D::setDockTitle(const QString& title) {
+	QDockWidget* dock = qobject_cast<QDockWidget*>(this->parentWidget());
+	if(dock){
+		dock->setWindowTitle(title);
+	}
+}
+
+void GLWindow3D::updateDockTitleWithFPS(float fps) {
+	//check if dockWidget is available
+	QDockWidget* dockWidget = qobject_cast<QDockWidget*>(parentWidget());
+	if (!dockWidget){
+		this->showFPS = false;
+		return;
+	}
+
+	//get name of dockWidget and add the FPS to it
+	QString baseTitle = this->getDockBaseTitle();
+	QString fpsPattern = " - FPS: ";
+	dockWidget->setWindowTitle(baseTitle + fpsPattern + QString::number(fps));
 }
 
 void GLWindow3D::saveSettings() {
@@ -558,6 +605,13 @@ void GLWindow3D::openScreenshotDialog() {
 		emit info(tr("Screenshot saved to ") + fileName);
 	}else{
 		emit error(tr("Could not save screenshot to disk."));
+	}
+}
+
+void GLWindow3D::enalbeFpsCalculation(bool enabled) {
+	this->showFPS = enabled;
+	if(!this->showFPS){
+		this->setDockTitle(this->getDockBaseTitle());
 	}
 }
 

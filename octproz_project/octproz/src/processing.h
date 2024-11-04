@@ -58,6 +58,15 @@ public:
 
 
 private:
+	void initCudaOpenGlInterop();
+	bool waitForCudaOpenGlInteropReady(int interval, int timeout);
+	bool isCudaOpenGlInteropReady();
+	void blockBuffersForAcquisitionSystem(AcquisitionSystem* system);
+	void unblockBuffersForAcquisitionSystem(AcquisitionSystem* system);
+
+	bool bscanGlBufferRegisteredWithCuda;
+	bool enfaceGlBufferRegisteredWithCuda;
+	bool volumeGlBufferRegisteredWithCuda;
 	qreal buffersPerSecond;
 	bool isProcessing;
 	OctAlgorithmParameters* octParams;
@@ -85,6 +94,7 @@ public slots :
 signals :
 	//void initOpenGL(QOpenGLContext** processingContext, QOffscreenSurface** processingSurface, QThread* processingThread);
 	void initializationDone();
+	void initializationFailed();
 	void initOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void initOpenGLenFaceView();
 	void initRawRecorder(RecordingParams params);

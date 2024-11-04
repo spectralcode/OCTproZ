@@ -2,7 +2,7 @@
 **  This file is part of OCTproZ.
 **  OCTproZ is an open source software for processig of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2024 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include <QToolTip>
 #include <QGuiApplication>
 #include <QSizePolicy>
+#include <QDockWidget>
 
 
 GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
@@ -55,6 +56,9 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	this->markerEnabled = false;
 	this->setMarkerOrigin(LEFT);
 	this->setMarkerPosition(0);
+	this->showFPS = false;
+	this->fps = 0;
+	this->baseTitle = "";
 	this->setFocusPolicy(Qt::StrongFocus);
 	this->panel = new ControlPanel2D(this);
 	this->layout = new QVBoxLayout(this);
@@ -83,6 +87,10 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 
 	//connect(this->panel, &ControlPanel2D::settingsChanged, this, &GLWindow2D::saveSettings);
 	this->setMouseTracking(true);
+
+//	QTimer* displayRefreshTimer = new QTimer(this);
+//	connect(displayRefreshTimer, &QTimer::timeout, this, QOverload<>::of(&GLWindow2D::update));
+//	displayRefreshTimer->start(REFRESH_TIME_IN_ms);
 }
 
 
@@ -153,6 +161,12 @@ void GLWindow2D::initContextMenu() {
 	this->screenshotAction = new QAction(tr("&Screenshot..."), this);
 	connect(this->screenshotAction, &QAction::triggered, this, &GLWindow2D::openScreenshotDialog);
 	this->contextMenu->addAction(this->screenshotAction);
+
+	QAction* showFPSAction = new QAction(tr("Show display refresh rate"), this);
+	showFPSAction->setCheckable(true);
+	showFPSAction->setChecked(this->showFPS);
+	connect(showFPSAction, &QAction::toggled, this, &GLWindow2D::enalbeFpsCalculation);
+	contextMenu->addAction(showFPSAction);
 }
 
 void GLWindow2D::displayScalebars() {
@@ -191,6 +205,60 @@ void GLWindow2D::displayOrientationLine(int x, int y, int length) {
 		glEnd();
 }
 
+void GLWindow2D::countFPS() {
+	if(!this->timer.isValid()) {
+		this->timer.start();
+	}
+	qreal elapsedTime = this->timer.elapsed();
+	qreal captureInfoTime = 2000;
+	this->counter++;
+	if (elapsedTime >= captureInfoTime) {
+		this->fps  = (qreal)counter / (elapsedTime / 1000.0);
+		this->updateDockTitleWithFPS(this->fps);
+		this->timer.restart();
+		this->counter = 0;
+	}
+}
+
+QString GLWindow2D::getDockTitle() {
+	QDockWidget* dock = qobject_cast<QDockWidget*>(this->parentWidget());
+	if(dock){
+		return dock->windowTitle();
+	}
+	return "";
+}
+
+QString GLWindow2D::getDockBaseTitle() {
+	if(this->baseTitle == ""){
+		QString currentTitle = getDockTitle();
+		QString fpsPattern = " - FPS: ";
+		int fpsIndex = currentTitle.indexOf(fpsPattern); //find the "FPS" part in title if there is one
+		this->baseTitle = fpsIndex != -1 ? currentTitle.left(fpsIndex) : currentTitle; //remove the "FPS" part from title if there is one
+	}
+	return this->baseTitle;
+}
+
+void GLWindow2D::setDockTitle(const QString& title) {
+	QDockWidget* dock = qobject_cast<QDockWidget*>(this->parentWidget());
+	if(dock){
+		dock->setWindowTitle(title);
+	}
+}
+
+void GLWindow2D::updateDockTitleWithFPS(qreal fps) {
+	//check if dockWidget is available
+	QDockWidget* dockWidget = qobject_cast<QDockWidget*>(parentWidget());
+	if (!dockWidget){
+		this->showFPS = false;
+		return;
+	}
+
+	//get name of dockWidget and add the FPS to it
+	QString baseTitle = this->getDockBaseTitle();
+	QString fpsPattern = " - FPS: ";
+	dockWidget->setWindowTitle(baseTitle + fpsPattern + QString::number(fps));
+}
+
 void GLWindow2D::delayedUpdate() {
 	this->update();
 	this->delayedUpdatingRunning = false;
@@ -214,6 +282,7 @@ void GLWindow2D::changeTextureSize(unsigned int width, unsigned int height, unsi
 	glGenBuffers(1, &(this->buf));
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, this->buf);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, (this->width * this->height * sizeof(float)), 0, GL_DYNAMIC_COPY);
+
 	glBindTexture(GL_TEXTURE_2D, this->texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, this->width, this->height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	doneCurrent();
@@ -224,17 +293,16 @@ void GLWindow2D::changeTextureSize(unsigned int width, unsigned int height, unsi
 
 void GLWindow2D::createOpenGLContextForProcessing(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread) {
 	QOpenGLContext* renderContext = this->context();
-	(processingContext)->setFormat(renderContext->format());
-	(processingContext)->setShareContext(renderContext);
-	(processingContext)->create();
-	(processingContext)->moveToThread(processingThread);
-	(processingSurface)->setFormat(renderContext->format());
-	(processingSurface)->create(); //Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms, cross-platform applications must ensure that create() is only called on the main (GUI) thread
-	(processingSurface)->moveToThread(processingThread);
-	
 	this->changeTextureSize(this->width, this->height, this->depth);
-
-	//QOpenGLContext::areSharing(processingContext, renderContext) ? emit info("processingContext, renderContext: yes") : emit info("processingContext, renderContext: no");
+	if(!QOpenGLContext::areSharing(processingContext, renderContext)){
+		(processingContext)->setFormat(renderContext->format());
+		(processingContext)->setShareContext(renderContext);
+		(processingContext)->create();
+		(processingContext)->moveToThread(processingThread);
+	}
+		(processingSurface)->setFormat(renderContext->format());
+		(processingSurface)->create(); //Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms, cross-platform applications must ensure that create() is only called on the main (GUI) thread
+		(processingSurface)->moveToThread(processingThread);
 }
 
 void GLWindow2D::registerOpenGLBufferWithCuda() {
@@ -331,6 +399,13 @@ void GLWindow2D::saveSettings() {
 	Settings::getInstance()->storeSettings(this->getName(), this->getSettings());
 }
 
+void GLWindow2D::enalbeFpsCalculation(bool enable) {
+	this->showFPS = enable;
+	if(!this->showFPS){
+		this->setDockTitle(this->getDockBaseTitle());
+	}
+}
+
 void GLWindow2D::saveScreenshot(QString savePath, QString fileName) {
 	QImage screenshot = this->grabFramebuffer();
 	QString filePath = savePath + "/" + fileName;
@@ -349,10 +424,13 @@ void GLWindow2D::initializeGL() {
 		this->height = 128;
 	}
 
-	glGenBuffers(1, &buf);
+	glDeleteBuffers(1, &(this->buf)); // Delete the old buffer
+	glGenBuffers(1, &(this->buf));
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, buf);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, (this->width * this->height * sizeof(float)), 0, GL_DYNAMIC_COPY);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	glDeleteTextures(1, &(this->texture)); // Delete the old texture
 	glGenTextures(1, &(this->texture));
 	glBindTexture(GL_TEXTURE_2D, this->texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, this->width, this->height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
@@ -418,9 +496,13 @@ void GLWindow2D::paintGL() {
 	this->displayScalebars();
 	//this->displayOrientationLine(0, 250, 256); //todo: implement orientation line feature (Line that can be placed by the user at a desired position over the b-scan / en face view)
 
+	if(this->showFPS){
+		this->countFPS();
+	}
+
 	if(!this->delayedUpdatingRunning){
 		this->delayedUpdatingRunning = true;
-		QTimer::singleShot(DELAY_TIME_IN_ms, this, QOverload<>::of(&GLWindow2D::delayedUpdate));
+		QTimer::singleShot(REFRESH_INTERVAL_IN_ms, this, QOverload<>::of(&GLWindow2D::delayedUpdate));
 	}
 }
 

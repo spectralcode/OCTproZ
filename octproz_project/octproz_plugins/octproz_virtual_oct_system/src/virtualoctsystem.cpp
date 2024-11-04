@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include "virtualoctsystem.h"
 
+
 VirtualOCTSystem::VirtualOCTSystem() {
 	this->setType((PLUGIN_TYPE)SYSTEM);
 	this->systemDialog = new VirtualOCTSystemSettingsDialog();
@@ -35,6 +36,18 @@ VirtualOCTSystem::VirtualOCTSystem() {
 
 	connect(this->systemDialog, &VirtualOCTSystemSettingsDialog::settingsUpdated, this, &VirtualOCTSystem::slot_updateParams);
 	connect(this, &VirtualOCTSystem::enableGui, this->systemDialog, &VirtualOCTSystemSettingsDialog::slot_enableGui);
+
+	//default values
+	this->currParams.filePath = "";
+	this->currParams.bitDepth = 8;
+	this->currParams.width = 256;
+	this->currParams.height = 256;
+	this->currParams.depth = 16;
+	this->currParams.buffersPerVolume = 2;
+	this->currParams.buffersFromFile = 2;
+	this->currParams.bscanOffset = 0;
+	this->currParams.waitTimeUs = 100000;
+	this->currParams.copyFileToRam = true;
 }
 
 VirtualOCTSystem::~VirtualOCTSystem() {
@@ -89,7 +102,7 @@ void VirtualOCTSystem::startAcquisition(){
 	}
 
 	//start acquisition
-	emit info("Acquisition startedd");
+	emit info("Acquisition started");
 	if(currParams.buffersFromFile <= 2){
 		this->acqcuisitionSimulation();
 	}else if(currParams.copyFileToRam){
@@ -150,6 +163,9 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 	//calculate size of buffer
 	uint numberOfElements = this->currParams.depth * currParams.width * currParams.height;
 	uint sizeOfElement = ceil((double)this->currParams.bitDepth / 8.0);
+	size_t offsetInBytes = this->currParams.bscanOffset * this->currParams.width * this->currParams.height * sizeOfElement;
+
+	fseek(this->file, offsetInBytes, SEEK_SET);
 
 	//read data from file into first buffer
 	void* buf = static_cast<void*>(this->buffer->bufferArray[0]);
@@ -157,9 +173,9 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 
 	//set position indicater associated with this->file
 	if(currParams.buffersFromFile == 2){
-		fseek(this->file, numberOfElements*sizeOfElement, SEEK_SET);
+		fseek(this->file, numberOfElements*sizeOfElement + offsetInBytes, SEEK_SET);
 	}else{
-		rewind(this->file);
+		fseek(this->file, offsetInBytes, SEEK_SET);
 	}
 
 	//read data from file into second buffer
@@ -203,9 +219,11 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 
 void VirtualOCTSystem::acqcuisitionSimulationLargeFile() {
 	//calculate size of buffer
-	uint numberOfElements = this->currParams.depth * currParams.width * currParams.height;
+	uint numberOfElements = this->currParams.depth * this->currParams.width * this->currParams.height;
 	uint sizeOfElement = ceil((double)this->currParams.bitDepth / 8.0);
 	size_t bufferSizeInBytes = numberOfElements*sizeOfElement;
+	size_t offsetInBytes = this->currParams.bscanOffset * this->currParams.width * this->currParams.height * sizeOfElement;
+
 
 	//init ifstream
 	fclose(this->file); //we are going to use ifstream and do not need FILE* file, so we close it without doing anything with it
@@ -215,7 +233,8 @@ void VirtualOCTSystem::acqcuisitionSimulationLargeFile() {
 		return;
 	}
 	//set stream buffer
-	bigFile.rdbuf()->pubsetbuf(static_cast<char*>(this->streamBuffer->bufferArray[0]), STREAM_BUFFER_SIZE);
+	bigFile.seekg(offsetInBytes);
+	//bigFile.rdbuf()->pubsetbuf(static_cast<char*>(this->streamBuffer->bufferArray[0]), STREAM_BUFFER_SIZE);
 	int readBuffers = 0;
 
 	//acquisition begins!
@@ -242,7 +261,7 @@ void VirtualOCTSystem::acqcuisitionSimulationLargeFile() {
 			//rewind file if necessary
 			readBuffers++;
 			if(readBuffers >= this->currParams.buffersFromFile){
-				bigFile.seekg(0);
+				bigFile.seekg(offsetInBytes);
 				readBuffers = 0;
 			}
 
@@ -266,11 +285,12 @@ void VirtualOCTSystem::acquisitionSimulationWithMultiFileBuffers() {
 	uint numberOfElements = this->currParams.depth * currParams.width * currParams.height;
 	uint sizeOfElement = ceil((double)this->currParams.bitDepth / 8.0);
 	size_t bufferSizeInBytes = numberOfElements*sizeOfElement;
+	size_t offsetInBytes = this->currParams.bscanOffset * this->currParams.width * this->currParams.height * sizeOfElement;
 
 	//read data from file into file buffers
 	for(int i = 0; i < currParams.buffersFromFile; i++){
 		void* buf = static_cast<void*>(this->streamBuffer->bufferArray[i]);
-		fseek(this->file, i*numberOfElements*sizeOfElement, SEEK_SET);
+		fseek(this->file, i*numberOfElements*sizeOfElement + offsetInBytes, SEEK_SET);
 		fread(buf, sizeOfElement, numberOfElements, this->file);
 	}
 
