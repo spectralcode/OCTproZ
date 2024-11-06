@@ -463,6 +463,7 @@ void OCTproZ::loadSystemsAndExtensions() {
 			enum PLUGIN_TYPE type = actualPlugin->getType();
 			connect(actualPlugin, &Plugin::setKLinCoeffsRequest, this, &OCTproZ::slot_setKLinCoeffs); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::setDispCompCoeffsRequest, this->sidebar, &Sidebar::slot_setDispCompCoeffs); //Experimental! May be removed in future versions.
+			connect(actualPlugin, &Plugin::setGrayscaleConversionRequest, this->sidebar, &Sidebar::slot_setGrayscaleConversion);
 			connect(this->sidebar, &Sidebar::klinCoeffs, actualPlugin, &Plugin::setKLinCoeffsRequestAccepted); //Experimental! May be removed in future versions.
 			connect(this->sidebar, &Sidebar::dispCompCoeffs, actualPlugin, &Plugin::setDispCompCoeffsRequestAccepted); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::startProcessingRequest, this, &OCTproZ::slot_start); //Experimental! May be removed in future versions.

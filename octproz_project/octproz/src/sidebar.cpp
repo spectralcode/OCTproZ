@@ -26,6 +26,7 @@
 **/
 
 #include "sidebar.h"
+#include <QtGlobal>
 
 
 Sidebar::Sidebar(QWidget *parent) : QWidget(parent) {
@@ -530,6 +531,23 @@ void Sidebar::slot_setDispCompCoeffs(double *d0, double *d1, double *d2, double 
 	}
 	QApplication::processEvents();
 	emit dispCompCoeffs(this->ui.doubleSpinBox_d0->value(), this->ui.doubleSpinBox_d1->value(), this->ui.doubleSpinBox_d2->value(), this->ui.doubleSpinBox_d3->value());
+}
+
+void Sidebar::slot_setGrayscaleConversion(bool enableLogScaling, double max, double min, double multiplicator, double offset) {
+	this->ui.checkBox_logScaling->setChecked(enableLogScaling);
+
+	if(!qIsNaN(max)) {
+		this->ui.doubleSpinBox_signalMax->setValue(max);
+	}
+	if(!qIsNaN(min)) {
+		this->ui.doubleSpinBox_signalMin->setValue(min);
+	}
+	if(!qIsNaN(multiplicator)) {
+		this->ui.doubleSpinBox_signalMultiplicator->setValue(multiplicator);
+	}
+	if(!qIsNaN(offset)) {
+		this->ui.doubleSpinBox_signalAddend->setValue(offset);
+	}
 }
 
 void Sidebar::disableKlinCoeffInput(bool disable) {

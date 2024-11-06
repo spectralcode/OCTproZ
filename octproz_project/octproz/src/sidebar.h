@@ -164,6 +164,7 @@ public slots:
 	void slot_setMaximumBscansForNoiseDetermination(unsigned int max);
 	void slot_setKLinCoeffs(double* k0, double* k1, double* k2, double* k3);
 	void slot_setDispCompCoeffs(double* d0, double* d1, double* d2, double* d3);
+	void slot_setGrayscaleConversion(bool enableLogScaling, double max, double min, double multiplicator, double offset);
 	void disableKlinCoeffInput(bool disable);
 	void copyInfoToClipboard();
 	void show();
