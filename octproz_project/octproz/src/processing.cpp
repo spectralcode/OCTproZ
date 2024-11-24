@@ -60,7 +60,7 @@ Processing::Processing(){
 	this->processedRecorder->moveToThread(&recordingProcessedThread);
 	Gpu2HostNotifier* notifier = Gpu2HostNotifier::getInstance();
 	connect(this, &Processing::initProcessedRecorder, this->processedRecorder, &Recorder::slot_init);
-	connect(notifier, &Gpu2HostNotifier::newGpuDataAvailible, this->processedRecorder, &Recorder::slot_record);
+	connect(notifier, &Gpu2HostNotifier::newGpuDataAvailable, this->processedRecorder, &Recorder::slot_record);
 	connect(this, &Processing::processingDone, this->processedRecorder, &Recorder::slot_abortRecording);
 	connect(this->processedRecorder, &Recorder::error, this, &Processing::error);
 	connect(this->processedRecorder, &Recorder::info, this, &Processing::info);

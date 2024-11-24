@@ -44,7 +44,7 @@ Gpu2HostNotifier::~Gpu2HostNotifier()
 
 void Gpu2HostNotifier::emitCurrentStreamingBuffer(void* streamingBuffer) {
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
-	emit newGpuDataAvailible(streamingBuffer, params->bitDepth, params->samplesPerLine / 2, params->ascansPerBscan, params->bscansPerBuffer, params->buffersPerVolume, params->currentBufferNr);
+	emit newGpuDataAvailable(streamingBuffer, params->bitDepth, params->samplesPerLine / 2, params->ascansPerBscan, params->bscansPerBuffer, params->buffersPerVolume, params->currentBufferNr);
 }
 
 void Gpu2HostNotifier::emitBackgroundRecorded() {

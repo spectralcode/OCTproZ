@@ -166,7 +166,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 
 	this->processedDataNotifier = Gpu2HostNotifier::getInstance();
 	this->processedDataNotifier->moveToThread(&notifierThread);
-	connect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailible, this->plot1D, &PlotWindow1D::slot_plotProcessedData);
+	connect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailable, this->plot1D, &PlotWindow1D::slot_plotProcessedData);
 	connect(this->processedDataNotifier, &Gpu2HostNotifier::backgroundRecorded, this->sidebar, &Sidebar::updateBackgroundPlot);
 	
 	//connects to update opengl displays only when new data is written to display buffers //todo: further investigation. this seems to give hugely different results on linux vs windows. on windows this seems to lock the processing speed to max 60 Hz.
@@ -740,7 +740,7 @@ void OCTproZ::slot_menuExtensions() {
 				//QMetaObject::invokeMethod(extension, "activateExtension", Qt::QueuedConnection); //todo: move activateExtension method to "slots" in extensions.h in devkit! move extension in separate thread
 				connect(this, &OCTproZ::allowRawGrabbing, extension, &Extension::enableRawDataGrabbing);
 				connect(this->signalProcessing, &Processing::streamingBufferEnabled, extension, &Extension::enableProcessedDataGrabbing);
-				connect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailible, extension, &Extension::processedDataReceived);
+				connect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailable, extension, &Extension::processedDataReceived);
 				connect(this->signalProcessing, &Processing::rawData, extension, &Extension::rawDataReceived);
 			}
 	}
@@ -757,7 +757,7 @@ void OCTproZ::slot_menuExtensions() {
 					disconnect(extension, &Extension::storeSettings, this, &OCTproZ::slot_storePluginSettings);
 					disconnect(this, &OCTproZ::allowRawGrabbing, extension, &Extension::enableRawDataGrabbing);
 					disconnect(this->signalProcessing, &Processing::streamingBufferEnabled, extension, &Extension::enableProcessedDataGrabbing);
-					disconnect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailible, extension, &Extension::processedDataReceived);
+					disconnect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailable, extension, &Extension::processedDataReceived);
 					disconnect(this->signalProcessing, &Processing::rawData, extension, &Extension::rawDataReceived);
 				} else if( extension->getDisplayStyle() == SEPARATE_WINDOW){
 					extensionWidget->close();
@@ -787,7 +787,7 @@ void OCTproZ::slot_uncheckExtensionInMenu(Extension* extension) {
 	disconnect(extension, &Extension::storeSettings, this, &OCTproZ::slot_storePluginSettings);
 	disconnect(this, &OCTproZ::allowRawGrabbing, extension, &Extension::enableRawDataGrabbing);
 	disconnect(this->signalProcessing, &Processing::streamingBufferEnabled, extension, &Extension::enableProcessedDataGrabbing);
-	disconnect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailible, extension, &Extension::processedDataReceived);
+	disconnect(this->processedDataNotifier, &Gpu2HostNotifier::newGpuDataAvailable, extension, &Extension::processedDataReceived);
 	disconnect(this->signalProcessing, &Processing::rawData, extension, &Extension::rawDataReceived);
 }
 

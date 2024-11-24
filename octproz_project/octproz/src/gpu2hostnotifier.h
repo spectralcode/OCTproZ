@@ -63,7 +63,7 @@ public slots:
 
 signals:
 	void processedRecordDone(void* recordBuffer);
-	void newGpuDataAvailible(void* rawBuffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
+	void newGpuDataAvailable(void* rawBuffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
 	void backgroundRecorded();
 	void bscanDisplayBufferReady();
 	void enfaceDisplayBufferReady();
