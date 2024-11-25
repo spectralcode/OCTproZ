@@ -1401,26 +1401,26 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 
 	//k-linearization and windowing
 	if (d_inputLinearized != NULL && params->resampling && params->windowing && !params->dispersionCompensation) {
-		if(params->resamplingInterpolation == INTERPOLATION::CUBIC) {
+		if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::CUBIC) {
 			klinearizationCubicAndWindowing<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
 		}
-		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
+		else if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::LINEAR) {
 			klinearizationAndWindowing<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
 		}
-		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+		else if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::LANCZOS) {
 			klinearizationLanczosAndWindowing<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
 	} else
 		//k-linearization and windowing and dispersion compensation
 	if (d_inputLinearized != NULL && params->resampling && params->windowing && params->dispersionCompensation) {
-		if(params->resamplingInterpolation == INTERPOLATION::CUBIC){
+		if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::CUBIC){
 			klinearizationCubicAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
 		}
-		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
+		else if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::LINEAR) {
 			klinearizationAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
 		}
-		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+		else if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::LANCZOS) {
 			klinearizationLanczosAndWindowingAndDispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, d_windowCurve, d_phaseCartesian, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
@@ -1431,13 +1431,13 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	} else
 		//just k-linearization
 	if (d_inputLinearized != NULL && params->resampling && !params->windowing && !params->dispersionCompensation) {
-		if(params->resamplingInterpolation == INTERPOLATION::CUBIC){
+		if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::CUBIC){
 			klinearizationCubic<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
-		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
+		else if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::LINEAR) {
 			klinearization<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
-		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+		else if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::LANCZOS) {
 			klinearizationLanczos<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;
@@ -1452,13 +1452,13 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	} else
 		//k-linearization and dispersion compensation. nobody will use this in a serious manner, so an optimized "klinearizationAndDispersionCompensation" kernel is not necessary
 	if (d_inputLinearized != NULL && params->resampling && !params->windowing && params->dispersionCompensation) {
-		if(params->resamplingInterpolation == INTERPOLATION::CUBIC) {
+		if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::CUBIC) {
 			klinearizationCubic<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
-		else if(params->resamplingInterpolation == INTERPOLATION::LINEAR) {
+		else if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::LINEAR) {
 			klinearization<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
-		else if(params->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+		else if(params->resamplingInterpolation == OctAlgorithmParameters::INTERPOLATION::LANCZOS) {
 			klinearizationLanczos<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, d_resampleCurve, signalLength, samplesPerBuffer);
 		}
 		d_fftBuffer2 = d_inputLinearized;

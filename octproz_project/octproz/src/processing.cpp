@@ -30,7 +30,7 @@
 Processing::Processing(){
 	///qRegisterMetaType is needed to enabel Qt::QueuedConnection for signal slot communication with "AcquisitionParams"
 	qRegisterMetaType<AcquisitionParams >("AcquisitionParams");
-	qRegisterMetaType<RecordingParams >("RecordingParams");
+	qRegisterMetaType<OctAlgorithmParameters::RecordingParams >("OctAlgorithmParameters::RecordingParams");
 	this->bscanGlBufferRegisteredWithCuda = false;
 	this->enfaceGlBufferRegisteredWithCuda = false;
 	this->volumeGlBufferRegisteredWithCuda = false;
@@ -226,7 +226,7 @@ void Processing::slot_start(AcquisitionSystem* system){
 	}
 }
 
-void Processing::slot_enableRecording(RecordingParams recParams) {
+void Processing::slot_enableRecording(OctAlgorithmParameters::RecordingParams recParams) {
 	if (recParams.recordRaw) {
 		if(this->rawRecorder->recordingEnabled) {
 			emit error(tr("Recording of raw data is already running."));
@@ -238,7 +238,7 @@ void Processing::slot_enableRecording(RecordingParams recParams) {
 		if(this->processedRecorder->recordingEnabled) {
 			emit error(tr("Recording of processed data is already running."));
 		}else{
-			RecordingParams recProcessedParams = recParams;
+			OctAlgorithmParameters::RecordingParams recProcessedParams = recParams;
 			recProcessedParams.bufferSizeInBytes = recProcessedParams.bufferSizeInBytes/2; //todo: add option to change bitdepth of processed recording
 			emit initProcessedRecorder(recProcessedParams);
 		}

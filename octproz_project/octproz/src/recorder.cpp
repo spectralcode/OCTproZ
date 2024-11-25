@@ -60,7 +60,7 @@ void Recorder::slot_abortRecording(){
 	}
 }
 
-void Recorder::slot_init(RecordingParams recParams){
+void Recorder::slot_init(OctAlgorithmParameters::RecordingParams recParams){
 	this->currRecParams = recParams;
 	this->recBuffer = (char*)malloc(this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes);
 	QString userSetFileName = this->currRecParams.fileName;

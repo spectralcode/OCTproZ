@@ -35,27 +35,6 @@
 #define FIXED_PATTERN_NOISE_REMOVAL_SEGMENTS 9
 
 
-enum INTERPOLATION {
-	LINEAR,
-	CUBIC,
-	LANCZOS
-};
-
-struct RecordingParams {
-	QString timestamp;
-	QString fileName;
-	QString savePath;
-	size_t bufferSizeInBytes;
-	unsigned int buffersToRecord;
-	bool startWithFirstBuffer;
-	bool recordRaw;
-	bool recordProcessed;
-	bool recordScreenshot;
-	bool saveMetaData;
-	bool stopAfterRecord;
-};
-
-
 class OctAlgorithmParameters
 {
 public:
@@ -72,6 +51,48 @@ public:
 	*
 	**/
 	~OctAlgorithmParameters();
+
+	enum INTERPOLATION {
+		LINEAR,
+		CUBIC,
+		LANCZOS
+	};
+
+	enum DATA_TYPE {
+		AUTO,
+		UINT8,
+		INT8,
+		UINT12,
+		INT12,
+		UINT12_PACKED,
+		INT12_PACKED,
+		UINT16,
+		INT16,
+		UINT32,
+		INT32,
+		FLOAT32,
+		FLOAT64
+	};
+
+	enum ENDIANNESS {
+		LITTLE_ENDIAN,
+		BIG_ENDIAN
+	};
+
+	struct RecordingParams {
+		QString timestamp;
+		QString fileName;
+		QString savePath;
+		DATA_TYPE dataType;
+		size_t bufferSizeInBytes;
+		unsigned int buffersToRecord;
+		bool startWithFirstBuffer;
+		bool recordRaw;
+		bool recordProcessed;
+		bool recordScreenshot;
+		bool saveMetaData;
+		bool stopAfterRecord;
+	};
 
 	void updateBufferSizeInBytes();
 	void updateResampleCurve();

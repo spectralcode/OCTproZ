@@ -80,7 +80,7 @@ private:
 public slots :
 	//todo: decide if prefix "slot_" should be used or not and change naming of slots accordingly
 	void slot_start(AcquisitionSystem* system);
-	void slot_enableRecording(RecordingParams recParams);
+	void slot_enableRecording(OctAlgorithmParameters::RecordingParams recParams);
 	void slot_updateDisplayedBscanFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
 	void slot_updateDisplayedEnFaceFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
 	void slot_registerBscanOpenGLbufferWithCuda(unsigned int openGLbufferId);
@@ -97,8 +97,8 @@ signals :
 	void initializationFailed();
 	void initOpenGL(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread);
 	void initOpenGLenFaceView();
-	void initRawRecorder(RecordingParams params);
-	void initProcessedRecorder(RecordingParams params);
+	void initRawRecorder(OctAlgorithmParameters::RecordingParams params);
+	void initProcessedRecorder(OctAlgorithmParameters::RecordingParams params);
 	void processingDone();
 	void streamingBufferEnabled(bool enabled);
 

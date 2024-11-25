@@ -353,7 +353,7 @@ void Sidebar::addActionsForKlinGroupBoxMenu(QList<QAction *> actions) {
 void Sidebar::updateResamplingParams() {
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
 	int interpolation = this->ui.comboBox_interpolation->currentIndex();
-	INTERPOLATION interpolationOption = (INTERPOLATION) interpolation;
+	OctAlgorithmParameters::INTERPOLATION interpolationOption = (OctAlgorithmParameters::INTERPOLATION) interpolation;
 	params->resamplingInterpolation = interpolationOption;
 	double c0 = this->ui.doubleSpinBox_c0->value();
 	double c1 = this->ui.doubleSpinBox_c1->value();

@@ -56,7 +56,7 @@ private:
 	char* recBuffer;
 	unsigned int recordedBuffers;
 	bool initialized;
-	RecordingParams currRecParams;
+	OctAlgorithmParameters::RecordingParams currRecParams;
 
 	void uninit();
 	void saveToDisk();
@@ -64,7 +64,7 @@ private:
 
 public slots :	
 	void slot_abortRecording();
-	void slot_init(RecordingParams recParams);
+	void slot_init(OctAlgorithmParameters::RecordingParams recParams);
 	void slot_record(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
 
 

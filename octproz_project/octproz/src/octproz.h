@@ -215,7 +215,7 @@ signals:
 	void stop();
 	void allowRawGrabbing(bool allowed);
 	void record();
-	void enableRecording(RecordingParams recParams);
+	void enableRecording(OctAlgorithmParameters::RecordingParams recParams);
 	void pluginSettingsRequest();
 	void newSystemSelected();
 	void newSystem(AcquisitionSystem*);

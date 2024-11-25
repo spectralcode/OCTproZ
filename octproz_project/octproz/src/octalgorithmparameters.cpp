@@ -98,7 +98,7 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	bscanViewEnabled(true),
 	enFaceViewEnabled(true),
 	volumeViewEnabled(false),
-	recParams{QString(), QString(), QString(), 0, 1, false, false, false, false, false, false},
+	recParams{QString(), QString(), QString(), AUTO, 0, 1, false, false, false, false, false, false},
 	streamingParamsChanged(true),
 	streamToHost(false),
 	streamingBuffersToSkip(0),

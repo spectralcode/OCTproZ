@@ -34,7 +34,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 {
 	///qRegisterMetaType is needed to enabel Qt::QueuedConnection for signal slot communication with "AcquisitionParams"
 	qRegisterMetaType<AcquisitionParams>("AcquisitionParams");
-	qRegisterMetaType<RecordingParams>("RecordingParams");
+	qRegisterMetaType<OctAlgorithmParameters::RecordingParams>("OctAlgorithmParameters::RecordingParams");
 	qRegisterMetaType<size_t>("size_t");
 
 	qApp->setApplicationVersion(APP_VERSION);
@@ -591,7 +591,7 @@ void OCTproZ::slot_record() {
 	}
 
 	//check if the user selected anything to record
-	RecordingParams recParams = this->octParams->recParams;
+	OctAlgorithmParameters::RecordingParams recParams = this->octParams->recParams;
 	if (!recParams.recordScreenshot && !recParams.recordRaw && !recParams.recordProcessed) {
 		emit error(tr("Nothing to record! Please select what to record in the recording settings!"));
 		return;
