@@ -251,6 +251,7 @@ void Processing::slot_enableRecording(OctAlgorithmParameters::RecordingParams re
 			// Disconnect previous signals
 			Gpu2HostNotifier* notifier = Gpu2HostNotifier::getInstance();
 			disconnect(notifier, nullptr, this->processedRecorder, nullptr);
+			disconnect(this->processedRecorder, &Recorder::readyToRecord, this, &Processing::enableFloatGpu2HostStreaming);
 
 			// Connect the appropriate signal
 			if (recParams.saveAs32bitFloat) {
