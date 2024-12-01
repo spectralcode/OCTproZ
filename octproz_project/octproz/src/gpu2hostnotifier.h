@@ -45,6 +45,7 @@ public:
 	~Gpu2HostNotifier();
 
 	static void CUDART_CB dh2StreamingCallback(void* currStreamingBuffer);
+	static void CUDART_CB dh2FloatStreamingCallback(void* currFloatStreamingBuffer);
 	static void CUDART_CB backgroundSignalCallback(void* backgroundSignal);
 	static void CUDART_CB bscanDisblayBufferReadySignalCallback(void* data);
 	static void CUDART_CB enfaceDisplayBufferReadySignalCallback(void* data);
@@ -56,6 +57,7 @@ private:
 
 public slots:
 	void emitCurrentStreamingBuffer(void* currStreamingBuffer);
+	void emitCurrentFloatStreamingBuffer(void *streamingBuffer);
 	void emitBackgroundRecorded();
 	void emitBscanDisplayBufferReady(void* data);
 	void emitEnfaceDisplayBufferReady(void* data);
@@ -63,7 +65,8 @@ public slots:
 
 signals:
 	void processedRecordDone(void* recordBuffer);
-	void newGpuDataAvailable(void* rawBuffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
+	void newGpuDataAvailable(void* rawBuffer, unsigned int bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
+	void newGpuFloatDataAvailable(void* data, unsigned int bitDepth, unsigned int samplesPerLine, unsigned int ascansPerBscan, unsigned int bscansPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
 	void backgroundRecorded();
 	void bscanDisplayBufferReady();
 	void enfaceDisplayBufferReady();

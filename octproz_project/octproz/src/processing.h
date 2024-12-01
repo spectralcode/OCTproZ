@@ -74,6 +74,7 @@ private:
 	Recorder* rawRecorder;
 	Recorder* processedRecorder;
 	AcquisitionBuffer* streamingBuffer;
+	AcquisitionBuffer* floatStreamingBuffer; // for optional 32-bit float recording
 	unsigned int currBufferNr;
 
 
@@ -87,9 +88,11 @@ public slots :
 	void slot_registerEnFaceViewOpenGLbufferWithCuda(unsigned int openGLbufferId);
 	void slot_registerVolumeViewOpenGLbufferWithCuda(unsigned int openGLbufferId);
 	void enableGpu2HostStreaming(bool enableStreaming);
+	void enableFloatGpu2HostStreaming(bool enableStreaming);
 	void registerStreamingHostBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
-	void unregisterStreamingdHostBuffers();
-
+	void unregisterStreamingHostBuffers();
+	void registerFloatStreamingHostBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
+	void unregisterFloatStreamingHostBuffers();
 
 signals :
 	//void initOpenGL(QOpenGLContext** processingContext, QOffscreenSurface** processingSurface, QThread* processingThread);

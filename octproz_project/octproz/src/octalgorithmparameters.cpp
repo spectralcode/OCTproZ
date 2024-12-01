@@ -98,7 +98,7 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	bscanViewEnabled(true),
 	enFaceViewEnabled(true),
 	volumeViewEnabled(false),
-	recParams{QString(), QString(), QString(), AUTO, 0, 1, false, false, false, false, false, false},
+	recParams{QString(), QString(), QString(), AUTO, 0, 1, false, false, false, false, false, false, false},
 	streamingParamsChanged(true),
 	streamToHost(false),
 	streamingBuffersToSkip(0),
@@ -135,7 +135,7 @@ OctAlgorithmParameters::~OctAlgorithmParameters()
 
 void OctAlgorithmParameters::updateBufferSizeInBytes() {
 	unsigned int bytesPerSample = ceil((double)(this->bitDepth) / 8.0);
-	recParams.bufferSizeInBytes = bytesPerSample * this->samplesPerLine * this->ascansPerBscan * this->bscansPerBuffer;
+	this->recParams.bufferSizeInBytes = bytesPerSample * this->samplesPerLine * this->ascansPerBscan * this->bscansPerBuffer; //todo: replace bufferSizeInBytes by bufferSizeInBytesRaw and bufferSizeInBytesProcessed. then no bufferSize calculation is needed in processing class in slot_enableRecording
 }
 
 void OctAlgorithmParameters::updateResampleCurve() {

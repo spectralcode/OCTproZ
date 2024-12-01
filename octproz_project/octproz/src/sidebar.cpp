@@ -172,6 +172,7 @@ void Sidebar::loadSettings() {
 	this->ui.checkBox_startWithFirstBuffer->setChecked(this->recordSettings.value(REC_START_WITH_FIRST_BUFFER).toBool());
 	this->ui.checkBox_stopAfterRec->setChecked(this->recordSettings.value(REC_STOP).toBool());
 	this->ui.checkBox_meta->setChecked(this->recordSettings.value(REC_META).toBool());
+	this->ui.checkBox_32bitfloat->setChecked(this->recordSettings.value(REC_32BIT_FLOAT).toBool());
 	this->ui.spinBox_volumes->setValue(this->recordSettings.value(REC_VOLUMES).toUInt());
 	this->ui.lineEdit_recName->setText(this->recordSettings.value(REC_NAME).toString());
 	this->ui.plainTextEdit_description->setPlainText(this->recordSettings.value(REC_DESCRIPTION).toString());
@@ -337,6 +338,7 @@ void Sidebar::updateRecordingParams() {
 	params->recParams.recordRaw = this->ui.checkBox_recordRawBuffers->isChecked();
 	params->recParams.recordScreenshot = this->ui.checkBox_recordScreenshots->isChecked();
 	params->recParams.saveMetaData = this->ui.checkBox_meta->isChecked();
+	params->recParams.saveAs32bitFloat = this->ui.checkBox_32bitfloat->isChecked();	
 }
 
 void Sidebar::enableRecordTab(bool enable) {
@@ -598,6 +600,7 @@ void Sidebar::updateSettingsMaps() {
 	this->recordSettings.insert(REC_START_WITH_FIRST_BUFFER, this->ui.checkBox_startWithFirstBuffer->isChecked());
 	this->recordSettings.insert(REC_STOP, this->ui.checkBox_stopAfterRec->isChecked());
 	this->recordSettings.insert(REC_META, this->ui.checkBox_meta->isChecked());
+	this->recordSettings.insert(REC_32BIT_FLOAT, this->ui.checkBox_32bitfloat->isChecked());
 	this->recordSettings.insert(REC_VOLUMES, this->ui.spinBox_volumes->value());
 	this->recordSettings.insert(REC_NAME, this->ui.lineEdit_recName->text());
 	this->recordSettings.insert(REC_DESCRIPTION, this->ui.plainTextEdit_description->toPlainText());

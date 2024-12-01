@@ -62,6 +62,8 @@ public:
 		AUTO,
 		UINT8,
 		INT8,
+		UINT10,
+		INT10,
 		UINT12,
 		INT12,
 		UINT12_PACKED,
@@ -83,7 +85,7 @@ public:
 		QString timestamp;
 		QString fileName;
 		QString savePath;
-		DATA_TYPE dataType;
+		DATA_TYPE dataType; //todo: think about if dataType should be used instead of bitDepth
 		size_t bufferSizeInBytes;
 		unsigned int buffersToRecord;
 		bool startWithFirstBuffer;
@@ -91,6 +93,7 @@ public:
 		bool recordProcessed;
 		bool recordScreenshot;
 		bool saveMetaData;
+		bool saveAs32bitFloat;
 		bool stopAfterRecord;
 	};
 

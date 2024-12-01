@@ -358,9 +358,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-791</y>
-                <width>311</width>
-                <height>1137</height>
+                <y>0</y>
+                <width>310</width>
+                <height>1039</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -2223,8 +2223,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>307</width>
-                <height>480</height>
+                <width>324</width>
+                <height>479</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -2385,6 +2385,13 @@
                    <widget class="QCheckBox" name="checkBox_meta">
                     <property name="text">
                      <string>Save meta information</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBox_32bitfloat">
+                    <property name="text">
+                     <string>Save processed buffers as 32-bit float</string>
                     </property>
                    </widget>
                   </item>

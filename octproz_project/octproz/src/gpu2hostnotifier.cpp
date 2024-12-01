@@ -47,6 +47,11 @@ void Gpu2HostNotifier::emitCurrentStreamingBuffer(void* streamingBuffer) {
 	emit newGpuDataAvailable(streamingBuffer, params->bitDepth, params->samplesPerLine / 2, params->ascansPerBscan, params->bscansPerBuffer, params->buffersPerVolume, params->currentBufferNr);
 }
 
+void Gpu2HostNotifier::emitCurrentFloatStreamingBuffer(void* streamingBuffer) {
+	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
+	emit newGpuFloatDataAvailable(streamingBuffer, params->bitDepth, params->samplesPerLine / 2, params->ascansPerBscan, params->bscansPerBuffer, params->buffersPerVolume, params->currentBufferNr);
+}
+
 void Gpu2HostNotifier::emitBackgroundRecorded() {
 	emit backgroundRecorded();
 }
@@ -69,6 +74,10 @@ void Gpu2HostNotifier::emitVolumeDisplayBufferReady(void* data) {
 
 void CUDART_CB Gpu2HostNotifier::dh2StreamingCallback(void* currStreamingBuffer) {
 	Gpu2HostNotifier::getInstance()->emitCurrentStreamingBuffer(currStreamingBuffer);
+}
+
+void CUDART_CB Gpu2HostNotifier::dh2FloatStreamingCallback(void* currFloatStreamingBuffer) {
+	Gpu2HostNotifier::getInstance()->emitCurrentFloatStreamingBuffer(currFloatStreamingBuffer);
 }
 
 void CUDART_CB Gpu2HostNotifier::backgroundSignalCallback(void* backgroundSignal) {

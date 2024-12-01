@@ -65,13 +65,14 @@ private:
 public slots :	
 	void slot_abortRecording();
 	void slot_init(OctAlgorithmParameters::RecordingParams recParams);
-	void slot_record(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
+	void slot_record(void* buffer, unsigned int bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr);
 
 
 signals :
 	void info(QString info);
 	void error(QString error);
 	void recordingDone();
+	void readyToRecord(bool);
 };
 
 #endif // RECORDER_H

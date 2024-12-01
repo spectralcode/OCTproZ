@@ -50,6 +50,7 @@
 #define REC_SCREENSHOTS "record_screenshots"
 #define REC_STOP "stop_after_record"
 #define REC_META "save_meta_info"
+#define REC_32BIT_FLOAT "save_as_32_bit_float"
 #define REC_VOLUMES "volumes"
 #define REC_NAME "name"
 #define REC_START_WITH_FIRST_BUFFER "start_with_first_buffer"

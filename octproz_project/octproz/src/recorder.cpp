@@ -72,6 +72,7 @@ void Recorder::slot_init(OctAlgorithmParameters::RecordingParams recParams){
 	this->recordingFinished = false;
 	this->recordingEnabled = true;
 	this->isRecording = false;
+	emit readyToRecord(true);
 	emit info(tr("Recording initialized..."));
 }
 
@@ -81,10 +82,11 @@ void Recorder::uninit(){
 	this->initialized = false;
 	this->recordingFinished = true;
 	this->recordedBuffers = 0;
+	emit readyToRecord(false);
 	emit recordingDone();
 }
 
-void Recorder::slot_record(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){
+void Recorder::slot_record(void* buffer, unsigned int bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){
 	Q_UNUSED(bitDepth);
 	Q_UNUSED(samplesPerLine);
 	Q_UNUSED(linesPerFrame);

@@ -41,6 +41,7 @@ Processing::Processing(){
 	this->context = new QOpenGLContext();
 	this->octParams = OctAlgorithmParameters::getInstance();
 	this->streamingBuffer = new AcquisitionBuffer();
+	this->floatStreamingBuffer = new AcquisitionBuffer();
 	this->rawRecorder = nullptr;
 	this->processedRecorder = nullptr;
 	this->currBufferNr = 0;
@@ -76,6 +77,7 @@ Processing::~Processing(){
 	recordingRawThread.wait();
 	delete this->context;
 	delete this->streamingBuffer;
+	delete this->floatStreamingBuffer;
 	this->surface->deleteLater();
 	cleanupCuda();
 	qDebug() << "Processing destructor. Thread ID: " << QThread::currentThreadId();
@@ -239,7 +241,25 @@ void Processing::slot_enableRecording(OctAlgorithmParameters::RecordingParams re
 			emit error(tr("Recording of processed data is already running."));
 		}else{
 			OctAlgorithmParameters::RecordingParams recProcessedParams = recParams;
-			recProcessedParams.bufferSizeInBytes = recProcessedParams.bufferSizeInBytes/2; //todo: add option to change bitdepth of processed recording
+			if(recParams.saveAs32bitFloat){
+				recProcessedParams.bufferSizeInBytes = (this->octParams->samplesPerLine / 2) * this->octParams->ascansPerBscan * this->octParams->bscansPerBuffer * sizeof (float);
+				//this->enableFloatGpu2HostStreaming(true);
+			} else {
+				recProcessedParams.bufferSizeInBytes = recProcessedParams.bufferSizeInBytes/2; //todo: add option to change bitdepth of processed recording
+			}
+			
+			// Disconnect previous signals
+			Gpu2HostNotifier* notifier = Gpu2HostNotifier::getInstance();
+			disconnect(notifier, nullptr, this->processedRecorder, nullptr);
+
+			// Connect the appropriate signal
+			if (recParams.saveAs32bitFloat) {
+				connect(notifier, &Gpu2HostNotifier::newGpuFloatDataAvailable, this->processedRecorder, &Recorder::slot_record);
+				connect(this->processedRecorder, &Recorder::readyToRecord, this, &Processing::enableFloatGpu2HostStreaming);
+			} else {
+				connect(notifier, &Gpu2HostNotifier::newGpuDataAvailable, this->processedRecorder, &Recorder::slot_record);
+			}
+
 			emit initProcessedRecorder(recProcessedParams);
 		}
 	}
@@ -311,9 +331,35 @@ void Processing::enableGpu2HostStreaming(bool enableStreaming) {
 		QCoreApplication::processEvents();
 		QThread::msleep(500);
 		QCoreApplication::processEvents();
-		this->unregisterStreamingdHostBuffers();
+		this->unregisterStreamingHostBuffers();
 		this->streamingBuffer->releaseMemory();
 		emit info(tr("GPU to Host-Ram Streaming disabled."));
+	}
+}
+
+void Processing::enableFloatGpu2HostStreaming(bool enableStreaming) {
+	if (enableStreaming) {
+		unsigned int width = this->octParams->samplesPerLine;
+		unsigned int height = this->octParams->ascansPerBscan;
+		unsigned int depth = this->octParams->bscansPerBuffer;
+		size_t bufferSizeInBytes = (width / 2) * height * depth * sizeof(float);
+
+		// Release any previously allocated memory
+		this->floatStreamingBuffer->releaseMemory();
+
+		// Allocate memory for two buffers
+		this->floatStreamingBuffer->allocateMemory(2, bufferSizeInBytes);
+
+		// Register the allocated buffers with CUDA
+		this->registerFloatStreamingHostBuffers(
+			this->floatStreamingBuffer->bufferArray.at(0),
+			this->floatStreamingBuffer->bufferArray.at(1),
+			bufferSizeInBytes
+		);
+	} else {
+		// Unregister and release memory
+		this->unregisterFloatStreamingHostBuffers();
+		this->floatStreamingBuffer->releaseMemory();
 	}
 }
 
@@ -321,6 +367,14 @@ void Processing::registerStreamingHostBuffers(void* h_streamingBuffer1, void* h_
 	cuda_registerStreamingBuffers(h_streamingBuffer1, h_streamingBuffer2, bytesPerBuffer);
 }
 
-void Processing::unregisterStreamingdHostBuffers() {
+void Processing::unregisterStreamingHostBuffers() {
 	cuda_unregisterStreamingBuffers();
+}
+
+void Processing::registerFloatStreamingHostBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer) {
+	cuda_registerFloatStreamingBuffers(h_streamingBuffer1, h_streamingBuffer2, bytesPerBuffer);
+}
+
+void Processing::unregisterFloatStreamingHostBuffers() {
+	cuda_unregisterFloatStreamingBuffers();
 }

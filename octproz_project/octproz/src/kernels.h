@@ -68,6 +68,8 @@ extern "C" void cleanupCuda();
 extern "C" void freeCudaMem(void** data);
 extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
 extern "C" void cuda_unregisterStreamingBuffers();
+extern "C" void cuda_registerFloatStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
+extern "C" void cuda_unregisterFloatStreamingBuffers();
 extern "C" bool cuda_registerGlBufferBscan(GLuint buf);
 extern "C" bool cuda_registerGlBufferEnFaceView(GLuint buf);
 extern "C" bool cuda_registerGlBufferVolumeView(GLuint buf);

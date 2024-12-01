@@ -61,9 +61,11 @@ void* d_outputBuffer = NULL;
 
 void* host_buffer1 = NULL;
 void* host_buffer2 = NULL;
-void* host_RecordBuffer = NULL;
 void* host_streamingBuffer1 = NULL;
 void* host_streamingBuffer2 = NULL;
+void* host_floatStreamingBuffer1 = nullptr;
+void* host_floatStreamingBuffer2 = nullptr;
+bool floatStreamingBuffersRegistered = false;
 
 cufftComplex* d_inputLinearized = NULL;
 float* d_windowCurve= NULL;
@@ -74,6 +76,7 @@ cufftComplex* d_phaseCartesian = NULL;
 unsigned int bufferNumber = 0;
 unsigned int bufferNumberInVolume = 0;
 unsigned int streamingBufferNumber = 0;
+static int floatStreamingBufferNumber = 0;
 
 cufftComplex* d_fftBuffer = NULL;
 cufftHandle d_plan = NULL;
@@ -719,6 +722,27 @@ extern "C" void cuda_unregisterStreamingBuffers() {
 	host_streamingBuffer2 = NULL;
 }
 
+extern "C" void cuda_registerFloatStreamingBuffers(void* h_floatStreamingBuffer1, void* h_floatStreamingBuffer2, size_t bytesPerBuffer) {
+	host_floatStreamingBuffer1 = h_floatStreamingBuffer1;
+	host_floatStreamingBuffer2 = h_floatStreamingBuffer2;
+#ifndef __aarch64__
+	checkCudaErrors(cudaHostRegister(host_floatStreamingBuffer1, bytesPerBuffer, cudaHostRegisterPortable));
+	checkCudaErrors(cudaHostRegister(host_floatStreamingBuffer2, bytesPerBuffer, cudaHostRegisterPortable));
+#endif
+	floatStreamingBuffersRegistered = true;
+}
+
+extern "C" void cuda_unregisterFloatStreamingBuffers() {
+#ifndef __aarch64__
+	checkCudaErrors(cudaHostUnregister(host_floatStreamingBuffer1));
+	checkCudaErrors(cudaHostUnregister(host_floatStreamingBuffer2));
+#endif
+	host_floatStreamingBuffer1 = nullptr;
+	host_floatStreamingBuffer2 = nullptr;
+	floatStreamingBuffersRegistered = false;
+}
+
+
 //Removes half of each processed A-scan (the mirror artefacts), logarithmizes each value of magnitude of remaining A-scan and copies it into an output array. This output array can be used to display the processed OCT data.
 __global__ void postProcessTruncateLog(float *output, const cufftComplex *input, const int outputAscanLength, const int samples, const int bufferNumberInVolume, const float max, const float min, const float addend, const float coeff) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
@@ -1117,6 +1141,7 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	bufferNumber = 0;
 	bufferNumberInVolume = params->buffersPerVolume-1;
 	streamingBufferNumber = 0;
+	floatStreamingBufferNumber = 0;
 	processedBuffers = 0;
 	streamedBuffers = 0;
 	fixedPatternNoiseDetermined = false;
@@ -1342,6 +1367,24 @@ inline void streamProcessedData(float* d_currProcessedBuffer, cudaStream_t strea
 	streamedBuffers++;
 }
 
+inline void streamProcessedFloatData(float* d_currProcessedBuffer, cudaStream_t stream) {
+	if (!floatStreamingBuffersRegistered) return;
+
+	floatStreamingBufferNumber = (floatStreamingBufferNumber + 1) % 2;
+	void* hostDestBuffer = floatStreamingBufferNumber == 0 ? host_floatStreamingBuffer1 : host_floatStreamingBuffer2;
+
+	size_t bufferSizeInBytes = (samplesPerBuffer / 2) * sizeof(float);
+
+	#if !defined(__aarch64__) || !defined(ENABLE_CUDA_ZERO_COPY)
+		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, d_currProcessedBuffer, bufferSizeInBytes, cudaMemcpyDeviceToHost, stream));
+	#endif
+
+	// Notify the host
+	checkCudaErrors(cudaLaunchHostFunc(stream, Gpu2HostNotifier::dh2FloatStreamingCallback, hostDestBuffer));
+	printf("host func launched!\n");
+}
+
+
 extern "C" void octCudaPipeline(void* h_inputSignal) {
 	//check if cuda buffers are initialized
 	if (!cudaInitialized) {
@@ -1547,6 +1590,11 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		printf("Cuda error: %s\n", cudaGetErrorString(err));
 	}
 
+	//save processed data as 32-bit float if requested
+	if (params->recParams.saveAs32bitFloat) {
+		streamProcessedFloatData(d_currBuffer, stream[currStream]);
+	}
+	
 	//Copy/Stream processed data to host continuously
 	if (params->streamToHost && !params->streamingParamsChanged) {
 		params->currentBufferNr = bufferNumberInVolume;
