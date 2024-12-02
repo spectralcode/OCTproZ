@@ -76,9 +76,9 @@ public:
 		FLOAT64
 	};
 
-	enum ENDIANNESS {
-		LITTLE_ENDIAN,
-		BIG_ENDIAN
+	enum ENDIANNESS { //todo: check if there are common ADC that use different endiannes and integrate endianness into processing if needed
+		LITTLE_END,
+		BIG_END
 	};
 
 	struct RecordingParams {
