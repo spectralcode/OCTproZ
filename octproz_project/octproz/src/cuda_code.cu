@@ -1379,9 +1379,7 @@ inline void streamProcessedFloatData(float* d_currProcessedBuffer, cudaStream_t 
 		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, d_currProcessedBuffer, bufferSizeInBytes, cudaMemcpyDeviceToHost, stream));
 	#endif
 
-	// Notify the host
 	checkCudaErrors(cudaLaunchHostFunc(stream, Gpu2HostNotifier::dh2FloatStreamingCallback, hostDestBuffer));
-	printf("host func launched!\n");
 }
 
 
