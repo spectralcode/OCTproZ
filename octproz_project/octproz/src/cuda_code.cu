@@ -756,8 +756,6 @@ __global__ void postProcessTruncateLog(float *output, const cufftComplex *input,
 		float realComponent = input[inputArrayIndex].x;
 		float imaginaryComponent = input[inputArrayIndex].y;
 		output[index] = coeff*((((10.0f*log10f(((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength))) - min) / (max - min)) + addend);
-
-		output[index] = __saturatef(output[index]); //Clamp values to be within the interval [+0.0, 1.0].
 	}
 }
 
@@ -772,8 +770,6 @@ __global__ void postProcessTruncateLin(float *output, const cufftComplex *input,
 		float realComponent = input[inputArrayIndex].x;
 		float imaginaryComponent = input[inputArrayIndex].y;
 		output[index] = coeff * ((((sqrt((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength)) - min) / (max - min)) + addend);
-
-		output[index] = __saturatef(output[index]);//Clamp values to be within the interval [+0.0, 1.0].
 	}
 }
 
@@ -943,22 +939,22 @@ __global__ void floatToOutput(void *output, const float *input, const int output
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if(outputBitdepth <= 8){
 		unsigned char* out = (unsigned char*)output;
-		out[index] = (unsigned char)(input[index] * (255.0)); //float input with values between 0.0 and 1.0 is converted to 8 bit (0 to 255) output
+		out[index] = (unsigned char)(__saturatef(input[index]) * (255.0)); //float input with values between 0.0 and 1.0 is converted to 8 bit (0 to 255) output
 	}else if(outputBitdepth > 8 && outputBitdepth <= 10){
 		unsigned short* out = (unsigned short*)output;
-		out[index] = (unsigned short)(input[index] * (1023.0)); //10 bit
+		out[index] = (unsigned short)(__saturatef(input[index]) * (1023.0)); //10 bit
 	}else if(outputBitdepth > 10 && outputBitdepth <= 12){
 		unsigned short* out = (unsigned short*)output;
-		out[index] = (unsigned short)(input[index] * (4095.0)); //12 bit
+		out[index] = (unsigned short)(__saturatef(input[index]) * (4095.0)); //12 bit
 	}else if(outputBitdepth > 12 && outputBitdepth <= 16){
 		unsigned short* out = (unsigned short*)output;
-		out[index] = (unsigned short)(input[index] * (65535.0)); //16 bit
+		out[index] = (unsigned short)(__saturatef(input[index]) * (65535.0)); //16 bit
 	}else if(outputBitdepth > 16 && outputBitdepth <= 24){
 		unsigned int* out = (unsigned int*)output;
-		out[index] = (unsigned int)(input[index] * (16777215.0f)); //24 bit
+		out[index] = (unsigned int)(__saturatef(input[index]) * (16777215.0f)); //24 bit
 	}else{
 		unsigned int* out = (unsigned int*)output;
-		out[index] = (unsigned int)(input[index] * (4294967295.0f)); //32 bit
+		out[index] = (unsigned int)(__saturatef(input[index]) * (4294967295.0f)); //32 bit
 	}
 }
 
