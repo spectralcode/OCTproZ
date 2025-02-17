@@ -523,6 +523,27 @@ void OCTproZ::initExtensionsMenu() {
 	}
 }
 
+void OCTproZ::autoLoadExtensions() {
+	// Check if the settings contain autoload extension list
+	if (!this->mainWindowSettings.contains(MAIN_ACTIVE_EXTENSIONS)){
+		return;
+	}
+
+	QStringList autoloadExtensions = this->mainWindowSettings.value(MAIN_ACTIVE_EXTENSIONS).toStringList();
+	if (autoloadExtensions.isEmpty())
+		return;
+
+	// Iterate through all extension actions and trigger those in the autoload list
+	foreach (QAction* action, this->extensionActions) {
+		if (autoloadExtensions.contains(action->text())) {
+			if (!action->isChecked()) {
+				// Triggering the action will call slot_menuExtensions() with the action as sender
+				action->trigger();
+			}
+		}
+	}
+}
+
 void OCTproZ::slot_start() {
 	if (this->currSystem != nullptr) {
 		if(this->currSystem->acqusitionRunning){
@@ -1042,6 +1063,15 @@ void OCTproZ::updateSettingsMap() {
 	this->mainWindowSettings.insert(DOCK_ENFACEVIEW_GEOMETRY, this->dockEnFaceView->saveGeometry());
 	this->mainWindowSettings.insert(DOCK_VOLUME_VISIBLE, this->dockVolumeView->isVisible());
 	this->mainWindowSettings.insert(DOCK_VOLUME_GEOMETRY, this->dockVolumeView->saveGeometry());
+
+	//active extensions
+	QStringList activeExtensions;
+	foreach (QAction* action, this->extensionActions) {
+		if (action->isChecked()) {
+			activeExtensions.append(action->text());
+		}
+	}
+	this->mainWindowSettings.insert(MAIN_ACTIVE_EXTENSIONS, activeExtensions);
 }
 
 void OCTproZ::loadResamplingCurveFromFile(QString fileName){
@@ -1080,6 +1110,9 @@ void OCTproZ::loadMainWindowSettings(){
 	if(loadedSystemName != ""){
 		this->setSystem(loadedSystemName);
 	}
+
+	//activate extensions
+	this->autoLoadExtensions();
 
 	MessageConsoleParams consoleParams;
 	consoleParams.newestMessageAtBottom = this->mainWindowSettings.value(MESSAGE_CONSOLE_BOTTOM).toBool();
