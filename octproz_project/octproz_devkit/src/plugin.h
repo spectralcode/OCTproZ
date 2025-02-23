@@ -43,6 +43,11 @@ public:
 
 	virtual void settingsLoaded(QVariantMap settings){}
 
+	virtual void receiveCommand(const QString &command, const QVariantMap &params) {
+		Q_UNUSED(command);
+		Q_UNUSED(params);
+	}
+
 	PLUGIN_TYPE getType() { return this->type;}
 	void setType(PLUGIN_TYPE type) { this->type = type;}
 	QString getName() { return this->name;}
@@ -70,6 +75,7 @@ signals:
 	void setCustomResamplingCurveRequest(QVector<float> customCurve);
 	void loadSettingsFileRequest(QString);
 	void saveSettingsFileRequest(QString);
+	void sendCommand(const QString &sender, const QString &targetPlugin, const QString &command, const QVariantMap &params = QVariantMap());
 };
 
 #endif // PLUGIN_H

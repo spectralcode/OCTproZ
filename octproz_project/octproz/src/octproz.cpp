@@ -53,6 +53,7 @@ OCTproZ::OCTproZ(QWidget *parent) :
 
 	this->sysManager = new SystemManager();
 	this->sysChooser = new SystemChooser();
+	this->messageBus = new PluginMessageBus(this);
 	this->currSystem = nullptr;
 	this->currSystemName = "";
 	this->octParams = OctAlgorithmParameters::getInstance();
@@ -460,7 +461,8 @@ void OCTproZ::loadSystemsAndExtensions() {
 		QObject *plugin = loader.instance(); //todo: figure out why qobject_cast<Plugin*>(loader.instance()) does not work and fix it
 		if (plugin) {
 			Plugin* actualPlugin = (Plugin*)(plugin);
-			enum PLUGIN_TYPE type = actualPlugin->getType();
+			this->messageBus->registerPlugin(actualPlugin->getName(), actualPlugin);
+			connect(actualPlugin, &Plugin::sendCommand, this->messageBus, &PluginMessageBus::sendCommand);
 			connect(actualPlugin, &Plugin::setKLinCoeffsRequest, this, &OCTproZ::slot_setKLinCoeffs); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::setDispCompCoeffsRequest, this->sidebar, &Sidebar::slot_setDispCompCoeffs); //Experimental! May be removed in future versions.
 			connect(actualPlugin, &Plugin::setGrayscaleConversionRequest, this->sidebar, &Sidebar::slot_setGrayscaleConversion);
@@ -472,6 +474,7 @@ void OCTproZ::loadSystemsAndExtensions() {
 			connect(actualPlugin, &Plugin::setCustomResamplingCurveRequest, this, &OCTproZ::slot_setCustomResamplingCurve);
 			connect(actualPlugin, &Plugin::loadSettingsFileRequest, this, &OCTproZ::slot_loadSettingsFromFile);
 			connect(actualPlugin, &Plugin::saveSettingsFileRequest, this, &OCTproZ::slot_saveSettingsToFile);
+			enum PLUGIN_TYPE type = actualPlugin->getType();
 			switch (type) {
 				case SYSTEM:{
 					this->sysManager->addSystem(qobject_cast<AcquisitionSystem*>(plugin));
@@ -934,6 +937,7 @@ void OCTproZ::slot_useCustomResamplingCurve(bool use) {
 	this->octParams->acquisitionParamsChanged = true;
 	this->sidebar->slot_updateProcessingParams();
 	this->sidebar->disableKlinCoeffInput(use);
+	//this->saveSettings();
 }
 
 void OCTproZ::slot_loadCustomResamplingCurve() {

@@ -54,6 +54,7 @@
 #include "octalgorithmparameters.h"
 #include "octalgorithmparametersmanager.h"
 #include "aboutdialog.h"
+#include "pluginmessagebus.h"
 
 #include "ui_octproz.h"
 
@@ -160,6 +161,7 @@ private:
 	SystemChooser* sysChooser;
 	AcquisitionSystem* currSystem;
 	ExtensionManager* extManager;
+	PluginMessageBus* messageBus;
 	Processing* signalProcessing; 
 	OctAlgorithmParameters* octParams;
 	OctAlgorithmParametersManager* paramsManager;
