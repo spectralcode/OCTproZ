@@ -109,6 +109,7 @@ public:
 	void saveSettings();
 	void connectGuiElementsToAutosave();
 	void disconnectGuiElementsFromAutosave();
+	void connectActionsToAutoSave();
 	void connectUpdateProcessingParams();
 	void updateProcessingParams();
 	void updateStreamingParams(); //todo: find a nice way to enable/disable streaming (allocate/release memory for streaming buffers)

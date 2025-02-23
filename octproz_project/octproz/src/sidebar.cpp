@@ -31,7 +31,11 @@
 
 Sidebar::Sidebar(QWidget *parent) : QWidget(parent) {
 	this->dock = new QDockWidget();
-	ui.setupUi(dock); 
+	ui.setupUi(dock);
+
+	this->actionUseCustomKLinCurve = nullptr;
+	this->actionUseSidebarKLinCurve = nullptr;
+	this->actionSetCustomKLinCurve = nullptr;
 
 	//Prevent accidental change of widget values by user inside QScrollArea
 	this->findGuiElements();
@@ -51,7 +55,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent) {
 	this->defaultWidth = static_cast<unsigned int>(this->dock->width());
 	this->spacer = nullptr;
 	this->initGui();
-	
+
 	//Connect gui signals to save changed settings
 	this->connectGuiElementsToAutosave(); //todo: rethink if this is really useful. maybe make this optional and add it to the general application settings
 	this->connectUpdateProcessingParams();
@@ -218,7 +222,7 @@ void Sidebar::loadSettings() {
 	this->ui.doubleSpinBox_postProcessBackgroundWeight->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_WEIGHT).toDouble());
 	this->ui.doubleSpinBox_postProcessBackgroundOffset->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_OFFSET).toDouble());
 	emit loadPostProcessBackgroundRequested(SETTINGS_PATH_BACKGROUND_FILE);
-	
+
 	//GPU to RAM Streaming
 	this->ui.groupBox_streaming->setChecked(this->streamingSettings.value(STREAM_STREAMING).toBool());
 	this->ui.spinBox_streamingBuffersToSkip->setValue(this->streamingSettings.value(STREAM_STREAMING_SKIP).toUInt());
@@ -272,6 +276,18 @@ void Sidebar::disconnectGuiElementsFromAutosave() {
 		disconnect(element, &QGroupBox::clicked, this, &Sidebar::saveSettings);
 	}
 	disconnect(this->ui.plainTextEdit_description, &QPlainTextEdit::textChanged, this, &Sidebar::saveSettings);
+}
+
+void Sidebar::connectActionsToAutoSave() {
+	if (actionUseSidebarKLinCurve) {
+		connect(actionUseSidebarKLinCurve, &QAction::triggered, this, &Sidebar::saveSettings);
+	}
+	if (actionUseCustomKLinCurve) {
+		connect(actionUseCustomKLinCurve, &QAction::triggered, this, &Sidebar::saveSettings);
+	}
+	if (actionSetCustomKLinCurve) {
+		connect(actionSetCustomKLinCurve, &QAction::triggered, this, &Sidebar::saveSettings);
+	}
 }
 
 void Sidebar::connectUpdateProcessingParams() {
@@ -338,7 +354,7 @@ void Sidebar::updateRecordingParams() {
 	params->recParams.recordRaw = this->ui.checkBox_recordRawBuffers->isChecked();
 	params->recParams.recordScreenshot = this->ui.checkBox_recordScreenshots->isChecked();
 	params->recParams.saveMetaData = this->ui.checkBox_meta->isChecked();
-	params->recParams.saveAs32bitFloat = this->ui.checkBox_32bitfloat->isChecked();	
+	params->recParams.saveAs32bitFloat = this->ui.checkBox_32bitfloat->isChecked();
 }
 
 void Sidebar::enableRecordTab(bool enable) {
@@ -350,6 +366,7 @@ void Sidebar::addActionsForKlinGroupBoxMenu(QList<QAction *> actions) {
 	this->actionUseSidebarKLinCurve = actions.at(0);
 	this->actionUseCustomKLinCurve = actions.at(1);
 	this->actionSetCustomKLinCurve = actions.at(3);
+	this->connectActionsToAutoSave();
 }
 
 void Sidebar::updateResamplingParams() {
