@@ -1,4 +1,4 @@
-#include "PluginMessageBus.h"
+#include "pluginmessagebus.h"
 #include <QMetaObject>
 #include <QDebug>
 
