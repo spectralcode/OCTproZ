@@ -1,31 +1,5 @@
-/**
-**  This file is part of OCTproZ.
-**  OCTproZ is an open source software for processig of optical
-**  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
-**
-**  OCTproZ is free software: you can redistribute it and/or modify
-**  it under the terms of the GNU General Public License as published by
-**  the Free Software Foundation, either version 3 of the License, or
-**  (at your option) any later version.
-**
-**  This program is distributed in the hope that it will be useful,
-**  but WITHOUT ANY WARRANTY; without even the implied warranty of
-**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-**  GNU General Public License for more details.
-**
-**  You should have received a copy of the GNU General Public License
-**  along with this program. If not, see http://www.gnu.org/licenses/.
-**
-****
-** Author:	Miroslav Zabic
-** Contact:	zabic
-**			at
-**			spectralcode.de
-****
-**/
-
 #include "settings.h"
+#include <QDateTime>
 
 
 Settings* Settings::settings = nullptr;
@@ -57,6 +31,11 @@ void Settings::setTimestamp(QString timestamp) {
 	settings.setValue(TIMESTAMP, this->timestamp);
 }
 
+void Settings::setCurrentTimeStamp() {
+	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmsszzz");
+	this->setTimestamp(timestamp);
+}
+
 void Settings::storeSettings(QString settingsGroupName, QVariantMap settingsMap) {
 	QSettings settings(SETTINGS_PATH, QSettings::IniFormat);
 	this->storeValues(&settings, settingsGroupName, settingsMap);
@@ -69,7 +48,7 @@ QVariantMap Settings::getStoredSettings(QString settingsGroupName) {
 	return settingsMap;
 }
 
-void Settings::copySettingsFile(QString path) {
+bool Settings::copySettingsFile(QString path) {
 	QString originPath = SETTINGS_PATH;
 	QString destinationPath = path;
 
@@ -77,15 +56,13 @@ void Settings::copySettingsFile(QString path) {
 	if (QFile::exists(destinationPath)) {
 		if (!QFile::remove(destinationPath)) {
 			emit error(tr("Could not overwrite existing file: ") + destinationPath);
-			return;
+			return false;
 		}
 	}
 
 	// Copy the settings file to the new location
 	bool success = QFile::copy(originPath, destinationPath);
-	if (!success) {
-		emit error(tr("Could not store settings file to: ") + destinationPath);
-	}
+	return success;
 }
 
 void Settings::storeValues(QSettings* settings, QString groupName, QVariantMap settingsMap) {

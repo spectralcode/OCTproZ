@@ -1,8 +1,8 @@
 /**
 **  This file is part of OCTproZ.
-**  OCTproZ is an open source software for processig of optical
+**  OCTproZ is an open source software for processing of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2025 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -86,6 +86,11 @@ public:
 	void setTimestamp(QString timestamp);
 
 	/**
+	* Sets current system time as timestamp.
+	**/
+	void setCurrentTimeStamp();
+
+	/**
 	* Set timestamp variable which will be saved together with all other settings inside settings file. The timestamp can be used as a part of several filenames to enable easy identification of related files. 
 	*
 	* @return timestamp that contains date time information
@@ -113,8 +118,9 @@ public:
 	* Copies current settings file to path
 	*
 	* @param path is the file path of the settings file to be copied
+	* @return bool that indicates if copy was successful. true = sucess, false = copy failed
 	**/
-	void copySettingsFile(QString path);
+	bool copySettingsFile(QString path);
 
 
 

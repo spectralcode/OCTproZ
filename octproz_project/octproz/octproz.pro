@@ -21,7 +21,8 @@ SOURCES += \
 	$$SOURCEDIR/main.cpp \
 	$$SOURCEDIR/mesh.cpp \
 	$$SOURCEDIR/minicurveplot.cpp \
-	$$SOURCEDIR/octproz.cpp \
+	$$SOURCEDIR/octprozapp.cpp \
+	$$SOURCEDIR/octprozmainwindow.cpp \
 	$$SOURCEDIR/raycastvolume.cpp \
 	$$SOURCEDIR/systemmanager.cpp \
 	$$QCUSTOMPLOTDIR/qcustomplot.cpp \
@@ -35,6 +36,7 @@ SOURCES += \
 	$$SOURCEDIR/settings.cpp \
 	$$SOURCEDIR/polynomial.cpp \
 	$$SOURCEDIR/extensionmanager.cpp \
+	$$SOURCEDIR/extensionuimanager.cpp \
 	$$SOURCEDIR/trackball.cpp \
 	$$SOURCEDIR/windowfunction.cpp \
 	$$SOURCEDIR/gpu2hostnotifier.cpp \
@@ -56,7 +58,8 @@ HEADERS += \
 	$$SOURCEDIR/glwindow3d.h \
 	$$SOURCEDIR/mesh.h \
 	$$SOURCEDIR/minicurveplot.h \
-	$$SOURCEDIR/octproz.h \
+	$$SOURCEDIR/octprozapp.h \
+	$$SOURCEDIR/octprozmainwindow.h \
 	$$SHAREDIR/octproz_devkit.h \
 	$$SHAREDIR/acquisitionbuffer.h \
 	$$SHAREDIR/acquisitionsystem.h \
@@ -74,6 +77,7 @@ HEADERS += \
 	$$SOURCEDIR/settings.h \
 	$$SOURCEDIR/polynomial.h \
 	$$SOURCEDIR/extensionmanager.h \
+	$$SOURCEDIR/extensionuimanager.h \
 	$$SOURCEDIR/trackball.h \
 	$$SOURCEDIR/windowfunction.h \
 	$$SOURCEDIR/gpu2hostnotifier.h \
@@ -84,10 +88,10 @@ HEADERS += \
 	$$SOURCEDIR/extensioneventfilter.h \
 	$$SOURCEDIR/outputwindow.h \
 	$$SOURCEDIR/octalgorithmparametersmanager.h \
-	$$SOURCEDIR/pluginmessagebus.h
+	$$SOURCEDIR/pluginmessagebus.h \
+	$$SOURCEDIR/settingsconstants.h
 
 FORMS += \
-	$$SOURCEDIR/octproz.ui \
 	$$SOURCEDIR/sidebar.ui
 
 RESOURCES += \

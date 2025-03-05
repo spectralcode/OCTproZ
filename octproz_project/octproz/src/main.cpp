@@ -1,8 +1,8 @@
 /**
 **  This file is part of OCTproZ.
-**  OCTproZ is an open source software for processig of optical
+**  OCTproZ is an open source software for processing of optical
 **  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
+**  Copyright (C) 2019-2025 Miroslav Zabic
 **
 **  OCTproZ is free software: you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -25,8 +25,10 @@
 ****
 **/
 
-#include "octproz.h"
+#include "octprozapp.h"
+#include "octprozmainwindow.h"
 #include <QApplication>
+#include <QStyleFactory>
 
 void style() {
 	qApp->setStyleSheet(
@@ -70,7 +72,17 @@ int main(int argc, char *argv[]) {
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QApplication a(argc, argv);
 	style();
-	OCTproZ w;
-	w.show();
-	return a.exec();
+
+	OCTproZApp* app = new OCTproZApp();
+	OCTproZMainWindow* window = new OCTproZMainWindow(app);
+	app->initialize();
+	window->initialize();
+	window->show();
+
+	int result = a.exec();
+
+	delete window;
+	delete app;
+
+	return result;
 }

@@ -1,58 +1,69 @@
-/**
-**  This file is part of OCTproZ.
-**  OCTproZ is an open source software for processig of optical
-**  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2022 Miroslav Zabic
-**
-**  OCTproZ is free software: you can redistribute it and/or modify
-**  it under the terms of the GNU General Public License as published by
-**  the Free Software Foundation, either version 3 of the License, or
-**  (at your option) any later version.
-**
-**  This program is distributed in the hope that it will be useful,
-**  but WITHOUT ANY WARRANTY; without even the implied warranty of
-**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-**  GNU General Public License for more details.
-**
-**  You should have received a copy of the GNU General Public License
-**  along with this program. If not, see http://www.gnu.org/licenses/.
-**
-****
-** Author:	Miroslav Zabic
-** Contact:	zabic
-**			at
-**			spectralcode.de
-****
-**/
-
 #ifndef EXTENSIONMMANAGER_H
 #define EXTENSIONMMANAGER_H
 
 #include <QObject>
 #include <QList>
+#include <QStringList>
+#include <QAction>
 #include "octproz_devkit.h"
+#include "processing.h"
+#include "gpu2hostnotifier.h"
+#include "settingsconstants.h"
+
+
+class OCTproZApp;
 
 class ExtensionManager : public QObject
 {
 	Q_OBJECT
 public:
-	explicit ExtensionManager(QObject *parent = nullptr);
+	explicit ExtensionManager(QObject* parent = nullptr);
 	~ExtensionManager();
 
-	void addExtension(Extension* plugin);
+	void initialize(OCTproZApp* app, Processing* processing, Gpu2HostNotifier* notifier);
+
+	// Basic extension management
+	void addExtension(Extension* extension);
 	Extension* getExtensionByName(QString name);
 	QList<Extension*> getExtensions() { return this->extensions; }
 	QList<QString> getExtensionNames() { return this->extensionNames; }
 
+	// Extension activation/deactivation
+	void activateExtension(Extension* extension);
+	void deactivateExtension(Extension* extension);
+
+	// Connection management
+	void connectExtensionSignals(Extension* extension);
+	void disconnectExtensionSignals(Extension* extension);
+
+	// State management
+	QStringList getActiveExtensionNames() { return this->activeExtensions; }
+	void setActiveExtensions(const QStringList& extensions) { this->activeExtensions = extensions; }
+	void saveExtensionStates();
+	QStringList loadActiveExtensions();
+	void autoLoadExtensions(QList<QAction*>& extensionActions);
+
+public slots:
+	void slot_extensionMenuItemTriggered(const QString& extensionName, bool checked);
+	void slot_enableRawGrabbing(bool allowed);
+	void slot_storePluginSettings(QString pluginName, QVariantMap settings);
+
+signals:
+	void extensionLoadRequested(Extension* extension, bool load);
+	void allowRawGrabbing(bool allowed);
+	void error(QString);
+	void info(QString);
+
 private:
 	QList<Extension*> extensions;
 	QList<QString> extensionNames;
+	QStringList activeExtensions;
 
-signals:
-
-public slots:
-	//void slot_connectExtensionAndSystem(AcquisitionSystem* system);
-
+	// External components for signal connections
+	OCTproZApp* app;
+	Processing* signalProcessing;
+	Gpu2HostNotifier* notifier;
+	bool rawGrabbingAllowed;
 };
 
 #endif // EXTENSIONMMANAGER_H

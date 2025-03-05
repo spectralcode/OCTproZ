@@ -28,6 +28,13 @@
 #ifndef MINICURVEPLOT_H
 #define MINICURVEPLOT_H
 
+
+#ifdef _WIN32
+	#define WINDOWS_LEAN_AND_MEAN
+	#include <windows.h>
+	#include "GL/glew.h" // Must be included before any OpenGL headers
+#endif
+
 #include "qcustomplot.h"
 
 class MiniCurvePlot : public QCustomPlot
