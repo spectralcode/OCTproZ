@@ -94,6 +94,9 @@ signals:
 	void reopenDock2D();
 	void allowRawGrabbing(bool allowed);
 
+protected:
+	void moveEvent(QMoveEvent *even) override;
+
 private:
 	OCTproZApp* app;
 

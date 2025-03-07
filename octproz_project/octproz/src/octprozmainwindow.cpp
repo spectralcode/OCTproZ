@@ -838,4 +838,8 @@ void OCTproZMainWindow::openUserManualDialog() {
 	QDesktopServices::openUrl(QUrl("file:///" + QCoreApplication::applicationDirPath() + "/docs/index.html"));
 }
 
+void OCTproZMainWindow::moveEvent(QMoveEvent *event) {
+	QMainWindow::moveEvent(event);
+	this->saveWindowStates();
+}
 
