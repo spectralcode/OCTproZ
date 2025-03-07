@@ -59,8 +59,8 @@ protected:
 	QVariantMap settingsMap;
 
 public slots:
-	void setKLinCoeffsRequestAccepted(int k0, int k1, int k2, int k3){} ///< This slot is called by OCTproZ if setKLinCoeffsRequest was accepted
-	void setDispCompCoeffsRequestAccepted(int d0, int d1, int d2, int d3){} ///< This slot is called by OCTproZ if setDispCompCoeffsRequest was accepted
+	void setKLinCoeffsRequestAccepted(double k0, double k1, double k2, double k3){} ///< This slot is called by OCTproZ if setKLinCoeffsRequest was accepted
+	void setDispCompCoeffsRequestAccepted(double d0, double d1, double d2, double d3){} ///< This slot is called by OCTproZ if setDispCompCoeffsRequest was accepted
 
 signals:
 	void info(QString);
