@@ -162,7 +162,7 @@ void Sidebar::init(QAction* start, QAction* stop, QAction* rec, QAction* system,
 
 void Sidebar::loadSettings() {
 	this->disconnectGuiElementsFromAutosave();
-	Settings settingsManager;
+	SettingsFileManager settingsManager;
 
 	//load setting maps
 	this->recordSettings = settingsManager.getStoredSettings(REC);
@@ -233,7 +233,7 @@ void Sidebar::loadSettings() {
 
 void Sidebar::saveSettings() {
 	this->updateSettingsMaps();
-	Settings settingsManager;
+	SettingsFileManager settingsManager;
 	settingsManager.storeSettings(REC, this->recordSettings);
 	settingsManager.storeSettings(PROC, this->processingSettings);
 	settingsManager.storeSettings(STREAM, this->streamingSettings);

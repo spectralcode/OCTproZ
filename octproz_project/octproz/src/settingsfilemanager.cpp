@@ -1,14 +1,14 @@
-#include "settings.h"
+#include "settingsfilemanager.h"
 #include <QDateTime>
 
-Settings::Settings(const QString& settingsFilePath, QObject* parent)
+SettingsFileManager::SettingsFileManager(const QString& settingsFilePath, QObject* parent)
 	: QObject(parent),
 	  settingsFilePath(settingsFilePath)
 {
 	this->createSettingsDirAndEmptyFile(settingsFilePath);
 }
 
-Settings::Settings(QObject* parent)
+SettingsFileManager::SettingsFileManager(QObject* parent)
 	: QObject(parent),
 	  settingsFilePath(SETTINGS_PATH)
 {
@@ -23,26 +23,26 @@ Settings::Settings(QObject* parent)
 	}
 }
 
-Settings::~Settings() {
+SettingsFileManager::~SettingsFileManager() {
 }
 
-void Settings::setTimestamp(QString timestamp) {
+void SettingsFileManager::setTimestamp(QString timestamp) {
 	this->timestamp = timestamp;
 	QSettings settings(settingsFilePath, QSettings::IniFormat);
 	settings.setValue(TIMESTAMP, this->timestamp);
 }
 
-void Settings::setCurrentTimeStamp() {
+void SettingsFileManager::setCurrentTimeStamp() {
 	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmsszzz");
 	this->setTimestamp(timestamp);
 }
 
-void Settings::storeSettings(QString settingsGroupName, QVariantMap settingsMap) {
+void SettingsFileManager::storeSettings(QString settingsGroupName, QVariantMap settingsMap) {
 	QSettings settings(settingsFilePath, QSettings::IniFormat);
 	this->storeValues(&settings, settingsGroupName, settingsMap);
 }
 
-QVariantMap Settings::getStoredSettings(QString settingsGroupName) {
+QVariantMap SettingsFileManager::getStoredSettings(QString settingsGroupName) {
 	QVariantMap settingsMap;
 
 	// Only try to load if the file exists
@@ -54,7 +54,7 @@ QVariantMap Settings::getStoredSettings(QString settingsGroupName) {
 	return settingsMap;
 }
 
-bool Settings::copySettingsFile(QString path) {
+bool SettingsFileManager::copySettingsFile(QString path) {
 	QString originPath = settingsFilePath;
 	QString destinationPath = path;
 
@@ -80,7 +80,7 @@ bool Settings::copySettingsFile(QString path) {
 	return success;
 }
 
-void Settings::storeValues(QSettings* settings, QString groupName, QVariantMap settingsMap) {
+void SettingsFileManager::storeValues(QSettings* settings, QString groupName, QVariantMap settingsMap) {
 	QMapIterator<QString, QVariant> i(settingsMap);
 	settings->beginGroup(groupName);
 	while (i.hasNext()) {
@@ -90,7 +90,7 @@ void Settings::storeValues(QSettings* settings, QString groupName, QVariantMap s
 	settings->endGroup();
 }
 
-void Settings::loadValues(QSettings* settings, QString groupName, QVariantMap* settingsMap) {
+void SettingsFileManager::loadValues(QSettings* settings, QString groupName, QVariantMap* settingsMap) {
 	settings->beginGroup(groupName);
 	QStringList keys = settings->allKeys();
 	for (int i = 0; i < keys.size(); i++) {
@@ -99,7 +99,7 @@ void Settings::loadValues(QSettings* settings, QString groupName, QVariantMap* s
 	settings->endGroup();
 }
 
-bool Settings::createSettingsDirAndEmptyFile(QString settingsFilePath) {
+bool SettingsFileManager::createSettingsDirAndEmptyFile(QString settingsFilePath) {
 	QFile file(settingsFilePath);
 	if(!file.exists()){
 		QFileInfo fileInfo(file);

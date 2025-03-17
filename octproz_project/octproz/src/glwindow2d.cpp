@@ -26,7 +26,7 @@
 **/
 
 #include "glwindow2d.h"
-#include "settings.h"
+#include "settingsfilemanager.h"
 #include "settingsconstants.h"
 #include <QTimer>
 #include <QToolTip>
@@ -397,7 +397,7 @@ void GLWindow2D::setMarkerPosition(unsigned int position) {
 }
 
 void GLWindow2D::saveSettings() {
-	Settings guiSettings(GUI_SETTINGS_PATH);
+	SettingsFileManager guiSettings(GUI_SETTINGS_PATH);
 	guiSettings.storeSettings(this->getName(), this->getSettings());
 }
 

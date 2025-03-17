@@ -19,7 +19,7 @@
 #include "octprozapp.h"
 #include "extensioneventfilter.h"
 #include "octproz_devkit.h"
-#include "settings.h"
+#include "settingsfilemanager.h"
 #include "settingsconstants.h"
 
 // Forward declarations to avoid OpenGL dependency chain
@@ -70,7 +70,7 @@ private:
 	Sidebar* sidebar;
 	OCTproZApp* app;
 	ExtensionManager* extManager;
-	Settings* appSettings;
+	SettingsFileManager* appSettings;
 
 	// Extension state
 	QList<QAction*> extensionActions;

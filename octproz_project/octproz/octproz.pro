@@ -33,7 +33,7 @@ SOURCES += \
 	$$SOURCEDIR/processing.cpp \
 	$$SOURCEDIR/sidebar.cpp \
 	$$SOURCEDIR/octalgorithmparameters.cpp \
-	$$SOURCEDIR/settings.cpp \
+	$$SOURCEDIR/settingsfilemanager.cpp \
 	$$SOURCEDIR/polynomial.cpp \
 	$$SOURCEDIR/extensionmanager.cpp \
 	$$SOURCEDIR/extensionuimanager.cpp \
@@ -74,7 +74,7 @@ HEADERS += \
 	$$SOURCEDIR/processing.h \
 	$$SOURCEDIR/sidebar.h \
 	$$SOURCEDIR/octalgorithmparameters.h \
-	$$SOURCEDIR/settings.h \
+	$$SOURCEDIR/settingsfilemanager.h \
 	$$SOURCEDIR/polynomial.h \
 	$$SOURCEDIR/extensionmanager.h \
 	$$SOURCEDIR/extensionuimanager.h \

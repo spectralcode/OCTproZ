@@ -154,8 +154,8 @@ private:
 	QMenu* extrasMenu;
 
 	// Settings handling
-	Settings* appSettings;
-	Settings* guiSettings;
+	SettingsFileManager* appSettings;
+	SettingsFileManager* guiSettings;
 	QVariantMap mainWindowSettings;
 };
 

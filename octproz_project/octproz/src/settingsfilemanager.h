@@ -30,12 +30,14 @@
  * The settings are stored in an ini file. The save path is QStandardPaths::ConfigLocation (for Windows this is usually "C:/Users/<USER>/AppData/Local/<APPNAME>"
 */
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef SETTINGSFILEMANAGER_H
+#define SETTINGSFILEMANAGER_H
 
 #define SETTINGS_DIR QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
 #define SETTINGS_FILE_NAME "settings.ini"
 #define SETTINGS_PATH SETTINGS_DIR + "/" + SETTINGS_FILE_NAME
+#define GUI_SETTINGS_FILE_NAME "gui_settings.ini"
+#define GUI_SETTINGS_PATH SETTINGS_DIR + "/" + GUI_SETTINGS_FILE_NAME
 #define TIMESTAMP "timestamp"
 
 #include <QStandardPaths>
@@ -47,8 +49,9 @@
 #include <QFileInfo>
 #include <QDir>
 
+#include "settingsconstants.h"
 
-class Settings : public QObject
+class SettingsFileManager : public QObject
 {
 	Q_OBJECT
 public:
@@ -59,20 +62,20 @@ public:
 	* @param createDefaultIfMissing Whether to create a default file if missing
 	* @param parent Parent QObject
 	**/
-	explicit Settings(const QString& settingsFilePath, QObject* parent = nullptr);
+	explicit SettingsFileManager(const QString& settingsFilePath, QObject* parent = nullptr);
 
 	/**
 	* Default Constructor. This will use the default settings file and default settings file location.
 	* @param parent Parent QObject
 	**/
-	explicit Settings(QObject* parent = nullptr);
+	explicit SettingsFileManager(QObject* parent = nullptr);
 
 
 	/**
 	* Destructor
 	*
 	**/
-	~Settings();
+	~SettingsFileManager();
 
 	/**
 	* Set timestamp variable which will be saved together with all other settings inside settings file. The timestamp can be used as a part of several filenames to enable easy identification of related files. 
@@ -141,5 +144,5 @@ signals:
 	void info(QString);
 };
 
-#endif // SETTINGS_H
+#endif // SETTINGSFILEMANAGER_H
 

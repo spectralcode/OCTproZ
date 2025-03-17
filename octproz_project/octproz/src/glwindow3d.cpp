@@ -578,7 +578,7 @@ void GLWindow3D::updateDockTitleWithFPS(float fps) {
 }
 
 void GLWindow3D::saveSettings() {
-	Settings guiSettings(GUI_SETTINGS_PATH);
+	SettingsFileManager guiSettings(GUI_SETTINGS_PATH);
 	guiSettings.storeSettings(this->getName(), this->getSettings());
 }
 

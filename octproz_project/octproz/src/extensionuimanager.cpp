@@ -1,6 +1,6 @@
 #include "extensionuimanager.h"
 #include "extensionmanager.h"
-#include "settings.h"
+#include "settingsfilemanager.h"
 #include "settingsconstants.h"
 
 ExtensionUIManager::ExtensionUIManager(QMenu* extensionMenu, QTabWidget* tabWidget,
@@ -13,7 +13,7 @@ ExtensionUIManager::ExtensionUIManager(QMenu* extensionMenu, QTabWidget* tabWidg
 	sidebar(sidebar),
 	app(app),
 	extManager(nullptr),
-	appSettings(new Settings(this))
+	appSettings(new SettingsFileManager(this))
 {
 }
 

@@ -1,5 +1,5 @@
 #include "extensionmanager.h"
-#include "settings.h"
+#include "settingsfilemanager.h"
 #include "octprozapp.h"
 
 ExtensionManager::ExtensionManager(QObject *parent) : QObject(parent)
@@ -8,7 +8,7 @@ ExtensionManager::ExtensionManager(QObject *parent) : QObject(parent)
 	this->signalProcessing = nullptr;
 	this->notifier = nullptr;
 	this->rawGrabbingAllowed = false;
-	this->appSettings = new Settings(this); //todo: consider using a separate file for extension settings.
+	this->appSettings = new SettingsFileManager(this); //todo: consider using a separate file for extension settings.
 }
 
 ExtensionManager::~ExtensionManager()

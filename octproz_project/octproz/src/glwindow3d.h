@@ -79,7 +79,7 @@
 #include "raycastvolume.h"
 #include "trackball.h"
 #include "controlpanel.h"
-#include "settings.h"
+#include "settingsfilemanager.h"
 
 #define REFRESH_INTERVAL_IN_ms 80
 

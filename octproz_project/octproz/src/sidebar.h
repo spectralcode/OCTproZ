@@ -33,7 +33,7 @@
 #include <QDockWidget>
 #include <QFileDialog>
 #include "minicurveplot.h"
-#include "settings.h"
+#include "settingsfilemanager.h"
 #include "octalgorithmparameters.h"
 #include "octalgorithmparametersmanager.h"
 #include "eventguard.h"

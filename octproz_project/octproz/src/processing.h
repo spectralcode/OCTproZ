@@ -33,7 +33,7 @@
 #include "octproz_devkit.h"
 #include "kernels.h"
 #include "recorder.h"
-#include "settings.h"
+#include "settingsfilemanager.h"
 #include "octalgorithmparameters.h"
 #include "gpu2hostnotifier.h"
 #include <QCoreApplication>

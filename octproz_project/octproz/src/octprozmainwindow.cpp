@@ -114,8 +114,8 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 	setStatusBar(statusBar);
 
 	// Initialize Settings manager
-	this->appSettings = new Settings(this);
-	this->guiSettings = new Settings(GUI_SETTINGS_PATH, this);
+	this->appSettings = new SettingsFileManager(this);
+	this->guiSettings = new SettingsFileManager(GUI_SETTINGS_PATH, this);
 }
 
 OCTproZMainWindow::~OCTproZMainWindow() {

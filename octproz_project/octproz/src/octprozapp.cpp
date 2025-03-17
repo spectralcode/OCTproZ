@@ -15,9 +15,9 @@ OCTproZApp::OCTproZApp(QObject* parent) :
 	qApp->setApplicationName(APP_NAME);
 
 	// Initialize core components
-	this->appSettings = new Settings(this);
-	connect(this->appSettings, &Settings::info, this, &OCTproZApp::info);
-	connect(this->appSettings, &Settings::error, this, &OCTproZApp::error);
+	this->appSettings = new SettingsFileManager(this);
+	connect(this->appSettings, &SettingsFileManager::info, this, &OCTproZApp::info);
+	connect(this->appSettings, &SettingsFileManager::error, this, &OCTproZApp::error);
 	this->sysManager = new SystemManager();
 	this->currSystem = nullptr;
 	this->currSystemName = "";
