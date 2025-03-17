@@ -8,6 +8,7 @@ ExtensionManager::ExtensionManager(QObject *parent) : QObject(parent)
 	this->signalProcessing = nullptr;
 	this->notifier = nullptr;
 	this->rawGrabbingAllowed = false;
+	this->appSettings = new Settings(this); //todo: consider using a separate file for extension settings.
 }
 
 ExtensionManager::~ExtensionManager()
@@ -47,7 +48,7 @@ void ExtensionManager::activateExtension(Extension* extension) {
 
 	// Load settings and activate extension
 	//info: the order is important here. loading of settings need to be done first, otherwise the extension window geometry will not be restored
-	extension->settingsLoaded(Settings::getInstance()->getStoredSettings(extension->getName()));
+	extension->settingsLoaded(this->appSettings->getStoredSettings(extension->getName()));
 	extension->activateExtension();
 
 	// Connect non-GUI signals
@@ -114,12 +115,12 @@ void ExtensionManager::slot_extensionMenuItemTriggered(const QString& extensionN
 void ExtensionManager::saveExtensionStates() {
 	QVariantMap windowSettings;
 	windowSettings[MAIN_ACTIVE_EXTENSIONS] = this->activeExtensions;
-	Settings::getInstance()->storeSettings(MAIN_WINDOW_SETTINGS_GROUP, windowSettings);
+	this->appSettings->storeSettings(MAIN_WINDOW_SETTINGS_GROUP, windowSettings);
 }
 
 QStringList ExtensionManager::loadActiveExtensions() {
 	// Get settings for auto-loading extensions
-	QVariantMap mainWindowSettings = Settings::getInstance()->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
+	QVariantMap mainWindowSettings = this->appSettings->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
 
 	// Check if the settings contain autoload extension list
 	if (!mainWindowSettings.contains(MAIN_ACTIVE_EXTENSIONS)) {
@@ -154,5 +155,5 @@ void ExtensionManager::slot_enableRawGrabbing(bool allowed) {
 }
 
 void ExtensionManager::slot_storePluginSettings(QString pluginName, QVariantMap settings) {
-	Settings::getInstance()->storeSettings(pluginName, settings);
+	this->appSettings->storeSettings(pluginName, settings);
 }

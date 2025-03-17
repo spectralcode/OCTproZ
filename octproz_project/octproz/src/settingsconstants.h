@@ -1,6 +1,17 @@
 #ifndef SETTINGS_CONSTANTS_H
 #define SETTINGS_CONSTANTS_H
 
+#include <QStandardPaths>
+
+// Settings file paths
+#define SETTINGS_DIR QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+#define SETTINGS_FILE_NAME "settings.ini"
+#define SETTINGS_PATH SETTINGS_DIR + "/" + SETTINGS_FILE_NAME
+#define GUI_SETTINGS_FILE_NAME "gui_settings.ini"
+#define GUI_SETTINGS_PATH SETTINGS_DIR + "/" + GUI_SETTINGS_FILE_NAME
+#define SETTINGS_PATH_BACKGROUND_FILE SETTINGS_DIR + "/background.csv"
+#define SETTINGS_PATH_RESAMPLING_FILE SETTINGS_DIR + "/resampling.csv"
+
 // Main window settings
 #define MAIN_WINDOW_SETTINGS_GROUP "main_window_settings"
 #define MAIN_ACTIVE_SYSTEM "main_active_system"

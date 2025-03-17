@@ -80,6 +80,8 @@ private slots:
 
 	void openLoadSettingsFileDialog();
 	void openSaveSettingsFileDialog();
+	void openLoadGuiSettingsFileDialog();
+	void openSaveGuiSettingsFileDialog();
 	void openLoadResamplingCurveDialog();
 	void openSystemSettingsDialog();
 	void openSelectSystemDialog();
@@ -87,6 +89,8 @@ private slots:
 
 
 signals:
+	void error(QString);
+	void info(QString);
 	void glBufferTextureSizeBscan(unsigned int width, unsigned int height, unsigned int depth);
 	void glBufferTextureSizeEnFaceView(unsigned int width, unsigned int height, unsigned int depth);
 	void linesPerBufferChanged(int linesPerBuffer);
@@ -94,10 +98,10 @@ signals:
 	void reopenDock2D();
 	void allowRawGrabbing(bool allowed);
 
-protected:
-	void moveEvent(QMoveEvent *even) override;
-
 private:
+	void loadGuiSettingsFromFile(const QString& settingsFilePath);
+	void saveGuiSettingsToFile(const QString& fileName);
+
 	OCTproZApp* app;
 
 	// UI components
@@ -149,6 +153,9 @@ private:
 	// Menu
 	QMenu* extrasMenu;
 
+	// Settings handling
+	Settings* appSettings;
+	Settings* guiSettings;
 	QVariantMap mainWindowSettings;
 };
 

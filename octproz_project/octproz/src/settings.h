@@ -26,7 +26,7 @@
 **/
 
 //!	Settings
-/*!	The Settings class is implemented with the singleton pattern and is used to load and save all user-modifiable settings of OCTproZ and every plugin.
+/*!	The Settings class is used to load and save all user-modifiable settings of OCTproZ and every plugin.
  * The settings are stored in an ini file. The save path is QStandardPaths::ConfigLocation (for Windows this is usually "C:/Users/<USER>/AppData/Local/<APPNAME>"
 */
 
@@ -36,11 +36,7 @@
 #define SETTINGS_DIR QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
 #define SETTINGS_FILE_NAME "settings.ini"
 #define SETTINGS_PATH SETTINGS_DIR + "/" + SETTINGS_FILE_NAME
-#define SETTINGS_PATH_BACKGROUND_FILE SETTINGS_DIR + "/background.csv"
-#define SETTINGS_PATH_RESAMPLING_FILE SETTINGS_DIR + "/resampling.csv"
 #define TIMESTAMP "timestamp"
-
-
 
 #include <QStandardPaths>
 #include <QSettings>
@@ -56,20 +52,20 @@ class Settings : public QObject
 {
 	Q_OBJECT
 public:
-	QMap<QString, QVariant> processingSettings;
-	QMap<QString, QVariant> recordSettings;
-	QMap<QString, QVariant> streamingSettings;
-	QMap<QString, QVariant> mainWindowSettings;
-	QVariantMap systemSettings;
-	QString systemName;
-
 
 	/**
 	* Constructor
-	* @note Singleton pattern
-	*
+	* @param settingsFilePath Path to the settings file to use
+	* @param createDefaultIfMissing Whether to create a default file if missing
+	* @param parent Parent QObject
 	**/
-	static Settings* getInstance();
+	explicit Settings(const QString& settingsFilePath, QObject* parent = nullptr);
+
+	/**
+	* Default Constructor. This will use the default settings file and default settings file location.
+	* @param parent Parent QObject
+	**/
+	explicit Settings(QObject* parent = nullptr);
 
 
 	/**
@@ -91,7 +87,7 @@ public:
 	void setCurrentTimeStamp();
 
 	/**
-	* Set timestamp variable which will be saved together with all other settings inside settings file. The timestamp can be used as a part of several filenames to enable easy identification of related files. 
+	* Get timestamp variable. It can be used as a part of other filenames that are saved together with the settings file to enable easy identification of related files.
 	*
 	* @return timestamp that contains date time information
 	**/
@@ -106,7 +102,7 @@ public:
 	void storeSettings(QString settingsGroupName, QVariantMap settingsMap);
 
 	/**
-	* Loads previously stored settings from settings group defined by "settingsGroupName". This method is typically used to load arbitrary system settings.
+	* Loads previously stored settings from the specified group
 	*
 	* @see storeSettings(QString sysName, QVariantMap settings)
 	* @param settingsGroupName is the group name that will be used in the settings file. To load the saved settings, the identical group name needs to be used.
@@ -115,22 +111,26 @@ public:
 	QVariantMap getStoredSettings(QString settingsGroupName);
 
 	/**
-	* Copies current settings file to path
+	* Copies current settings file to specified  path
 	*
-	* @param path is the file path of the settings file to be copied
+	* @param path is the Destination file path. The settings file will be copied to this path
 	* @return bool that indicates if copy was successful. true = sucess, false = copy failed
 	**/
 	bool copySettingsFile(QString path);
 
-
+	/**
+	* Gets the settings file path
+	* @return Path to the settings file
+	**/
+	QString getSettingsFilePath() const { return settingsFilePath; }
 
 private:
-	Settings(void);
-	static Settings *settings;
+	QString settingsFilePath;
 	QString timestamp;
 
 	void storeValues(QSettings* settings, QString groupName, QVariantMap settingsMap);
 	void loadValues(QSettings* settings, QString groupName, QVariantMap* settingsMap);
+	bool createSettingsDirAndEmptyFile(QString settingsFilePath);
 
 
 public slots:

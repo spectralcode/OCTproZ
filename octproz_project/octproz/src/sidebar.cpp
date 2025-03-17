@@ -26,6 +26,7 @@
 **/
 
 #include "sidebar.h"
+#include "settingsconstants.h"
 #include <QtGlobal>
 
 
@@ -161,12 +162,12 @@ void Sidebar::init(QAction* start, QAction* stop, QAction* rec, QAction* system,
 
 void Sidebar::loadSettings() {
 	this->disconnectGuiElementsFromAutosave();
-	Settings* settingsManager = Settings::getInstance();
+	Settings settingsManager;
 
 	//load setting maps
-	this->recordSettings = settingsManager->getStoredSettings(REC);
-	this->processingSettings = settingsManager->getStoredSettings(PROC);
-	this->streamingSettings = settingsManager->getStoredSettings(STREAM);
+	this->recordSettings = settingsManager.getStoredSettings(REC);
+	this->processingSettings = settingsManager.getStoredSettings(PROC);
+	this->streamingSettings = settingsManager.getStoredSettings(STREAM);
 
 	//Recording
 	this->ui.lineEdit_saveFolder->setText(this->recordSettings.value(REC_PATH).toString());
@@ -232,10 +233,10 @@ void Sidebar::loadSettings() {
 
 void Sidebar::saveSettings() {
 	this->updateSettingsMaps();
-	Settings* settingsManager = Settings::getInstance();
-	settingsManager->storeSettings(REC, this->recordSettings);
-	settingsManager->storeSettings(PROC, this->processingSettings);
-	settingsManager->storeSettings(STREAM, this->streamingSettings);
+	Settings settingsManager;
+	settingsManager.storeSettings(REC, this->recordSettings);
+	settingsManager.storeSettings(PROC, this->processingSettings);
+	settingsManager.storeSettings(STREAM, this->streamingSettings);
 }
 
 void Sidebar::connectGuiElementsToAutosave() {

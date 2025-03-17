@@ -64,6 +64,8 @@ private:
 	Processing* signalProcessing;
 	Gpu2HostNotifier* notifier;
 	bool rawGrabbingAllowed;
+
+	Settings* appSettings;
 };
 
 #endif // EXTENSIONMMANAGER_H

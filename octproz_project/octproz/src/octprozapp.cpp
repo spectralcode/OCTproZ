@@ -15,6 +15,9 @@ OCTproZApp::OCTproZApp(QObject* parent) :
 	qApp->setApplicationName(APP_NAME);
 
 	// Initialize core components
+	this->appSettings = new Settings(this);
+	connect(this->appSettings, &Settings::info, this, &OCTproZApp::info);
+	connect(this->appSettings, &Settings::error, this, &OCTproZApp::error);
 	this->sysManager = new SystemManager();
 	this->currSystem = nullptr;
 	this->currSystemName = "";
@@ -179,7 +182,7 @@ void OCTproZApp::slot_start() {
 	this->forceUpdateProcessingParams();
 
 	// set current system time as timestamp
-	Settings::getInstance()->setCurrentTimeStamp();
+	this->appSettings->setCurrentTimeStamp();
 
 	// Emit start signal to activate acquisition of current AcquisitionSystem
 	emit processingStarted();
@@ -216,10 +219,10 @@ void OCTproZApp::slot_record() {
 	}
 
 	// set current system time as timestamp
-	Settings::getInstance()->setCurrentTimeStamp();
+	this->appSettings->setCurrentTimeStamp();
 
 	// Set time stamp so it can be used in all file names of the same recording session
-	recParams.timestamp = Settings::getInstance()->getTimestamp();
+	recParams.timestamp = this->appSettings->getTimestamp();
 
 	// Get user defined rec name
 	QString recName = recParams.fileName;
@@ -250,7 +253,7 @@ void OCTproZApp::slot_record() {
 	// Check if meta information should be saved
 	if (recParams.saveMetaData) {
 		QString metaFileName = recParams.savePath + "/" + recParams.timestamp + recName + "_meta.txt";
-		Settings::getInstance()->copySettingsFile(metaFileName);
+		this->appSettings->copySettingsFile(metaFileName);
 	}
 }
 
@@ -283,7 +286,7 @@ void OCTproZApp::setSystem(QString systemName) {
 	this->octParams->acquisitionParamsChanged = true; //todo: if this flag is not set here the minicurveplots dont show correct reference curves on startup when "use polynomial curve" is selected. however this flag should be set in slot_updateAcquistionParameter when a new acquisitionsystem is set or parameter change (and it is!) --> investigate
 
 	emit systemChanged(systemName);
-	emit loadPluginSettings(Settings::getInstance()->getStoredSettings(systemName));
+	emit loadPluginSettings(this->appSettings->getStoredSettings(systemName));
 	emit info(tr("System opened: ") + this->currSystemName);
 }
 
@@ -358,7 +361,7 @@ void OCTproZApp::slot_updateAcquistionParameter(AcquisitionParams newParams) {
 }
 
 void OCTproZApp::slot_storePluginSettings(QString pluginName, QVariantMap settings) {
-	Settings::getInstance()->storeSettings(pluginName, settings);
+	this->appSettings->storeSettings(pluginName, settings);
 }
 
 void OCTproZApp::slot_prepareGpu2HostForProcessedRecording() {
@@ -491,7 +494,7 @@ void OCTproZApp::loadSettingsFromFile(const QString& settingsFilePath) { //todo:
 	emit windowStateReloadRequested(); //todo: implement this as a user-selectable option.
 
 	if(!this->currSystemName.isEmpty()) {
-		emit loadPluginSettings(Settings::getInstance()->getStoredSettings(this->currSystemName));
+		emit loadPluginSettings(this->appSettings->getStoredSettings(this->currSystemName));
 	}
 
 	// Inform the user that the settings have been loaded
@@ -512,11 +515,10 @@ void OCTproZApp::saveSettingsToFile(const QString &fileName) { //todo: extend Oc
 	}
 
 	// save current system time to settings file
-	Settings::getInstance()->setCurrentTimeStamp();
+	this->appSettings->setCurrentTimeStamp();
 
 	// Save the settings by copying the existing settings file
-	Settings* settingsManager = Settings::getInstance();
-	if (settingsManager->copySettingsFile(finalFileName)) {
+	if (this->appSettings->copySettingsFile(finalFileName)) {
 		emit info(tr("Settings have been saved successfully to: ") + finalFileName); //there are already success and error messages emitted in settingsManager but not displayed in message console. todo: more consistend error handling.
 	} else {
 		emit error(tr("Failed to save settings to: ") + finalFileName);

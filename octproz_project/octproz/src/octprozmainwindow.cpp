@@ -13,6 +13,8 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 	this->dockConsole = new QDockWidget((tr("Message Console")), this);
 	connect(this->app, &OCTproZApp::info, this->console, &MessageConsole::displayInfo);
 	connect(this->app, &OCTproZApp::error, this->console, &MessageConsole::displayError);
+	connect(this, &OCTproZMainWindow::info, this->console, &MessageConsole::displayInfo);
+	connect(this, &OCTproZMainWindow::error, this->console, &MessageConsole::displayError);
 
 	this->aboutWindow = new AboutDialog(this);
 	connect(this->aboutWindow, &AboutDialog::easterEgg, this, &OCTproZMainWindow::slot_easterEgg);
@@ -107,9 +109,13 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 
 	// Initialize UI
 	setWindowTitle("OCTproZ");
-	resize(512, 512);
+	resize(1024, 768);
 	QStatusBar* statusBar = new QStatusBar(this);
 	setStatusBar(statusBar);
+
+	// Initialize Settings manager
+	this->appSettings = new Settings(this);
+	this->guiSettings = new Settings(GUI_SETTINGS_PATH, this);
 }
 
 OCTproZMainWindow::~OCTproZMainWindow() {
@@ -126,7 +132,7 @@ OCTproZMainWindow::~OCTproZMainWindow() {
 }
 
 void OCTproZMainWindow::closeEvent(QCloseEvent* event) {
-	Settings::getInstance()->setCurrentTimeStamp();
+	this->guiSettings->setCurrentTimeStamp();
 	this->saveWindowStates();
 	QApplication::processEvents();
 
@@ -182,10 +188,6 @@ void OCTproZMainWindow::initGui() {
 	connect(this->enFaceViewWindow, &GLWindow2D::error, this->console, &MessageConsole::displayError);
 	connect(this->volumeWindow, &GLWindow3D::info, this->console, &MessageConsole::displayInfo);
 	connect(this->volumeWindow, &GLWindow3D::error, this->console, &MessageConsole::displayError);
-
-	Settings* settings = Settings::getInstance();
-	connect(settings, &Settings::info, this->console, &MessageConsole::displayInfo);
-	connect(settings, &Settings::error, this->console, &MessageConsole::displayError);
 
 	// Connect to bypass Linux/Qt bugs
 	connect(this, &OCTproZMainWindow::closeDock2D, this, &OCTproZMainWindow::slot_closeOpenGLwindows);
@@ -304,8 +306,7 @@ void OCTproZMainWindow::setupConnections() {
 
 //todo: add load window state from file, similar to load settings from file. separate window state from settings file into its own file.
 void OCTproZMainWindow::loadWindowState() {
-	Settings* settingsManager = Settings::getInstance();
-	QVariantMap windowSettings = settingsManager->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
+	QVariantMap windowSettings = this->guiSettings->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
 	if (!windowSettings.isEmpty()) {
 		// Restore geometry and state
 		if (windowSettings.contains(MAIN_GEOMETRY))
@@ -341,9 +342,9 @@ void OCTproZMainWindow::loadWindowState() {
 		//this->dockVolumeView->restoreGeometry(windowSettings.value(DOCK_VOLUME_GEOMETRY).toByteArray());
 	});
 
-	this->bscanWindow->setSettings(settingsManager->getStoredSettings(this->bscanWindow->getName()));
-	this->enFaceViewWindow->setSettings(settingsManager->getStoredSettings(this->enFaceViewWindow->getName()));
-	this->volumeWindow->setSettings(settingsManager->getStoredSettings(this->volumeWindow->getName()));
+	this->bscanWindow->setSettings(this->guiSettings->getStoredSettings(this->bscanWindow->getName()));
+	this->enFaceViewWindow->setSettings(this->guiSettings->getStoredSettings(this->enFaceViewWindow->getName()));
+	this->volumeWindow->setSettings(this->guiSettings->getStoredSettings(this->volumeWindow->getName()));
 
 	//todo orthogonal views marker state saving and loading
 
@@ -389,7 +390,6 @@ void OCTproZMainWindow::saveWindowStates() {
 	this->extensionUIManager->saveExtensionStates();
 
 	//save appearance
-	Settings* settingsManager = Settings::getInstance();
 	QVariantMap windowSettings;
 	windowSettings[MAIN_GEOMETRY] = this->saveGeometry();
 	windowSettings[MAIN_STATE] = this->saveState();
@@ -406,14 +406,12 @@ void OCTproZMainWindow::saveWindowStates() {
 	windowSettings[MESSAGE_CONSOLE_BOTTOM] = consoleParams.newestMessageAtBottom;
 	windowSettings[MESSAGE_CONSOLE_HEIGHT] = consoleParams.preferredHeight;
 
-	settingsManager->storeSettings(MAIN_WINDOW_SETTINGS_GROUP, windowSettings);
+	this->guiSettings->storeSettings(MAIN_WINDOW_SETTINGS_GROUP, windowSettings);
 }
 
-void OCTproZMainWindow::loadActiveSystem() {
-	Settings* settingsManager = Settings::getInstance();
-
+void OCTproZMainWindow::loadActiveSystem() { //todo: move this to octprozapp
 	// Load settings
-	QVariantMap windowSettings = settingsManager->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
+	QVariantMap windowSettings = this->appSettings->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
 
 	// Get active system name
 	QString systemName = windowSettings.value(MAIN_ACTIVE_SYSTEM).toString();
@@ -424,15 +422,13 @@ void OCTproZMainWindow::loadActiveSystem() {
 	}
 }
 
-void OCTproZMainWindow::saveActiveSystem() {
-	Settings* settingsManager = Settings::getInstance();
-
+void OCTproZMainWindow::saveActiveSystem() { //todo: move this to octprozapp
 	// Create a map just for the active system
 	QVariantMap systemSettings;
 	systemSettings[MAIN_ACTIVE_SYSTEM] = this->app->getCurrentSystemName();
 
 	// Store in settings
-	settingsManager->storeSettings(MAIN_WINDOW_SETTINGS_GROUP, systemSettings);
+	this->appSettings->storeSettings(MAIN_WINDOW_SETTINGS_GROUP, systemSettings);
 }
 
 void OCTproZMainWindow::initActionsAndDocks() {
@@ -546,13 +542,11 @@ void OCTproZMainWindow::initMenu() {
 	loadSettingsAction->setIcon(QIcon(":/icons/octproz_load_icon.png"));
 	connect(loadSettingsAction, &QAction::triggered, this, &OCTproZMainWindow::openLoadSettingsFileDialog);
 	fileMenu->addAction(loadSettingsAction);
-
 	// Save settings to file
 	QAction *saveSettingsAction = new QAction(tr("&Save Settings to File"), this);
 	saveSettingsAction->setIcon(QIcon(":/icons/octproz_save_icon.png"));
 	connect(saveSettingsAction, &QAction::triggered, this, &OCTproZMainWindow::openSaveSettingsFileDialog);
 	fileMenu->addAction(saveSettingsAction);
-
 	fileMenu->addSeparator();
 	const QIcon exitIcon = QIcon(":/icons/octproz_close_icon.png");
 	QAction *exitAct = fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
@@ -573,6 +567,17 @@ void OCTproZMainWindow::initMenu() {
 	// Add toolbar view actions to view menu
 	viewMenu->addActions({ viewToolBarAction, view2DExtrasToolBarAction, controlToolBarAction,
 						 this->action1D, this->action2D, this->actionEnFaceView, this->action3D, this->actionConsole });
+	// Load GUI layout from file
+	viewMenu->addSeparator();
+	QAction *loadLayoutAction = new QAction(tr("&Load Layout from File"), this);
+	loadLayoutAction->setIcon(QIcon(":/icons/octproz_load_icon.png"));
+	connect(loadLayoutAction, &QAction::triggered, this, &OCTproZMainWindow::openLoadGuiSettingsFileDialog);
+	viewMenu->addAction(loadLayoutAction);
+	// Save GUI layout to file
+	QAction *saveLayoutAction = new QAction(tr("&Save current Layout to File"), this);
+	saveLayoutAction->setIcon(QIcon(":/icons/octproz_save_icon.png"));
+	connect(saveLayoutAction, &QAction::triggered, this, &OCTproZMainWindow::openSaveGuiSettingsFileDialog);
+	viewMenu->addAction(saveLayoutAction);
 
 	// Extras menu
 	this->extrasMenu = this->menuBar()->addMenu(tr("&Extras"));
@@ -766,7 +771,7 @@ void OCTproZMainWindow::onProcessingStarted() {
 }
 
 void OCTproZMainWindow::openLoadSettingsFileDialog() {
-	emit closeDock2D(); // Handle Linux/Qt bugs with OpenGL contexts
+	emit closeDock2D(); // Close OpenGL windows to handle Linux/Qt bug where QFileDialog is empty if a OpenGL window is visible in the background
 
 	QString fileName = QFileDialog::getOpenFileName(this,
 		tr("Select Settings File"),
@@ -794,6 +799,38 @@ void OCTproZMainWindow::openSaveSettingsFileDialog() {
 
 	if (!fileName.isEmpty()) {
 		this->app->saveSettingsToFile(fileName);
+	}
+}
+
+void OCTproZMainWindow::openLoadGuiSettingsFileDialog() {
+	emit closeDock2D();
+
+	QString fileName = QFileDialog::getOpenFileName(this,
+		tr("Select GUI Settings File"),
+		"",
+		tr("Settings Files (*.ini *.txt)")
+	);
+
+	emit reopenDock2D();
+
+	if (!fileName.isEmpty()) {
+		this->loadGuiSettingsFromFile(fileName);
+	}
+}
+
+void OCTproZMainWindow::openSaveGuiSettingsFileDialog() {
+	emit closeDock2D();
+
+	QString fileName = QFileDialog::getSaveFileName(this,
+		tr("Save GUI Settings File"),
+		"",
+		tr("Settings Files (*.ini *.txt);;All Files (*.*)")
+	);
+
+	emit reopenDock2D();
+
+	if (!fileName.isEmpty()) {
+		this->saveGuiSettingsToFile(fileName);
 	}
 }
 
@@ -838,8 +875,58 @@ void OCTproZMainWindow::openUserManualDialog() {
 	QDesktopServices::openUrl(QUrl("file:///" + QCoreApplication::applicationDirPath() + "/docs/index.html"));
 }
 
-void OCTproZMainWindow::moveEvent(QMoveEvent *event) {
-	QMainWindow::moveEvent(event);
-	this->saveWindowStates();
+void OCTproZMainWindow::loadGuiSettingsFromFile(const QString &settingsFilePath) {
+	if (settingsFilePath.isEmpty()) {
+		emit error(tr("No GUI settings file selected or file path is invalid. Nothing loaded."));
+		return;
+	}
+
+	// Backup current GUI settings file
+	QString backupPath = GUI_SETTINGS_PATH + ".backup";
+	QFile::remove(backupPath);  // Remove any existing backup
+	QFile::copy(GUI_SETTINGS_PATH, backupPath);
+
+	// Attempt to copy the selected settings file to the default settings path
+	if (!QFile::remove(GUI_SETTINGS_PATH)) {
+		emit error(tr("Failed to remove the existing GUI settings file."));
+		return;
+	}
+
+	if (!QFile::copy(settingsFilePath, GUI_SETTINGS_PATH)) {
+		emit error(tr("Failed to load GUI settings from: ") + settingsFilePath);
+		QFile::copy(backupPath, GUI_SETTINGS_PATH);
+		return;
+	}
+
+	// Reload the settings
+	this->loadWindowState();
+
+	// Inform the user that the settings have been loaded
+	emit info(tr("GUI settings have been loaded successfully from: ") + settingsFilePath);
 }
+
+void OCTproZMainWindow::saveGuiSettingsToFile(const QString &fileName) {
+	if (fileName.isEmpty()) {
+		emit error(tr("File path is empty. GUI settings file not saved."));
+		return;
+	}
+
+	// Ensure the file has an extension - use .ini as default
+	QString finalFileName = fileName;
+	QFileInfo fileInfo(fileName);
+	if (fileInfo.suffix().isEmpty()) {
+		finalFileName = fileName + ".ini";
+	}
+
+	// Make sure window states are saved first
+	this->saveWindowStates();
+
+	// Save the settings by copying the existing settings file
+	if (this->guiSettings->copySettingsFile(finalFileName)) {
+		emit info(tr("GUI settings have been saved successfully to: ") + finalFileName);
+	} else {
+		emit error(tr("Failed to save GUI settings to: ") + finalFileName);
+	}
+}
+
 

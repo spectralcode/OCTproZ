@@ -57,6 +57,7 @@
 #include <QtWidgets>
 
 #include "glwindow3d.h"
+#include "settingsconstants.h"
 
 
 /*!
@@ -133,20 +134,20 @@ GLWindow3D::~GLWindow3D()
 
 void GLWindow3D::setSettings(QVariantMap settings) {
 	GLWindow3DParams params;
-	params.extendedViewEnabled = settings.value(EXTENDED_PANEL).toBool();
-	params.displayMode = settings.value(DISPLAY_MODE).toString();
-	params.displayModeIndex = settings.value(DISPLAY_MODE_INDEX).toInt();
-	params.threshold = settings.value(THRESHOLD).toReal();
-	params.rayMarchStepLength = settings.value(RAY_STEP_LENGTH).toReal();
-	params.stretchX = settings.value(STRETCH_X).toReal();
-	params.stretchY= settings.value(STRETCH_Y).toReal();
-	params.stretchZ = settings.value(STRETCH_Z).toReal();
-	params.gamma = settings.value(GAMMA).toReal();
-	params.depthWeight = settings.value(DEPTH_WEIGHT).toReal();
-	params.smoothFactor = settings.value(SMOOTH_FACTOR).toInt();
-	params.alphaExponent = settings.value(ALPHA_EXPONENT).toReal();
-	params.shading = settings.value(SHADING_ENABLED).toBool();
-	params.lutEnabled = settings.value(LUT_ENABLED).toBool();
+	params.extendedViewEnabled = settings.value(EXTENDED_PANEL, false).toBool();
+	params.displayMode = settings.value(DISPLAY_MODE, "MIP").toString();
+	params.displayModeIndex = settings.value(DISPLAY_MODE_INDEX, 6).toInt();
+	params.threshold = settings.value(THRESHOLD, 0.0).toReal();
+	params.rayMarchStepLength = settings.value(RAY_STEP_LENGTH, 0.01).toReal();
+	params.stretchX = settings.value(STRETCH_X, 1.0).toReal();
+	params.stretchY= settings.value(STRETCH_Y, 1.0).toReal();
+	params.stretchZ = settings.value(STRETCH_Z, 1.0).toReal();
+	params.gamma = settings.value(GAMMA, 2.0).toReal();
+	params.depthWeight = settings.value(DEPTH_WEIGHT, 0.3).toReal();
+	params.smoothFactor = settings.value(SMOOTH_FACTOR, 0).toInt();
+	params.alphaExponent = settings.value(ALPHA_EXPONENT, 2.0).toReal();
+	params.shading = settings.value(SHADING_ENABLED, false).toBool();
+	params.lutEnabled = settings.value(LUT_ENABLED, false).toBool();
 	params.lutFileName = settings.value(LUT_FILENAME).toString();
 	this->panel->setParams(params);
 }
@@ -577,7 +578,8 @@ void GLWindow3D::updateDockTitleWithFPS(float fps) {
 }
 
 void GLWindow3D::saveSettings() {
-	Settings::getInstance()->storeSettings(this->getName(), this->getSettings());
+	Settings guiSettings(GUI_SETTINGS_PATH);
+	guiSettings.storeSettings(this->getName(), this->getSettings());
 }
 
 void GLWindow3D::saveScreenshot(QString savePath, QString fileName) {

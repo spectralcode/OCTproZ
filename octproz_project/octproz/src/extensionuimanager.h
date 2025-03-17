@@ -70,6 +70,7 @@ private:
 	Sidebar* sidebar;
 	OCTproZApp* app;
 	ExtensionManager* extManager;
+	Settings* appSettings;
 
 	// Extension state
 	QList<QAction*> extensionActions;

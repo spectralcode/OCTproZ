@@ -12,7 +12,8 @@ ExtensionUIManager::ExtensionUIManager(QMenu* extensionMenu, QTabWidget* tabWidg
 	console(console),
 	sidebar(sidebar),
 	app(app),
-	extManager(nullptr)
+	extManager(nullptr),
+	appSettings(new Settings(this))
 {
 }
 
@@ -98,7 +99,7 @@ void ExtensionUIManager::saveExtensionStates() {
 
 void ExtensionUIManager::autoLoadExtensions() {
 	// Get settings from app
-	QVariantMap mainWindowSettings = Settings::getInstance()->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
+	QVariantMap mainWindowSettings = this->appSettings->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
 
 	// Check if the settings contain autoload extension list
 	if (!mainWindowSettings.contains(MAIN_ACTIVE_EXTENSIONS)) {

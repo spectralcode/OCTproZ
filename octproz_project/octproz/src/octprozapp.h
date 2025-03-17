@@ -127,6 +127,7 @@ signals:
 
 private:
 	// Core components
+	Settings* appSettings;
 	SystemManager* sysManager;
 	AcquisitionSystem* currSystem;
 	ExtensionManager* extManager;
