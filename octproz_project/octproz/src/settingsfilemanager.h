@@ -49,8 +49,6 @@
 #include <QFileInfo>
 #include <QDir>
 
-#include "settingsconstants.h"
-
 class SettingsFileManager : public QObject
 {
 	Q_OBJECT
