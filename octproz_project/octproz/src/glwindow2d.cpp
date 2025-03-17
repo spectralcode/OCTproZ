@@ -27,6 +27,7 @@
 
 #include "glwindow2d.h"
 #include "settings.h"
+#include "settingsconstants.h"
 #include <QTimer>
 #include <QToolTip>
 #include <QGuiApplication>
@@ -108,19 +109,19 @@ void GLWindow2D::setMarkerOrigin(FRAME_EDGE origin) {
 
 void GLWindow2D::setSettings(QVariantMap settings) {
 	GLWindow2DParams params;
-	params.extendedViewEnabled = settings.value(EXTENDED_PANEL).toBool();
-	params.displayedFrames = settings.value(DISPLAYED_FRAMES).toInt();
-	params.currentFrame = settings.value(CURRENT_FRAME).toInt();
-	params.rotationAngle = settings.value(ROTATION_ANGLE).toDouble();
-	params.displayFunction = settings.value(DISPLAY_MODE).toInt();
-	params.stretchX = settings.value(STRETCH_X).toDouble();
-	params.stretchY = settings.value(STRETCH_Y).toDouble();
-	params.horizontalScaleBarEnabled = settings.value(HORIZONTAL_SCALE_BAR_ENABLED).toBool();
-	params.verticalScaleBarEnabled = settings.value(VERTICAL_SCALE_BAR_ENABLED).toBool();
-	params.horizontalScaleBarText = settings.value(HORIZONTAL_SCALE_BAR_TEXT).toString();
-	params.verticalScaleBarText = settings.value(VERTICAL_SCALE_BAR_TEXT).toString();
-	params.horizontalScaleBarLength = settings.value(HORIZONTAL_SCALE_BAR_LENGTH).toInt();
-	params.verticalScaleBarLength = settings.value(VERTICAL_SCALE_BAR_LENGTH).toInt();
+	params.extendedViewEnabled = settings.value(EXTENDED_PANEL, false).toBool();
+	params.displayedFrames = settings.value(DISPLAYED_FRAMES, 1).toInt();
+	params.currentFrame = settings.value(CURRENT_FRAME, 0).toInt();
+	params.rotationAngle = settings.value(ROTATION_ANGLE, 0.0).toDouble();
+	params.displayFunction = settings.value(DISPLAY_MODE, 0).toInt();
+	params.stretchX = settings.value(STRETCH_X, 1.0).toDouble();
+	params.stretchY = settings.value(STRETCH_Y, 1.0).toDouble();
+	params.horizontalScaleBarEnabled = settings.value(HORIZONTAL_SCALE_BAR_ENABLED, false).toBool();
+	params.verticalScaleBarEnabled = settings.value(VERTICAL_SCALE_BAR_ENABLED, false).toBool();
+	params.horizontalScaleBarText = settings.value(HORIZONTAL_SCALE_BAR_TEXT, "1 mm").toString();
+	params.verticalScaleBarText = settings.value(VERTICAL_SCALE_BAR_TEXT, "1 mm").toString();
+	params.horizontalScaleBarLength = settings.value(HORIZONTAL_SCALE_BAR_LENGTH, 128).toInt();
+	params.verticalScaleBarLength = settings.value(VERTICAL_SCALE_BAR_LENGTH, 256).toInt();
 	this->panel->setParams(params);
 }
 
@@ -396,7 +397,8 @@ void GLWindow2D::setMarkerPosition(unsigned int position) {
 }
 
 void GLWindow2D::saveSettings() {
-	Settings::getInstance()->storeSettings(this->getName(), this->getSettings());
+	Settings guiSettings(GUI_SETTINGS_PATH);
+	guiSettings.storeSettings(this->getName(), this->getSettings());
 }
 
 void GLWindow2D::enalbeFpsCalculation(bool enable) {
@@ -895,9 +897,11 @@ void ControlPanel2D::adjustFontSize() {
 	QFont font = this->font();
 
 	if(this->width() <= thresholdWidth){
-		font.setStretch(80);
+		font.setStretch(75);
+		labelDisplayFunctionFrames->setVisible(false);
 	} else {
 		font.setStretch(100);
+		labelDisplayFunctionFrames->setVisible(true);
 	}
 	this->setFont(font);
 
@@ -906,8 +910,18 @@ void ControlPanel2D::adjustFontSize() {
 	}
 }
 
+void ControlPanel2D::adjustFrameLabelVisibility() {
+	const int thresholdWidth = 250;
+	if(this->width() <= thresholdWidth){
+		labelDisplayFunctionFrames->setVisible(false);
+	} else {
+		labelDisplayFunctionFrames->setVisible(true);
+	}
+}
+
 void ControlPanel2D::resizeEvent(QResizeEvent *event) {
 	this->adjustFontSize();
+	this->adjustFrameLabelVisibility();
 	QWidget::resizeEvent(event);
 }
 

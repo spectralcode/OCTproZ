@@ -301,6 +301,7 @@ private:
 	void connectGuiToSettingsChangedSignal();
 	void disconnectGuiFromSettingsChangedSignal();
 	void adjustFontSize();
+	void adjustFrameLabelVisibility();
 
 	GLWindow2DParams params;
 	bool extendedView;
