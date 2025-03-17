@@ -25,9 +25,9 @@
 ****
 **/
 
-//!	Settings
-/*!	The Settings class is used to load and save all user-modifiable settings of OCTproZ and every plugin.
- * The settings are stored in an ini file. The save path is QStandardPaths::ConfigLocation (for Windows this is usually "C:/Users/<USER>/AppData/Local/<APPNAME>"
+//!	SettingsFileManager
+/*!	The SettingsFileManager class is used to load and save all user-modifiable settings of OCTproZ and every plugin.
+ * The settings are stored in an ini file. The default save path is QStandardPaths::ConfigLocation (for Windows this is usually "C:/Users/<USER>/AppData/Local/<APPNAME>"
 */
 
 #ifndef SETTINGSFILEMANAGER_H
