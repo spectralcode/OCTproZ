@@ -41,6 +41,7 @@
 #define VERTICAL_SCALE_BAR_TEXT "vertical_scale_bar_text"
 #define HORIZONTAL_SCALE_BAR_LENGTH "horizontal_scale_bar_length"
 #define VERTICAL_SCALE_BAR_LENGTH "vertical_scale_bar_length"
+#define DATA_CURSOR_ENABLED "data_cursor_enabled"
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
@@ -157,11 +158,14 @@ private:
 	//OctAlgorithmParameters::DISPLAY_FUNCTION displayFuntion;
 	unsigned int markerPosition;
 	bool markerEnabled;
+	bool dataCursorEnabled;
+	QLabel* coordinateDisplay;
 
 	QMenu* contextMenu;
 	QAction* keepAspectRatioAction;
 	QAction* markerAction;
 	QAction* screenshotAction;
+	QAction* dataCursorAction;
 
 	FRAME_EDGE markerOrigin;
 	LineCoordinates markerCoordinates;
@@ -223,6 +227,7 @@ public slots:
 	void setMarkerPosition(unsigned int position);
 	void saveSettings();
 	void enalbeFpsCalculation(bool enable);
+	void enableDataCursor(bool enable);
 
 
 signals:

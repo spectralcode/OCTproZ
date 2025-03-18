@@ -71,7 +71,12 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	this->horizontalScaleBar->setOrientation(ScaleBar::Horizontal);
 
 	this->verticalScaleBar = new ScaleBar();
-	this->verticalScaleBar->setOrientation(ScaleBar::Vertical);;
+	this->verticalScaleBar->setOrientation(ScaleBar::Vertical);
+
+	this->dataCursorEnabled = false;
+	this->coordinateDisplay = new QLabel(this);
+	this->coordinateDisplay->setStyleSheet("QLabel { background-color: rgba(0, 0, 0, 150); color: white; }");
+	this->coordinateDisplay->setVisible(false);
 
 	this->initContextMenu();
 
@@ -122,6 +127,7 @@ void GLWindow2D::setSettings(QVariantMap settings) {
 	params.verticalScaleBarText = settings.value(VERTICAL_SCALE_BAR_TEXT, "1 mm").toString();
 	params.horizontalScaleBarLength = settings.value(HORIZONTAL_SCALE_BAR_LENGTH, 128).toInt();
 	params.verticalScaleBarLength = settings.value(VERTICAL_SCALE_BAR_LENGTH, 256).toInt();
+
 	this->panel->setParams(params);
 }
 
@@ -168,6 +174,13 @@ void GLWindow2D::initContextMenu() {
 	showFPSAction->setChecked(this->showFPS);
 	connect(showFPSAction, &QAction::toggled, this, &GLWindow2D::enalbeFpsCalculation);
 	contextMenu->addAction(showFPSAction);
+
+	// In initContextMenu(), modify the action creation part
+	this->dataCursorAction = new QAction(tr("Show Values at Cursor"), this);
+	this->dataCursorAction->setCheckable(true);
+	this->dataCursorAction->setChecked(this->dataCursorEnabled);
+	connect(this->dataCursorAction, &QAction::toggled, this, &GLWindow2D::enableDataCursor);
+	this->contextMenu->addAction(this->dataCursorAction);
 }
 
 void GLWindow2D::displayScalebars() {
@@ -408,6 +421,16 @@ void GLWindow2D::enalbeFpsCalculation(bool enable) {
 	}
 }
 
+void GLWindow2D::enableDataCursor(bool enable) {
+	this->dataCursorEnabled = enable;
+	if (enable) {
+		this->setCursor(Qt::CrossCursor);
+	} else {
+		this->unsetCursor();
+		this->coordinateDisplay->setVisible(false);
+	}
+}
+
 void GLWindow2D::saveScreenshot(QString savePath, QString fileName) {
 	QImage screenshot = this->grabFramebuffer();
 	QString filePath = savePath + "/" + fileName;
@@ -533,33 +556,93 @@ void GLWindow2D::mousePressEvent(QMouseEvent* event) {
 	this->mousePos = event->pos();
 }
 
+//void GLWindow2D::mouseMoveEvent(QMouseEvent* event) {
+//	if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) && !this->panel->underMouse()){
+//		qreal x = event->pos().x();
+//		qreal y = event->pos().y();
+
+//		qreal xWindowNorm = ((x/static_cast<qreal>(this->size().width()))) - ((1.0-this->scaleFactor*this->stretchX*this->screenWidthScaled)/(2.0));
+//		x = (xWindowNorm-this->xTranslation/2.0)/this->screenWidthScaled;
+//		x = x/this->scaleFactor;
+//		x = x/this->stretchX;
+//		x = x*this->height;
+//		int xCoord = static_cast<int>(floor(x));
+
+//		qreal yWindowNorm = ((y/static_cast<qreal>(this->size().height()))) - ((1.0-this->scaleFactor*this->stretchY*this->screenHeightScaled)/(2.0)); //coordinate normalization to texture
+//		y = (yWindowNorm+this->yTranslation/2.0)/this->screenHeightScaled;
+//		y = y/this->scaleFactor;
+//		y = y/this->stretchY;
+//		y = y*this->width;
+//		int yCoord = static_cast<int>(floor(y));
+
+//		QToolTip::showText(this->mapToGlobal(event->pos()), QString("%1 , %2").arg(xCoord).arg(yCoord));
+//	}
+//	if((event->buttons() & Qt::LeftButton || event->buttons() & Qt::MiddleButton) && !this->panel->underMouse()){
+//		QPoint delta = (event->pos() - this->mousePos);
+//		int windowWidth = this->size().width();
+//		int windowHeight = this->size().height();
+//		this->xTranslation += 2.0*(float)delta.x()/((float)windowWidth);
+//		this->yTranslation += -2.0*(float)delta.y()/(float)windowHeight;
+//	}
+//	this->mousePos = event->pos();
+//}
 void GLWindow2D::mouseMoveEvent(QMouseEvent* event) {
-	if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) && !this->panel->underMouse()){
-		qreal x = event->pos().x();
-		qreal y = event->pos().y();
+	qreal x = event->pos().x();
+	qreal y = event->pos().y();
 
-		qreal xWindowNorm = ((x/static_cast<qreal>(this->size().width()))) - ((1.0-this->scaleFactor*this->stretchX*this->screenWidthScaled)/(2.0));
-		x = (xWindowNorm-this->xTranslation/2.0)/this->screenWidthScaled;
-		x = x/this->scaleFactor;
-		x = x/this->stretchX;
-		x = x*this->height;
-		int xCoord = static_cast<int>(floor(x));
+	qreal xWindowNorm = ((x/static_cast<qreal>(this->size().width()))) - ((1.0-this->scaleFactor*this->stretchX*this->screenWidthScaled)/(2.0));
+	x = (xWindowNorm-this->xTranslation/2.0)/this->screenWidthScaled;
+	x = x/this->scaleFactor;
+	x = x/this->stretchX;
+	x = x*this->height;
+	int xCoord = static_cast<int>(floor(x));
 
-		qreal yWindowNorm = ((y/static_cast<qreal>(this->size().height()))) - ((1.0-this->scaleFactor*this->stretchY*this->screenHeightScaled)/(2.0)); //coordinate normalization to texture
-		y = (yWindowNorm+this->yTranslation/2.0)/this->screenHeightScaled;
-		y = y/this->scaleFactor;
-		y = y/this->stretchY;
-		y = y*this->width;
-		int yCoord = static_cast<int>(floor(y));
+	qreal yWindowNorm = ((y/static_cast<qreal>(this->size().height()))) - ((1.0-this->scaleFactor*this->stretchY*this->screenHeightScaled)/(2.0));
+	y = (yWindowNorm+this->yTranslation/2.0)/this->screenHeightScaled;
+	y = y/this->scaleFactor;
+	y = y/this->stretchY;
+	y = y*this->width;
+	int yCoord = static_cast<int>(floor(y));
 
-		QToolTip::showText(this->mapToGlobal(event->pos()), QString("%1 , %2").arg(xCoord).arg(yCoord));
+	if (this->dataCursorEnabled && !this->panel->underMouse()) {
+		if (xCoord >= 0 && xCoord < static_cast<int>(this->height) &&
+			yCoord >= 0 && yCoord < static_cast<int>(this->width)) {
+
+			makeCurrent();
+
+			GLfloat pixelValue = 0.0f;
+			glReadPixels(
+				event->pos().x(),
+				this->size().height() - event->pos().y(),
+				1, 1,
+				GL_RED,
+				GL_FLOAT,
+				&pixelValue
+			);
+
+			doneCurrent();
+
+			this->coordinateDisplay->setText(
+				QString("x: %1, y: %2\nvalue: %3")
+					.arg(xCoord)
+					.arg(yCoord)
+					.arg(pixelValue, 0, 'f', 4)
+			);
+			this->coordinateDisplay->adjustSize();
+			this->coordinateDisplay->move(event->pos() + QPoint(10, -10));
+			this->coordinateDisplay->setVisible(true);
+		} else {
+			this->coordinateDisplay->setVisible(false);
+		}
 	}
-	if((event->buttons() & Qt::LeftButton || event->buttons() & Qt::MiddleButton) && !this->panel->underMouse()){
+
+	//Handle dragging
+	if ((event->buttons() & Qt::LeftButton || event->buttons() & Qt::MiddleButton) && !this->panel->underMouse()) {
 		QPoint delta = (event->pos() - this->mousePos);
 		int windowWidth = this->size().width();
 		int windowHeight = this->size().height();
 		this->xTranslation += 2.0*(float)delta.x()/((float)windowWidth);
-		this->yTranslation += -2.0*(float)delta.y()/(float)windowHeight;
+		this->yTranslation += -2.0*(float)delta.y()/((float)windowHeight);
 	}
 	this->mousePos = event->pos();
 }
