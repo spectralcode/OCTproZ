@@ -556,88 +556,53 @@ void GLWindow2D::mousePressEvent(QMouseEvent* event) {
 	this->mousePos = event->pos();
 }
 
-//void GLWindow2D::mouseMoveEvent(QMouseEvent* event) {
-//	if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) && !this->panel->underMouse()){
-//		qreal x = event->pos().x();
-//		qreal y = event->pos().y();
-
-//		qreal xWindowNorm = ((x/static_cast<qreal>(this->size().width()))) - ((1.0-this->scaleFactor*this->stretchX*this->screenWidthScaled)/(2.0));
-//		x = (xWindowNorm-this->xTranslation/2.0)/this->screenWidthScaled;
-//		x = x/this->scaleFactor;
-//		x = x/this->stretchX;
-//		x = x*this->height;
-//		int xCoord = static_cast<int>(floor(x));
-
-//		qreal yWindowNorm = ((y/static_cast<qreal>(this->size().height()))) - ((1.0-this->scaleFactor*this->stretchY*this->screenHeightScaled)/(2.0)); //coordinate normalization to texture
-//		y = (yWindowNorm+this->yTranslation/2.0)/this->screenHeightScaled;
-//		y = y/this->scaleFactor;
-//		y = y/this->stretchY;
-//		y = y*this->width;
-//		int yCoord = static_cast<int>(floor(y));
-
-//		QToolTip::showText(this->mapToGlobal(event->pos()), QString("%1 , %2").arg(xCoord).arg(yCoord));
-//	}
-//	if((event->buttons() & Qt::LeftButton || event->buttons() & Qt::MiddleButton) && !this->panel->underMouse()){
-//		QPoint delta = (event->pos() - this->mousePos);
-//		int windowWidth = this->size().width();
-//		int windowHeight = this->size().height();
-//		this->xTranslation += 2.0*(float)delta.x()/((float)windowWidth);
-//		this->yTranslation += -2.0*(float)delta.y()/(float)windowHeight;
-//	}
-//	this->mousePos = event->pos();
-//}
 void GLWindow2D::mouseMoveEvent(QMouseEvent* event) {
-	qreal x = event->pos().x();
-	qreal y = event->pos().y();
+	//data cursor //todo: consider rotation for calculation of x and y coordinates
+	if(this->dataCursorEnabled && !this->panel->underMouse()){
+		qreal x = event->pos().x();
+		qreal y = event->pos().y();
+	
+		qreal xWindowNorm = ((x/static_cast<qreal>(this->size().width()))) - ((1.0-this->scaleFactor*this->stretchX*this->screenWidthScaled)/(2.0));
+		x = (xWindowNorm-this->xTranslation/2.0)/this->screenWidthScaled;
+		x = x/this->scaleFactor;
+		x = x/this->stretchX;
+		x = x*this->height;
+		int xCoord = static_cast<int>(floor(x));
+	
+		qreal yWindowNorm = ((y/static_cast<qreal>(this->size().height()))) - ((1.0-this->scaleFactor*this->stretchY*this->screenHeightScaled)/(2.0));
+		y = (yWindowNorm+this->yTranslation/2.0)/this->screenHeightScaled;
+		y = y/this->scaleFactor;
+		y = y/this->stretchY;
+		y = y*this->width;
+		int yCoord = static_cast<int>(floor(y));
 
-	qreal xWindowNorm = ((x/static_cast<qreal>(this->size().width()))) - ((1.0-this->scaleFactor*this->stretchX*this->screenWidthScaled)/(2.0));
-	x = (xWindowNorm-this->xTranslation/2.0)/this->screenWidthScaled;
-	x = x/this->scaleFactor;
-	x = x/this->stretchX;
-	x = x*this->height;
-	int xCoord = static_cast<int>(floor(x));
+		makeCurrent();
 
-	qreal yWindowNorm = ((y/static_cast<qreal>(this->size().height()))) - ((1.0-this->scaleFactor*this->stretchY*this->screenHeightScaled)/(2.0));
-	y = (yWindowNorm+this->yTranslation/2.0)/this->screenHeightScaled;
-	y = y/this->scaleFactor;
-	y = y/this->stretchY;
-	y = y*this->width;
-	int yCoord = static_cast<int>(floor(y));
+		GLfloat pixelValue = 0.0f;
+		glReadPixels(
+			event->pos().x(),
+			this->size().height() - event->pos().y(),
+			1, 1,
+			GL_RED,
+			GL_FLOAT,
+			&pixelValue
+		);
 
-	if (this->dataCursorEnabled && !this->panel->underMouse()) {
-		if (xCoord >= 0 && xCoord < static_cast<int>(this->height) &&
-			yCoord >= 0 && yCoord < static_cast<int>(this->width)) {
+		doneCurrent();
 
-			makeCurrent();
-
-			GLfloat pixelValue = 0.0f;
-			glReadPixels(
-				event->pos().x(),
-				this->size().height() - event->pos().y(),
-				1, 1,
-				GL_RED,
-				GL_FLOAT,
-				&pixelValue
-			);
-
-			doneCurrent();
-
-			this->coordinateDisplay->setText(
-				QString("x: %1, y: %2\nvalue: %3")
-					.arg(xCoord)
-					.arg(yCoord)
-					.arg(pixelValue, 0, 'f', 4)
-			);
-			this->coordinateDisplay->adjustSize();
-			this->coordinateDisplay->move(event->pos() + QPoint(10, -10));
-			this->coordinateDisplay->setVisible(true);
-		} else {
-			this->coordinateDisplay->setVisible(false);
-		}
+		this->coordinateDisplay->setText(
+			QString("x: %1, y: %2\nvalue: %3")
+				.arg(xCoord)
+				.arg(yCoord)
+				.arg(pixelValue, 0, 'f', 4)
+		);
+		this->coordinateDisplay->adjustSize();
+		this->coordinateDisplay->move(event->pos() + QPoint(10, -10));
+		this->coordinateDisplay->setVisible(true);
 	}
 
-	//Handle dragging
-	if ((event->buttons() & Qt::LeftButton || event->buttons() & Qt::MiddleButton) && !this->panel->underMouse()) {
+	//dragging
+	if((event->buttons() & Qt::LeftButton || event->buttons() & Qt::MiddleButton) && !this->panel->underMouse()){
 		QPoint delta = (event->pos() - this->mousePos);
 		int windowWidth = this->size().width();
 		int windowHeight = this->size().height();
