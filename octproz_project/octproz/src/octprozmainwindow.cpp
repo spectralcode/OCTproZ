@@ -20,6 +20,7 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 	connect(this->aboutWindow, &AboutDialog::easterEgg, this, &OCTproZMainWindow::slot_easterEgg);
 
 	this->plot1D = new PlotWindow1D(this);
+	this->plot1D->setName("1d-plot");
 	connect(this, &OCTproZMainWindow::allowRawGrabbing, this->plot1D, &PlotWindow1D::slot_enableRawGrabbing);
 	connect(this->plot1D, &PlotWindow1D::info, this->console, &MessageConsole::displayInfo);
 	connect(this->plot1D, &PlotWindow1D::error, this->console, &MessageConsole::displayError);
@@ -342,6 +343,7 @@ void OCTproZMainWindow::loadWindowState() {
 		//this->dockVolumeView->restoreGeometry(windowSettings.value(DOCK_VOLUME_GEOMETRY).toByteArray());
 	});
 
+	this->plot1D->setSettings(this->guiSettings->getStoredSettings(this->plot1D->getName()));
 	this->bscanWindow->setSettings(this->guiSettings->getStoredSettings(this->bscanWindow->getName()));
 	this->enFaceViewWindow->setSettings(this->guiSettings->getStoredSettings(this->enFaceViewWindow->getName()));
 	this->volumeWindow->setSettings(this->guiSettings->getStoredSettings(this->volumeWindow->getName()));
@@ -385,6 +387,9 @@ void OCTproZMainWindow::saveWindowStates() {
 	this->enFaceViewWindow->saveSettings();
 	this->volumeWindow->saveSettings();
 	//todo: implement saveSettings method for console
+	//todo: maybe remove settingsfilemanager from sidebar, bscanWindow,enFaceViewWindow and volumeWindow. instead use "getSettings" and "getName" to store settings. just like for plot1D below
+
+	this->guiSettings->storeSettings(this->plot1D->getName(), this->plot1D->getSettings());
 
 	// Save active extensions //todo: move to extensionmanager
 	this->extensionUIManager->saveExtensionStates();

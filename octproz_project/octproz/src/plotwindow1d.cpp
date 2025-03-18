@@ -97,6 +97,13 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	this->panel->checkBoxProcessed->setChecked(this->displayProcessed);
 	this->panel->checkBoxRaw->setChecked(this->displayRaw);
 
+	this->dataCursorEnabled = false;
+	this->dualCoordinateDisplay = new QLabel(this);
+	this->dualCoordinateDisplay->setStyleSheet("QLabel { background-color: rgba(0, 0, 0, 150); color: white; }");
+	this->dualCoordinateDisplay->setVisible(false);
+
+	this->slot_changeLinesPerBuffer(999999);
+
 	connect(this->panel->checkBoxProcessed, &QCheckBox::stateChanged, this, &PlotWindow1D::slot_displayProcessed);
 	connect(this->panel->checkBoxRaw, &QCheckBox::stateChanged, this, &PlotWindow1D::slot_displayRaw);
 	connect(this->panel->checkBoxAutoscale, &QCheckBox::stateChanged, this, &PlotWindow1D::slot_activateAutoscaling);
@@ -105,6 +112,50 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 
 PlotWindow1D::~PlotWindow1D(){
 }
+
+void PlotWindow1D::setSettings(QVariantMap settings){
+	this->displayRaw = settings.value(PLOT1D_DISPLAY_RAW, true).toBool();
+	this->setRawPlotVisible(this->displayRaw);
+	this->panel->checkBoxRaw->setChecked(this->displayRaw);
+
+	this->displayProcessed = settings.value(PLOT1D_DISPLAY_PROCESSED, false).toBool();
+	this->setProcessedPlotVisible(this->displayProcessed);
+	this->panel->checkBoxProcessed->setChecked(this->displayProcessed);
+
+	this->autoscaling = settings.value(PLOT1D_AUTOSCALING, true).toBool();
+	this->panel->checkBoxAutoscale->setChecked(this->autoscaling);
+
+	this->bitshift = settings.value(PLOT1D_BITSHIFT, false).toBool();
+
+	this->line = settings.value(PLOT1D_LINE_NR, 0).toInt();
+	this->panel->spinBoxLine->setValue(this->line);
+
+	this->dataCursorEnabled = settings.value(PLOT1D_DATA_CURSOR, false).toBool();
+	if (this->dataCursorEnabled) {
+		this->setCursor(Qt::CrossCursor);
+	} else {
+		this->unsetCursor();
+		dualCoordinateDisplay->setVisible(false);
+	}
+
+	bool legendVisible = settings.value(PLOT1D_SHOW_LEGEND, true).toBool();
+	this->legend->setVisible(legendVisible);
+
+	this->replot();
+}
+
+QVariantMap PlotWindow1D::getSettings() {
+	QVariantMap settings;
+	settings.insert(PLOT1D_DISPLAY_RAW, this->displayRaw);
+	settings.insert(PLOT1D_DISPLAY_PROCESSED, this->displayProcessed);
+	settings.insert(PLOT1D_AUTOSCALING, this->autoscaling);
+	settings.insert(PLOT1D_BITSHIFT, this->bitshift);
+	settings.insert(PLOT1D_LINE_NR, this->line);
+	settings.insert(PLOT1D_DATA_CURSOR, this->dataCursorEnabled);
+	settings.insert(PLOT1D_SHOW_LEGEND, this->legend->visible());
+	return settings;
+}
+
 
 QSize PlotWindow1D::sizeHint() const {
 	return(QSize(640, 320));
@@ -186,6 +237,19 @@ void PlotWindow1D::contextMenuEvent(QContextMenuEvent *event) {
 	QAction savePlotAction(tr("Save Plot as..."), this);
 	connect(&savePlotAction, &QAction::triggered, this, &PlotWindow1D::slot_saveToDisk);
 	menu.addAction(&savePlotAction);
+
+	QAction dualCoordAction(tr("Show Values at Cursor"), this);
+	dualCoordAction.setCheckable(true);
+	dualCoordAction.setChecked(this->dataCursorEnabled);
+	connect(&dualCoordAction, &QAction::toggled, this, &PlotWindow1D::slot_toggleDualCoordinates);
+	menu.addAction(&dualCoordAction);
+
+	QAction toggleLegendAction(tr("Show Legend"), this);
+	toggleLegendAction.setCheckable(true);
+	toggleLegendAction.setChecked(this->legend->visible());
+	connect(&toggleLegendAction, &QAction::toggled, this, &PlotWindow1D::slot_toggleLegend);
+	menu.addAction(&toggleLegendAction);
+
 	menu.exec(event->globalPos());
 }
 
@@ -193,6 +257,46 @@ void PlotWindow1D::mouseDoubleClickEvent(QMouseEvent *event) {
 	this->rescaleAxes();
 	this->replot();
 }
+
+void PlotWindow1D::mouseMoveEvent(QMouseEvent* event) {
+	// Only update the coordinate overlay if dual coordinate display is enabled
+	if (dataCursorEnabled){
+		QString labelText;
+		bool hasPrevious = false;
+
+		// Only show raw coordinates if the raw plot is enabled
+		if (this->displayRaw){
+			double rawX = this->xAxis->pixelToCoord(event->pos().x());
+			double rawY = this->yAxis->pixelToCoord(event->pos().y());
+			labelText += QString("Raw: (%1, %2)")
+				.arg(rawX, 0, 'f', 2)
+				.arg(rawY, 0, 'f', 2);
+			hasPrevious = true;
+		}
+
+		// Only show processed coordinates if the processed plot is enabled
+		if (this->displayProcessed){
+			if (hasPrevious){
+				labelText += " \n";
+			}
+			double procX = this->xAxis2->pixelToCoord(event->pos().x());
+			double procY = this->yAxis2->pixelToCoord(event->pos().y());
+			labelText += QString("Processed: (%1, %2)")
+				.arg(procX, 0, 'f', 2)
+				.arg(procY, 0, 'f', 2);
+		}
+
+		// Update and position the overlay label near the mouse cursor
+		dualCoordinateDisplay->setText(labelText);
+		dualCoordinateDisplay->adjustSize();
+		dualCoordinateDisplay->move(event->pos() + QPoint(10, -10));
+		dualCoordinateDisplay->setVisible(true);
+	}
+
+	// Call the base class implementation to preserve default behavior
+	QCustomPlot::mouseMoveEvent(event);
+}
+
 
 void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr) {
 	if(!this->isPlottingRaw && this->displayRaw && this->rawGrabbingAllowed){
@@ -405,6 +509,21 @@ void PlotWindow1D::slot_enableBitshift(bool enable) {
 	this->bitshift = enable;
 }
 
+void PlotWindow1D::slot_toggleDualCoordinates(bool enabled) {
+	dataCursorEnabled = enabled;
+	if (enabled){
+		this->setCursor(Qt::CrossCursor);
+	} else {
+		this->unsetCursor();
+		dualCoordinateDisplay->setVisible(false);
+	}
+}
+
+void PlotWindow1D::slot_toggleLegend(bool enabled) {
+	this->legend->setVisible(enabled);
+	this->replot();
+}
+
 void PlotWindow1D::zoomSelectedAxisWithMouseWheel() {
 	QList<QCPAxis*> selectedAxes;
 	if (this->xAxis->selectedParts().testFlag(QCPAxis::spAxis)) {
@@ -470,8 +589,6 @@ void PlotWindow1D::combineSelections() {
 		this->yAxis2->setSelectedParts(QCPAxis::spAxis | QCPAxis::spTickLabels | QCPAxis::spAxisLabel);
 	}
 }
-
-
 
 
 

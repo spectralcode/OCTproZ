@@ -28,6 +28,14 @@
 #ifndef PLOTWINDOW1D_H
 #define PLOTWINDOW1D_H
 
+#define PLOT1D_DISPLAY_RAW "plot1d_display_raw"
+#define PLOT1D_DISPLAY_PROCESSED "plot1d_display_processed"
+#define PLOT1D_AUTOSCALING "plot1d_autoscaling_enabled"
+#define PLOT1D_BITSHIFT "plot1d_bitshift_enabled"
+#define PLOT1D_LINE_NR "plot1d_line_nr"
+#define PLOT1D_DATA_CURSOR "plot1d_data_cursor_enabled"
+#define PLOT1D_SHOW_LEGEND "plot1d_show_legend"
+
 #include "qcustomplot.h"
 #include "octproz_devkit.h"
 
@@ -38,6 +46,11 @@ class PlotWindow1D : public QCustomPlot
 public:
 	explicit PlotWindow1D(QWidget *parent = nullptr);
 	~PlotWindow1D();
+
+	QString getName() const { return this->name; }
+	void setName(const QString &name) { this->name = name; }
+	void setSettings(QVariantMap settings);
+	QVariantMap getSettings();
 
 	QSize sizeHint() const override;
 
@@ -69,6 +82,7 @@ private:
 	bool processedGrabbingAllowed;
 	QString rawLineName;
 	QString processedLineName;
+	QString name;
 
 	QColor processedColor;
 	QColor rawColor;
@@ -76,9 +90,14 @@ private:
 	ControlPanel1D* panel;
 	QVBoxLayout* layout;
 
+	bool dataCursorEnabled;
+	QLabel* dualCoordinateDisplay;
+
+
 protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
+	void mouseMoveEvent(QMouseEvent* event) override;
 
 signals:
 	void info(QString info);
@@ -97,6 +116,8 @@ public slots:
 	void slot_enableRawGrabbing(bool enable);
 	void slot_enableProcessedGrabbing(bool enable);
 	void slot_enableBitshift(bool enable);
+	void slot_toggleDualCoordinates(bool enabled);
+	void slot_toggleLegend(bool enabled);
 	void zoomSelectedAxisWithMouseWheel();
 	void dragSelectedAxes();
 	void combineSelections();
