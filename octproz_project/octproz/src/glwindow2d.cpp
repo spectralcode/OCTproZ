@@ -554,6 +554,7 @@ void GLWindow2D::resizeGL(int w, int h) {
 
 void GLWindow2D::mousePressEvent(QMouseEvent* event) {
 	this->mousePos = event->pos();
+	event->accept();
 }
 
 void GLWindow2D::mouseMoveEvent(QMouseEvent* event) {
@@ -610,6 +611,7 @@ void GLWindow2D::mouseMoveEvent(QMouseEvent* event) {
 		this->yTranslation += -2.0*(float)delta.y()/((float)windowHeight);
 	}
 	this->mousePos = event->pos();
+	event->accept();
 }
 
 void GLWindow2D::wheelEvent(QWheelEvent *event) {
@@ -627,6 +629,8 @@ void GLWindow2D::wheelEvent(QWheelEvent *event) {
 			}
 		}
 		event->accept();
+	} else {
+		event->ignore();
 	}
 }
 
@@ -635,22 +639,29 @@ void GLWindow2D::mouseDoubleClickEvent(QMouseEvent *event) {
 		this->scaleFactor = 1.0;
 		this->xTranslation = 0.0;
 		this->yTranslation = 0.0;
+		event->accept();
+	} else {
+		event->ignore();
 	}
 }
 
 void GLWindow2D::enterEvent(QEvent *event) {
 	this->panel->setVisible(true);
+	event->accept();
 }
 
 void GLWindow2D::leaveEvent(QEvent *event) {
 	this->panel->setVisible(false);
+	if (this->dataCursorEnabled) {
+		this->coordinateDisplay->setVisible(false);
+	}
+	event->accept();
 }
+
 void GLWindow2D::contextMenuEvent(QContextMenuEvent *event) {
 	this->contextMenu->exec(event->globalPos());
+	event->accept();
 }
-
-
-
 
 
 //_______________________

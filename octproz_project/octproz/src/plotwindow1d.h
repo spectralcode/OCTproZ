@@ -91,13 +91,14 @@ private:
 	QVBoxLayout* layout;
 
 	bool dataCursorEnabled;
-	QLabel* dualCoordinateDisplay;
+	QLabel* coordinateDisplay;
 
 
 protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
+	void leaveEvent(QEvent* event) override;
 
 signals:
 	void info(QString info);

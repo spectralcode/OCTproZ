@@ -98,9 +98,9 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	this->panel->checkBoxRaw->setChecked(this->displayRaw);
 
 	this->dataCursorEnabled = false;
-	this->dualCoordinateDisplay = new QLabel(this);
-	this->dualCoordinateDisplay->setStyleSheet("QLabel { background-color: rgba(0, 0, 0, 150); color: white; }");
-	this->dualCoordinateDisplay->setVisible(false);
+	this->coordinateDisplay = new QLabel(this);
+	this->coordinateDisplay->setStyleSheet("QLabel { background-color: rgba(0, 0, 0, 150); color: white; }");
+	this->coordinateDisplay->setVisible(false);
 
 	this->slot_changeLinesPerBuffer(999999);
 
@@ -135,7 +135,7 @@ void PlotWindow1D::setSettings(QVariantMap settings){
 		this->setCursor(Qt::CrossCursor);
 	} else {
 		this->unsetCursor();
-		dualCoordinateDisplay->setVisible(false);
+		this->coordinateDisplay->setVisible(false);
 	}
 
 	bool legendVisible = settings.value(PLOT1D_SHOW_LEGEND, true).toBool();
@@ -259,8 +259,8 @@ void PlotWindow1D::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 void PlotWindow1D::mouseMoveEvent(QMouseEvent* event) {
-	// Only update the coordinate overlay if dual coordinate display is enabled
-	if (dataCursorEnabled){
+	// Only update the coordinate overlay if data cursor is enabled and mouse is not on top of control panel
+	if (dataCursorEnabled && !this->panel->underMouse()){
 		QString labelText;
 		bool hasPrevious = false;
 
@@ -287,14 +287,23 @@ void PlotWindow1D::mouseMoveEvent(QMouseEvent* event) {
 		}
 
 		// Update and position the overlay label near the mouse cursor
-		dualCoordinateDisplay->setText(labelText);
-		dualCoordinateDisplay->adjustSize();
-		dualCoordinateDisplay->move(event->pos() + QPoint(10, -10));
-		dualCoordinateDisplay->setVisible(true);
+		this->coordinateDisplay->setText(labelText);
+		this->coordinateDisplay->adjustSize();
+		this->coordinateDisplay->move(event->pos() + QPoint(10, -10));
+		this->coordinateDisplay->setVisible(true);
+	} else {
+		this->coordinateDisplay->setVisible(false);
 	}
-
+	
 	// Call the base class implementation to preserve default behavior
 	QCustomPlot::mouseMoveEvent(event);
+}
+
+void PlotWindow1D::leaveEvent(QEvent *event) {
+	if (this->dataCursorEnabled) {
+		this->coordinateDisplay->setVisible(false);
+	}
+	event->accept();
 }
 
 
@@ -515,7 +524,7 @@ void PlotWindow1D::slot_toggleDualCoordinates(bool enabled) {
 		this->setCursor(Qt::CrossCursor);
 	} else {
 		this->unsetCursor();
-		dualCoordinateDisplay->setVisible(false);
+		this->coordinateDisplay->setVisible(false);
 	}
 }
 
