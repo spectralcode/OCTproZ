@@ -151,12 +151,13 @@ private:
 	QGridLayout* layout;
 
 protected:
-
+	void enterEvent(QEvent *event) override;
 
 public slots:
 
 
 signals:
+	void mouseEntered();
 
 friend class PlotWindow1D;
 };

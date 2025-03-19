@@ -77,6 +77,7 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	this->coordinateDisplay = new QLabel(this);
 	this->coordinateDisplay->setStyleSheet("QLabel { background-color: rgba(0, 0, 0, 150); color: white; }");
 	this->coordinateDisplay->setVisible(false);
+	this->coordinateDisplay->setAttribute(Qt::WA_TransparentForMouseEvents);
 
 	this->initContextMenu();
 
@@ -90,6 +91,12 @@ GLWindow2D::GLWindow2D(QWidget *parent) : QOpenGLWidget(parent) {
 	connect(this->panel->spinBoxVerticalScaleBar, QOverload<int>::of(&QSpinBox::valueChanged), this->verticalScaleBar, &ScaleBar::setLength);
 	connect(this->panel->lineEditHorizontalScaleBarText, &QLineEdit::textChanged, this->horizontalScaleBar, &ScaleBar::setText);
 	connect(this->panel->lineEditVerticalScaleBarText, &QLineEdit::textChanged, this->verticalScaleBar, &ScaleBar::setText);
+
+	connect(this->panel, &ControlPanel2D::mouseEntered, this, [this]() {
+		if (this->dataCursorEnabled) {
+			this->coordinateDisplay->setVisible(false);
+		}
+	});
 
 	//connect(this->panel, &ControlPanel2D::settingsChanged, this, &GLWindow2D::saveSettings);
 	this->setMouseTracking(true);
@@ -600,6 +607,8 @@ void GLWindow2D::mouseMoveEvent(QMouseEvent* event) {
 		this->coordinateDisplay->adjustSize();
 		this->coordinateDisplay->move(event->pos() + QPoint(10, -10));
 		this->coordinateDisplay->setVisible(true);
+	} else {
+		this->coordinateDisplay->setVisible(false);
 	}
 
 	//dragging
@@ -729,7 +738,7 @@ void ScaleBar::updateTextSizeInfo() {
 
 //_______________________
 ControlPanel2D::ControlPanel2D(QWidget *parent) : QWidget(parent) {
-	this->panel = new QWidget(parent);
+	this->panel = new QWidget(this);
 	QPalette pal;
 	pal.setColor(QPalette::Background, QColor(32,32,32,128));
 	this->panel->setAutoFillBackground(true);
@@ -982,6 +991,11 @@ void ControlPanel2D::resizeEvent(QResizeEvent *event) {
 	this->adjustFontSize();
 	this->adjustFrameLabelVisibility();
 	QWidget::resizeEvent(event);
+}
+
+void ControlPanel2D::enterEvent(QEvent *event) {
+	emit mouseEntered();
+	QWidget::enterEvent(event);
 }
 
 void ControlPanel2D::setParams(GLWindow2DParams params) {

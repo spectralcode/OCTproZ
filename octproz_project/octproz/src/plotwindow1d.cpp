@@ -101,6 +101,7 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	this->coordinateDisplay = new QLabel(this);
 	this->coordinateDisplay->setStyleSheet("QLabel { background-color: rgba(0, 0, 0, 150); color: white; }");
 	this->coordinateDisplay->setVisible(false);
+	this->coordinateDisplay->setAttribute(Qt::WA_TransparentForMouseEvents);
 
 	this->slot_changeLinesPerBuffer(999999);
 
@@ -108,6 +109,12 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	connect(this->panel->checkBoxRaw, &QCheckBox::stateChanged, this, &PlotWindow1D::slot_displayRaw);
 	connect(this->panel->checkBoxAutoscale, &QCheckBox::stateChanged, this, &PlotWindow1D::slot_activateAutoscaling);
 	connect(this->panel->spinBoxLine, QOverload<int>::of(&QSpinBox::valueChanged), this, &PlotWindow1D::slot_setLine);
+
+	connect(this->panel, &ControlPanel1D::mouseEntered, this, [this]() {
+		if (this->dataCursorEnabled) {
+			this->coordinateDisplay->setVisible(false);
+		}
+	});
 }
 
 PlotWindow1D::~PlotWindow1D(){
@@ -607,7 +614,7 @@ void PlotWindow1D::combineSelections() {
 
 
 ControlPanel1D::ControlPanel1D(QWidget *parent) : QWidget(parent){
-	this->panel = new QWidget(parent);
+	this->panel = new QWidget(this);
 	QPalette pal;
 	pal.setColor(QPalette::Background, QColor(32,32,32,128));
 	this->panel->setAutoFillBackground(true);
@@ -647,4 +654,9 @@ ControlPanel1D::~ControlPanel1D()
 void ControlPanel1D::setMaxLineNr(unsigned int maxLineNr){
 	this->slider->setMaximum(maxLineNr);
 	this->spinBoxLine->setMaximum(maxLineNr);
+}
+
+void ControlPanel1D::enterEvent(QEvent *event) {
+	emit mouseEntered();
+	QWidget::enterEvent(event);
 }

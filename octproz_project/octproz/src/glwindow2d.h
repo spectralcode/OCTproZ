@@ -350,16 +350,17 @@ private:
 
 protected:
 	void resizeEvent(QResizeEvent *event) override;
+	void enterEvent(QEvent *event) override;
 
 public slots:
 	void setParams(GLWindow2DParams params);
 	void updateDisplayFrameSettings();
 	void toggleExtendedView();
 
-
 signals:
 	void displayFrameSettingsChanged(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
 	void settingsChanged();
+	void mouseEntered();
 
 
 friend class GLWindow2D;
