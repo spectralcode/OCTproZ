@@ -152,25 +152,44 @@ inline __device__ int16_t endianSwapInt16(int16_t val) {
 }
 
 __global__ void rollingAverageBackgroundRemoval(cufftComplex* out, cufftComplex* in, const int rollingAverageWindowSize, const int width, const int height, const int samplesPerFrame, const int samples) { //width: samplesPerAscan; height: ascansPerBscan,samples: total number of samples in buffer
+	extern __shared__ float s_data[];
+
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
+
 	if (index < samples) {
-		//determine start and end index of rolling average window
-		int currentBscan = index/(samplesPerFrame);
-		int currentLine = (index/width)%height;
-		int firstIndexOfCurrentLine = currentLine*width+(samplesPerFrame*currentBscan);
-		int lastIndexOfCurrentLine = firstIndexOfCurrentLine+width-1;
+		int currentBscan = index / samplesPerFrame;
+		int currentLine = (index / width) % height;
+		int firstIndexOfCurrentLine = currentLine * width + (samplesPerFrame * currentBscan);
+		int lastIndexOfCurrentLine = firstIndexOfCurrentLine + width - 1;
+
 		int startIdx = max(firstIndexOfCurrentLine, index - rollingAverageWindowSize + 1);
 		int endIdx = min(lastIndexOfCurrentLine, index + rollingAverageWindowSize);
+		int windowSize = endIdx - startIdx + 1;
 
-		//calculate rolling average
-		float rollingAverage = 0.0;
-		for (int i = startIdx; i <= endIdx; i++) {
-			rollingAverage += in[i].x;
+		//load data into shared memory for this line segment
+		//first determine the range of data this block will process
+		int blockFirstIdx = blockIdx.x * blockDim.x;
+		int blockStartIdx = max(firstIndexOfCurrentLine, blockFirstIdx - rollingAverageWindowSize + 1);
+		int blockEndIdx = min(lastIndexOfCurrentLine, (blockFirstIdx + blockDim.x - 1) + rollingAverageWindowSize);
+
+		//load data collaboratively (each thread loads one or more elements)
+		for (int i = blockStartIdx + threadIdx.x; i <= blockEndIdx; i += blockDim.x) {
+			if (i >= firstIndexOfCurrentLine && i <= lastIndexOfCurrentLine) {
+				s_data[i - blockStartIdx] = in[i].x;
+			}
 		}
-		rollingAverage /= (endIdx - startIdx + 1);
 
-		//subtract rolling average
-		out[index].x = (in[index].x - rollingAverage);
+		//ensure all data is loaded before proceeding
+		__syncthreads();
+
+		//calculate rolling average using shared memory
+		float rollingSum = 0.0f;
+		for (int i = startIdx; i <= endIdx; i++) {
+			rollingSum += s_data[i - blockStartIdx];
+		}
+
+		float rollingAverage = rollingSum / windowSize;
+		out[index].x = in[index].x - rollingAverage;
 		out[index].y = 0;
 	}
 }
@@ -1414,7 +1433,8 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 
 	//rolling average background subtraction
 	if (params->backgroundRemoval){
-		rollingAverageBackgroundRemoval<<<gridSize, blockSize, 0, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, params->rollingAverageWindowSize, signalLength, ascansPerBscan, signalLength*ascansPerBscan, samplesPerBuffer);
+		int sharedMemSize = (blockSize + 2 * params->rollingAverageWindowSize) * sizeof(float);
+		rollingAverageBackgroundRemoval<<<gridSize, blockSize, sharedMemSize, stream[currStream]>>>(d_inputLinearized, d_fftBuffer, params->rollingAverageWindowSize, signalLength, ascansPerBscan, signalLength*ascansPerBscan, samplesPerBuffer);
 		cufftComplex* tmpSwapPointer = d_inputLinearized;
 		d_inputLinearized = d_fftBuffer;
 		d_fftBuffer = tmpSwapPointer;
