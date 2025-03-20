@@ -366,8 +366,6 @@ void PlotWindow1D::mouseMoveEvent(QMouseEvent* event) {
 			(event->pos().y() - this->axisRect()->top()) / (double)this->axisRect()->height()
 		);
 		QPointF newPos = mousePoint - dragLegendOrigin;
-		newPos.setX(qMax(0.0, qMin(1.0, newPos.x())));
-		newPos.setY(qMax(0.0, qMin(1.0, newPos.y())));
 		rect.moveTopLeft(newPos);
 		this->axisRect()->insetLayout()->setInsetRect(0, rect);
 		this->replot();
@@ -375,11 +373,22 @@ void PlotWindow1D::mouseMoveEvent(QMouseEvent* event) {
 		return;
 	}
 
-	// Change cursor when hovering over the legend (only if not in data cursor mode)
-	if (!dataCursorEnabled && this->legend->selectTest(event->pos(), false) > 0) {
-		this->setCursor(Qt::OpenHandCursor);
-	} else if (!dataCursorEnabled && !this->panel->underMouse()) {
-		this->unsetCursor();
+	// Cursor handling when data cursor is active
+	if (dataCursorEnabled) {
+		if (this->legend->selectTest(event->pos(), false) > 0) {
+			// Over legend with data cursor active
+			this->setCursor(Qt::OpenHandCursor);
+		} else {
+			// Restore cross cursor when data cursor is active
+			this->setCursor(Qt::CrossCursor);
+		}
+	} else {
+		// Normal cursor handling when data cursor is not active
+		if (this->legend->selectTest(event->pos(), false) > 0) {
+			this->setCursor(Qt::OpenHandCursor);
+		} else if (!this->panel->underMouse()) {
+			this->unsetCursor();
+		}
 	}
 
 	// Only update the coordinate overlay if data cursor is enabled and mouse is not on top of control panel
@@ -425,7 +434,14 @@ void PlotWindow1D::mouseMoveEvent(QMouseEvent* event) {
 void PlotWindow1D::mouseReleaseEvent(QMouseEvent *event) {
 	if (draggingLegend) {
 		draggingLegend = false;
-		this->setCursor(Qt::OpenHandCursor);
+		// Restore cursor based on current state
+		if (dataCursorEnabled) {
+			this->setCursor(Qt::CrossCursor);
+		} else if (this->legend->selectTest(event->pos(), false) > 0) {
+			this->setCursor(Qt::OpenHandCursor);
+		} else {
+			this->unsetCursor();
+		}
 		event->accept();
 	} else {
 		QCustomPlot::mouseReleaseEvent(event);
