@@ -67,9 +67,18 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	this->legend->setBrush(QColor(80, 80, 80, 200));
 	this->legend->setTextColor(Qt::white);
 	this->legend->setBorderPen(QColor(180, 180, 180, 200));
+	this->axisRect()->insetLayout()->setInsetPlacement(0, QCPLayoutInset::ipFree);
+	this->draggingLegend = false;
+
+	// Connect signals for legend dragging
+	connect(this, &QCustomPlot::mousePress, this, &PlotWindow1D::mousePressOnLegend);
+	connect(this, &QCustomPlot::mouseMove, this, &PlotWindow1D::mouseMoveWithLegend);
+	connect(this, &QCustomPlot::mouseRelease, this, &PlotWindow1D::mouseReleaseFromLegend);
+	connect(this, &QCustomPlot::beforeReplot, this, &PlotWindow1D::beforeReplot);
 
 	//this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes | QCP::iSelectPlottables); //plot is slow if iSelectPlottable is set
 	this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
+	//this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes | QCP::iSelectLegend);
 	connect(this, &QCustomPlot::selectionChangedByUser, this, &PlotWindow1D::combineSelections);
 	connect(this, &QCustomPlot::mouseWheel, this, &PlotWindow1D::zoomSelectedAxisWithMouseWheel);
 	connect(this, &QCustomPlot::mousePress, this, &PlotWindow1D::dragSelectedAxes);
@@ -148,6 +157,34 @@ void PlotWindow1D::setSettings(QVariantMap settings){
 	bool legendVisible = settings.value(PLOT1D_SHOW_LEGEND, true).toBool();
 	this->legend->setVisible(legendVisible);
 
+	if (settings.contains(PLOT1D_LEGEND_X) && settings.contains(PLOT1D_LEGEND_Y)) {
+		double xPos = settings.value(PLOT1D_LEGEND_X, 0.99).toDouble();
+		double yPos = settings.value(PLOT1D_LEGEND_Y, 0.01).toDouble();
+
+		//restore placement type
+		QCPLayoutInset::InsetPlacement placement = static_cast<QCPLayoutInset::InsetPlacement>(
+			settings.value(PLOT1D_LEGEND_PLACEMENT, QCPLayoutInset::ipFree).toInt()
+		);
+		this->axisRect()->insetLayout()->setInsetPlacement(0, placement);
+
+		//restore alignment if applicable
+		if (placement == QCPLayoutInset::ipBorderAligned) {
+			// Convert saved integer back to Qt::Alignment
+			int savedAlignment = settings.value(PLOT1D_LEGEND_ALIGNMENT,
+				static_cast<int>(Qt::AlignTop | Qt::AlignRight)).toInt();
+			Qt::Alignment alignment = static_cast<Qt::Alignment>(savedAlignment);
+			this->axisRect()->insetLayout()->setInsetAlignment(0, alignment);
+		}
+
+		//set the legend position
+		this->axisRect()->insetLayout()->setInsetRect(0, QRectF(xPos, yPos, 0, 0));
+	} else {
+		//default legend position
+		this->axisRect()->insetLayout()->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
+		this->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop | Qt::AlignRight);
+		this->axisRect()->insetLayout()->setInsetRect(0, QRectF(0.99, 0.01, 0, 0));
+	}
+
 	this->replot();
 }
 
@@ -160,6 +197,19 @@ QVariantMap PlotWindow1D::getSettings() {
 	settings.insert(PLOT1D_LINE_NR, this->line);
 	settings.insert(PLOT1D_DATA_CURSOR, this->dataCursorEnabled);
 	settings.insert(PLOT1D_SHOW_LEGEND, this->legend->visible());
+
+	QRectF rect = this->axisRect()->insetLayout()->insetRect(0);
+	settings.insert(PLOT1D_LEGEND_X, rect.x());
+	settings.insert(PLOT1D_LEGEND_Y, rect.y());
+
+	QCPLayoutInset::InsetPlacement placement = this->axisRect()->insetLayout()->insetPlacement(0);
+	settings.insert(PLOT1D_LEGEND_PLACEMENT, static_cast<int>(placement));
+
+	if (placement == QCPLayoutInset::ipBorderAligned) {
+		int alignment = static_cast<int>(this->axisRect()->insetLayout()->insetAlignment(0));
+		settings.insert(PLOT1D_LEGEND_ALIGNMENT, alignment);
+	}
+
 	return settings;
 }
 
@@ -257,6 +307,15 @@ void PlotWindow1D::contextMenuEvent(QContextMenuEvent *event) {
 	connect(&toggleLegendAction, &QAction::toggled, this, &PlotWindow1D::slot_toggleLegend);
 	menu.addAction(&toggleLegendAction);
 
+	QAction resetLegendAction(tr("Reset Legend Position"), this);
+	connect(&resetLegendAction, &QAction::triggered, this, [this]() {
+		this->axisRect()->insetLayout()->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
+		this->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop | Qt::AlignRight);
+		this->replot();
+		draggingLegend = false;
+	});
+	menu.addAction(&resetLegendAction);
+
 	menu.exec(event->globalPos());
 }
 
@@ -265,7 +324,64 @@ void PlotWindow1D::mouseDoubleClickEvent(QMouseEvent *event) {
 	this->replot();
 }
 
+void PlotWindow1D::mousePressEvent(QMouseEvent *event) {
+	//check if this is a legend drag
+	if (this->legend->selectTest(event->pos(), false) > 0) {
+		draggingLegend = true;
+		this->setCursor(Qt::ClosedHandCursor);
+
+		//if legend isn't already in free placement mode, switch to it now
+		if (this->axisRect()->insetLayout()->insetPlacement(0) != QCPLayoutInset::ipFree) {
+			//get current position before switching to free mode
+			QPointF currentPos;
+			QRectF legendRect = this->legend->outerRect();
+
+			//convert to normalized coordinates
+			currentPos.setX((legendRect.x() - this->axisRect()->left()) / (double)this->axisRect()->width());
+			currentPos.setY((legendRect.y() - this->axisRect()->top()) / (double)this->axisRect()->height());
+
+			//switch to free placement
+			this->axisRect()->insetLayout()->setInsetPlacement(0, QCPLayoutInset::ipFree);
+			this->axisRect()->insetLayout()->setInsetRect(0, QRectF(currentPos, QSizeF(0, 0)));
+		}
+
+		//set drag origin
+		QPointF mousePoint(
+			(event->pos().x() - this->axisRect()->left()) / (double)this->axisRect()->width(),
+			(event->pos().y() - this->axisRect()->top()) / (double)this->axisRect()->height()
+		);
+		dragLegendOrigin = mousePoint - this->axisRect()->insetLayout()->insetRect(0).topLeft();
+
+		event->accept();
+	} else {
+		QCustomPlot::mousePressEvent(event);
+	}
+}
+
 void PlotWindow1D::mouseMoveEvent(QMouseEvent* event) {
+	if (draggingLegend) {
+		QRectF rect = this->axisRect()->insetLayout()->insetRect(0);
+		QPointF mousePoint(
+			(event->pos().x() - this->axisRect()->left()) / (double)this->axisRect()->width(),
+			(event->pos().y() - this->axisRect()->top()) / (double)this->axisRect()->height()
+		);
+		QPointF newPos = mousePoint - dragLegendOrigin;
+		newPos.setX(qMax(0.0, qMin(1.0, newPos.x())));
+		newPos.setY(qMax(0.0, qMin(1.0, newPos.y())));
+		rect.moveTopLeft(newPos);
+		this->axisRect()->insetLayout()->setInsetRect(0, rect);
+		this->replot();
+		event->accept();
+		return;
+	}
+
+	// Change cursor when hovering over the legend (only if not in data cursor mode)
+	if (!dataCursorEnabled && this->legend->selectTest(event->pos(), false) > 0) {
+		this->setCursor(Qt::OpenHandCursor);
+	} else if (!dataCursorEnabled && !this->panel->underMouse()) {
+		this->unsetCursor();
+	}
+
 	// Only update the coordinate overlay if data cursor is enabled and mouse is not on top of control panel
 	if (dataCursorEnabled && !this->panel->underMouse()){
 		QString labelText;
@@ -301,9 +417,19 @@ void PlotWindow1D::mouseMoveEvent(QMouseEvent* event) {
 	} else {
 		this->coordinateDisplay->setVisible(false);
 	}
-	
+
 	// Call the base class implementation to preserve default behavior
 	QCustomPlot::mouseMoveEvent(event);
+}
+
+void PlotWindow1D::mouseReleaseEvent(QMouseEvent *event) {
+	if (draggingLegend) {
+		draggingLegend = false;
+		this->setCursor(Qt::OpenHandCursor);
+		event->accept();
+	} else {
+		QCustomPlot::mouseReleaseEvent(event);
+	}
 }
 
 void PlotWindow1D::leaveEvent(QEvent *event) {
@@ -312,7 +438,6 @@ void PlotWindow1D::leaveEvent(QEvent *event) {
 	}
 	event->accept();
 }
-
 
 void PlotWindow1D::slot_plotRawData(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr) {
 	if(!this->isPlottingRaw && this->displayRaw && this->rawGrabbingAllowed){
@@ -606,7 +731,46 @@ void PlotWindow1D::combineSelections() {
 	}
 }
 
+void PlotWindow1D::mousePressOnLegend(QMouseEvent *event) {
+	if (this->legend->selectTest(event->pos(), false) > 0) {
+		this->draggingLegend = true;
+		QPointF mousePoint(
+			(event->pos().x() - this->axisRect()->left()) / (double)this->axisRect()->width(),
+			(event->pos().y() - this->axisRect()->top()) / (double)this->axisRect()->height()
+		);
+		this->dragLegendOrigin = mousePoint - this->axisRect()->insetLayout()->insetRect(0).topLeft();
+		event->accept();
+	}
+}
 
+void PlotWindow1D::mouseMoveWithLegend(QMouseEvent *event) {
+	if (draggingLegend) {
+		QRectF rect = this->axisRect()->insetLayout()->insetRect(0);
+		QPointF mousePoint(
+			(event->pos().x() - this->axisRect()->left()) / (double)this->axisRect()->width(),
+			(event->pos().y() - this->axisRect()->top()) / (double)this->axisRect()->height()
+		);
+		rect.moveTopLeft(mousePoint - dragLegendOrigin);
+		this->axisRect()->insetLayout()->setInsetRect(0, rect);
+		this->replot();
+		event->accept();
+	}
+}
+
+void PlotWindow1D::mouseReleaseFromLegend(QMouseEvent *event) {
+	if (draggingLegend) {
+		draggingLegend = false;
+		event->accept();
+	}
+}
+
+void PlotWindow1D::beforeReplot() {
+//this is to prevent the legend from stretching if the plot is stretched.see: https://www.qcustomplot.com/index.php/support/forum/481
+//with the current QCustomPlot version, this may not be necessary anymore --> todo: check if this is necessary.
+if (this->axisRect()->insetLayout()->insetPlacement(0) == QCPLayoutInset::ipFree) {
+		this->legend->setMaximumSize(this->legend->minimumOuterSizeHint());
+	}
+}
 
 
 

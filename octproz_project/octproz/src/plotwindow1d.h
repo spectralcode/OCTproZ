@@ -35,6 +35,11 @@
 #define PLOT1D_LINE_NR "plot1d_line_nr"
 #define PLOT1D_DATA_CURSOR "plot1d_data_cursor_enabled"
 #define PLOT1D_SHOW_LEGEND "plot1d_show_legend"
+#define PLOT1D_LEGEND_X "plot1d_legend_position_x"
+#define PLOT1D_LEGEND_Y "plot1d_legend_position_y"
+#define PLOT1D_LEGEND_PLACEMENT "plot1d_legend_placement"
+#define PLOT1D_LEGEND_ALIGNMENT "plot1d_legend_alignment"
+
 
 #include "qcustomplot.h"
 #include "octproz_devkit.h"
@@ -93,12 +98,18 @@ private:
 	bool dataCursorEnabled;
 	QLabel* coordinateDisplay;
 
+	bool draggingLegend;
+	QPointF dragLegendOrigin;
+
 
 protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
 	void leaveEvent(QEvent* event) override;
+
+	void mousePressEvent(QMouseEvent *event) override;
+	void mouseReleaseEvent(QMouseEvent *event) override;
 
 signals:
 	void info(QString info);
@@ -122,6 +133,10 @@ public slots:
 	void zoomSelectedAxisWithMouseWheel();
 	void dragSelectedAxes();
 	void combineSelections();
+	void mousePressOnLegend(QMouseEvent *event);
+	void mouseMoveWithLegend(QMouseEvent *event);
+	void mouseReleaseFromLegend(QMouseEvent *event);
+	void beforeReplot();
 };
 
 
