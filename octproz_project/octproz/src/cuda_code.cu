@@ -169,14 +169,12 @@ __global__ void rollingAverageBackgroundRemoval(cufftComplex* out, cufftComplex*
 		//load data into shared memory for this line segment
 		//first determine the range of data this block will process
 		int blockFirstIdx = blockIdx.x * blockDim.x;
-		int blockStartIdx = max(firstIndexOfCurrentLine, blockFirstIdx - rollingAverageWindowSize + 1);
-		int blockEndIdx = min(lastIndexOfCurrentLine, (blockFirstIdx + blockDim.x - 1) + rollingAverageWindowSize);
+		int blockStartIdx = max(0, blockFirstIdx - rollingAverageWindowSize + 1);
+		int blockEndIdx = min(samples-1, (blockFirstIdx + blockDim.x - 1) + rollingAverageWindowSize);
 
 		//load data collaboratively (each thread loads one or more elements)
-		for (int i = blockStartIdx + threadIdx.x; i <= blockEndIdx; i += blockDim.x) {
-			if (i >= firstIndexOfCurrentLine && i <= lastIndexOfCurrentLine) {
+		for (int i = blockStartIdx + threadIdx.x; i <= blockEndIdx ; i += blockDim.x) {
 				s_data[i - blockStartIdx] = in[i].x;
-			}
 		}
 
 		//ensure all data is loaded before proceeding
