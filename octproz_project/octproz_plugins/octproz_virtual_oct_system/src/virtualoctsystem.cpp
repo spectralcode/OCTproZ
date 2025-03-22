@@ -194,7 +194,6 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 	while (this->acqusitionRunning) {
 		//wait until processing thread is done with copying data from previous buffer. This is not necessary in real oct systems, since they usually do not provide new data as fast as this virtual oct system. In real oct systems just check the bufferReadyArray flag of the next buffer.
 		while(this->buffer->bufferReadyArray[buffer->currIndex] == true && this->acqusitionRunning){
-			QThread::usleep(100);
 			QCoreApplication::processEvents();
 		}
 
@@ -213,7 +212,9 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 
 		}
 		//user defined wait time
-		QThread::usleep((this->currParams.waitTimeUs));
+		if(this->currParams.waitTimeUs > 0){
+			QThread::usleep((this->currParams.waitTimeUs));
+		}
 	}
 }
 
@@ -246,7 +247,6 @@ void VirtualOCTSystem::acqcuisitionSimulationLargeFile() {
 	while (this->acqusitionRunning) {
 		//wait until processing thread is done with copying data from previous buffer. This is not necessary in real oct systems, since they usually do not provide new data as fast as this virtual oct system. In real oct systems just check the bufferReadyArray flag of the next buffer.
 		while(this->buffer->bufferReadyArray[buffer->currIndex] == true && this->acqusitionRunning){
-			QThread::usleep(100);
 			QCoreApplication::processEvents();
 		}
 
@@ -275,7 +275,9 @@ void VirtualOCTSystem::acqcuisitionSimulationLargeFile() {
 			nextIndex = (this->buffer->currIndex+1)%2;
 		}
 		//user defined wait time
-		QThread::usleep((this->currParams.waitTimeUs));
+		if(this->currParams.waitTimeUs > 0){
+			QThread::usleep((this->currParams.waitTimeUs));
+		}
 	}
 }
 
@@ -308,7 +310,6 @@ void VirtualOCTSystem::acquisitionSimulationWithMultiFileBuffers() {
 	while (this->acqusitionRunning) {
 		//wait until processing thread is done with copying data from previous buffer. This is not necessary in real oct systems, since they usually do not provide new data as fast as this virtual oct system. In real oct systems just check the bufferReadyArray flag of the next buffer.
 		while(this->buffer->bufferReadyArray[buffer->currIndex] == true && this->acqusitionRunning){
-			QThread::usleep(100);
 			QCoreApplication::processEvents();
 		}
 
@@ -332,7 +333,9 @@ void VirtualOCTSystem::acquisitionSimulationWithMultiFileBuffers() {
 			nextIndex = (this->buffer->currIndex+1)%2;
 		}
 		//user defined wait time
-		QThread::usleep((this->currParams.waitTimeUs));
+		if(this->currParams.waitTimeUs > 0){
+			QThread::usleep((this->currParams.waitTimeUs));
+		}
 	}
 }
 
