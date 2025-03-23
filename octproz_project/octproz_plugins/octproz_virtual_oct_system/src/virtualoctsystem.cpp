@@ -48,6 +48,7 @@ VirtualOCTSystem::VirtualOCTSystem() {
 	this->currParams.bscanOffset = 0;
 	this->currParams.waitTimeUs = 100000;
 	this->currParams.copyFileToRam = true;
+	this->currParams.syncWithProcessing = true;
 }
 
 VirtualOCTSystem::~VirtualOCTSystem() {
@@ -191,10 +192,14 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 	this->acqusitionRunning = true;
 	this->buffer->currIndex = 1;
 	emit acquisitionStarted(this);
+	bool syncEnabled = true;
 	while (this->acqusitionRunning) {
 		//wait until processing thread is done with copying data from previous buffer. This is not necessary in real oct systems, since they usually do not provide new data as fast as this virtual oct system. In real oct systems just check the bufferReadyArray flag of the next buffer.
-		while(this->buffer->bufferReadyArray[buffer->currIndex] == true && this->acqusitionRunning){
-			QCoreApplication::processEvents();
+		if(syncEnabled){
+			while(this->buffer->bufferReadyArray.at(buffer->currIndex) == true && this->acqusitionRunning && syncEnabled){
+				QCoreApplication::processEvents();
+				syncEnabled = this->currParams.syncWithProcessing;
+			}
 		}
 
 		//calculate index of next buffer
@@ -204,7 +209,7 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 		this->buffer->currIndex = nextIndex;
 
 		//check bufferReadyArray flag to see if acquisition system is allowed to reuse this buffer and write new data in acquisition buffer. Once the bufferReadyArray flag is false, the acquisition system is allowed to reuse the buffer. If bufferReadyArray is true the processing thread is still copying data from the buffer.
-		if(buffer->bufferReadyArray[nextIndex] == false){
+		if(buffer->bufferReadyArray.at(nextIndex) == false){
 
 			//actual data acquisition could be placed here. the content of this->buffer->bufferArray[nextIndex] could be modified here, but the acquisition buffer already contains the desired data so we just set the bufferReadyArray to true
 			//set bufferReadyArray to true to allow processing of buffer
@@ -244,14 +249,18 @@ void VirtualOCTSystem::acqcuisitionSimulationLargeFile() {
 	this->buffer->currIndex = 1;
 	int nextIndex = 0;
 	emit acquisitionStarted(this);
+	bool syncEnabled = true;
 	while (this->acqusitionRunning) {
 		//wait until processing thread is done with copying data from previous buffer. This is not necessary in real oct systems, since they usually do not provide new data as fast as this virtual oct system. In real oct systems just check the bufferReadyArray flag of the next buffer.
-		while(this->buffer->bufferReadyArray[buffer->currIndex] == true && this->acqusitionRunning){
-			QCoreApplication::processEvents();
+		if(syncEnabled){
+			while(this->buffer->bufferReadyArray.at(buffer->currIndex) == true && this->acqusitionRunning && syncEnabled){
+				QCoreApplication::processEvents();
+				syncEnabled = this->currParams.syncWithProcessing;
+			}
 		}
 
 		//check bufferReadyArray flag to see if acquisition system is allowed to reuse this buffer and write new data in acquisition buffer. Once the bufferReadyArray flag is false, the acquisition system is allowed to reuse the buffer. If bufferReadyArray is true the processing thread is still copying data from the buffer.
-		if(this->buffer->bufferReadyArray[nextIndex] == false){
+		if(this->buffer->bufferReadyArray.at(nextIndex) == false){
 			//get current buffer positions
 			void* currAcquisitionBuf = static_cast<void*>(this->buffer->bufferArray[nextIndex]);
 
@@ -307,17 +316,21 @@ void VirtualOCTSystem::acquisitionSimulationWithMultiFileBuffers() {
 	int nextIndex = 1;
 	int streamBufferIndex = currParams.buffersFromFile-1;
 	emit acquisitionStarted(this);
+	bool syncEnabled = true;
 	while (this->acqusitionRunning) {
 		//wait until processing thread is done with copying data from previous buffer. This is not necessary in real oct systems, since they usually do not provide new data as fast as this virtual oct system. In real oct systems just check the bufferReadyArray flag of the next buffer.
-		while(this->buffer->bufferReadyArray[buffer->currIndex] == true && this->acqusitionRunning){
-			QCoreApplication::processEvents();
+		if(syncEnabled){
+			while(this->buffer->bufferReadyArray.at(buffer->currIndex) == true && this->acqusitionRunning && syncEnabled){
+				QCoreApplication::processEvents();
+				syncEnabled = this->currParams.syncWithProcessing;
+			}
 		}
 
 		//set acquisition buffer index, so that processing thread knows current buffer
 		this->buffer->currIndex = nextIndex;
 
 		//check bufferReadyArray flag to see if acquisition system is allowed to reuse this buffer and write new data in acquisition buffer. Once the bufferReadyArray flag is false, the acquisition system is allowed to reuse the buffer. If bufferReadyArray is true the processing thread is still copying data from the buffer.
-		if(this->buffer->bufferReadyArray[nextIndex] == false){
+		if(this->buffer->bufferReadyArray.at(nextIndex) == false){
 			//get current buffer positions
 			streamBufferIndex = (streamBufferIndex+1)%currParams.buffersFromFile;
 			void* currAcquisitionBuf = static_cast<void*>(this->buffer->bufferArray[nextIndex]);

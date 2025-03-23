@@ -41,15 +41,16 @@ VirtualOCTSystemSettingsDialog::~VirtualOCTSystemSettingsDialog()
 
 void VirtualOCTSystemSettingsDialog::setSettings(QVariantMap settings){
 	this->ui->lineEdit->setText(settings.value(FILEPATH).toString());
-	this->ui->spinBox_bitDepth->setValue(settings.value(BITDEPTH).toInt());
-	this->ui->spinBox_width->setValue(settings.value(WIDTH).toInt());
-	this->ui->spinBox_height->setValue(settings.value(HEIGHT).toInt());
-	this->ui->spinBox_depth->setValue(settings.value(DEPTH).toInt());
-	this->ui->spinBox_buffersPerVolume->setValue(settings.value(BUFFERS_PER_VOLUME).toInt());
-	this->ui->spinBox_buffersFromFile->setValue(settings.value(BUFFERS_FROM_FILE).toInt());
-	this->ui->spinBox_bscanOffset->setValue(settings.value(BSCAN_OFFSET).toInt());
-	this->ui->spinBox_waitTime->setValue(settings.value(WAITTIME).toInt());
-	this->ui->checkBox_copyFileToRam->setChecked(settings.value(COPY_TO_RAM).toBool());
+	this->ui->spinBox_bitDepth->setValue(settings.value(BITDEPTH, 12).toInt());
+	this->ui->spinBox_width->setValue(settings.value(WIDTH, 1664).toInt());
+	this->ui->spinBox_height->setValue(settings.value(HEIGHT, 512).toInt());
+	this->ui->spinBox_depth->setValue(settings.value(DEPTH, 16).toInt());
+	this->ui->spinBox_buffersPerVolume->setValue(settings.value(BUFFERS_PER_VOLUME, 16).toInt());
+	this->ui->spinBox_buffersFromFile->setValue(settings.value(BUFFERS_FROM_FILE, 16).toInt());
+	this->ui->spinBox_bscanOffset->setValue(settings.value(BSCAN_OFFSET, 0).toInt());
+	this->ui->spinBox_waitTime->setValue(settings.value(WAITTIME, 0).toInt());
+	this->ui->checkBox_copyFileToRam->setChecked(settings.value(COPY_TO_RAM, true).toBool());
+	this->ui->checkBox_sync->setChecked(settings.value(SYNC_WITH_PROCESSING, true).toBool());
 	this->slot_apply();
 }
 
@@ -64,6 +65,7 @@ void VirtualOCTSystemSettingsDialog::getSettings(QVariantMap* settings) {
 	settings->insert(BSCAN_OFFSET, this->ui->spinBox_bscanOffset->value());
 	settings->insert(WAITTIME, this->ui->spinBox_waitTime->value());
 	settings->insert(COPY_TO_RAM, this->ui->checkBox_copyFileToRam->isChecked());
+	settings->insert(SYNC_WITH_PROCESSING, this->ui->checkBox_sync->isChecked());
 }
 
 void VirtualOCTSystemSettingsDialog::initGui(){
@@ -94,6 +96,7 @@ void VirtualOCTSystemSettingsDialog::slot_apply() {
 	this->params.bscanOffset = this->ui->spinBox_bscanOffset->value();
 	this->params.waitTimeUs = this->ui->spinBox_waitTime->value();
 	this->params.copyFileToRam = this->ui->checkBox_copyFileToRam->isChecked();
+	this->params.syncWithProcessing = this->ui->checkBox_sync->isChecked();
 	emit settingsUpdated(this->params);
 }
 
@@ -109,6 +112,7 @@ void VirtualOCTSystemSettingsDialog::slot_enableGui(bool enable){
 	this->ui->spinBox_bscanOffset->setEnabled(enable);
 	//this->ui->spinBox_waitTime->setEnabled(enable);  //waitTime does not need to be disabled. It can be safely changed during processing
 	this->ui->checkBox_copyFileToRam->setEnabled(enable);
+	this->ui->checkBox_sync->setEnabled(enable);
 }
 
 void VirtualOCTSystemSettingsDialog::slot_checkWidthValue(){

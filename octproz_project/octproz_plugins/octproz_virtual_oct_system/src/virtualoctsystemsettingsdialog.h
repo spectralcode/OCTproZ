@@ -35,6 +35,7 @@ SOFTWARE.
 #define BSCAN_OFFSET "bscan_offset"
 #define WAITTIME "wait_time"
 #define COPY_TO_RAM "copy_file_to_ram"
+#define SYNC_WITH_PROCESSING "sync_with_processing"
 
 
 #include <qstandardpaths.h>
@@ -55,6 +56,7 @@ struct simulatorParams {
 	int bscanOffset;
 	int waitTimeUs;
 	bool copyFileToRam;
+	bool syncWithProcessing;
 };
 
 class VirtualOCTSystemSettingsDialog : public QDialog
