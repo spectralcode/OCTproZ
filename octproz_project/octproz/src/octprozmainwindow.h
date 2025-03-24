@@ -32,6 +32,7 @@
 #include "octprozapp.h"
 #include "extensionuimanager.h"
 #include "settingsconstants.h"
+#include "recordingschedulerwidget.h"
 
 
 class OCTproZMainWindow : public QMainWindow
@@ -86,6 +87,7 @@ private slots:
 	void openSystemSettingsDialog();
 	void openSelectSystemDialog();
 	void openUserManualDialog();
+	void openRecordingScheduler();
 
 
 signals:
@@ -113,6 +115,7 @@ private:
 	GLWindow2D* enFaceViewWindow;
 	GLWindow3D* volumeWindow;
 	SystemChooser* systemChooser;
+	RecordingSchedulerWidget* recordingSchedulerWidget;
 
 	// UI helper classes
 	ExtensionUIManager* extensionUIManager;

@@ -92,6 +92,13 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 	connect(this->sidebar, &Sidebar::dialogClosed, this, &OCTproZMainWindow::slot_reopenOpenGLwindows);
 	connect(this->app, &OCTproZApp::processingParamsUpdateRequested, this->sidebar, &Sidebar::slot_updateProcessingParams); //todo: figure out why opengl windows stay black without this
 
+	// Scheduled Recording Widget
+	this->recordingSchedulerWidget = new RecordingSchedulerWidget(this);
+	connect(this->recordingSchedulerWidget, &RecordingSchedulerWidget::info, this->console, &MessageConsole::displayInfo);
+	connect(this->recordingSchedulerWidget, &RecordingSchedulerWidget::error, this->console, &MessageConsole::displayError);
+	connect(this->recordingSchedulerWidget->getScheduler(), &RecordingScheduler::recordingTriggered, this->app, &OCTproZApp::slot_record);
+	connect(this->app, &OCTproZApp::recordingFinished, this->recordingSchedulerWidget->getScheduler(), &RecordingScheduler::recordingFinished);
+
 	// Connect sidebar to paramsManager
 	connect(this->sidebar, &Sidebar::savePostProcessBackgroundRequested,
 			this->app->getParamsManager(), &OctAlgorithmParametersManager::savePostProcessBackgroundToFile);
@@ -130,6 +137,7 @@ OCTproZMainWindow::~OCTproZMainWindow() {
 	delete this->dockVolumeView;
 	delete this->systemChooser;
 	delete this->extensionUIManager;
+	delete this->recordingSchedulerWidget;
 }
 
 void OCTproZMainWindow::closeEvent(QCloseEvent* event) {
@@ -140,6 +148,12 @@ void OCTproZMainWindow::closeEvent(QCloseEvent* event) {
 	if (this->extensionUIManager) {
 		this->extensionUIManager->shutdownAllExtensions();
 	}
+
+	// Stop any active recording schedule
+	if (this->recordingSchedulerWidget->getScheduler()->isActive()) {
+		this->recordingSchedulerWidget->getScheduler()->stopSchedule();
+	}
+	this->recordingSchedulerWidget->hide();
 
 	// Disconnect all signals
 	disconnect(this->app, nullptr, this, nullptr);
@@ -249,7 +263,7 @@ void OCTproZMainWindow::setupConnections() {
 	connect(this->app, &OCTproZApp::dispCompCoeffsChanged, this->sidebar, &Sidebar::slot_setDispCompCoeffs);
 
 	connect(this->app, &OCTproZApp::systemChanged, this, &OCTproZMainWindow::setAppWindowTitle);
-	connect(this->app, &OCTproZApp::systemChanged, [this](const QString& /*systemName*/) {
+	connect(this->app, &OCTproZApp::systemChanged, this, [this](const QString& /*systemName*/) {
 		this->actionStart->setEnabled(true);
 		this->actionRecord->setEnabled(true);
 	});
@@ -377,6 +391,9 @@ void OCTproZMainWindow::loadWindowState() {
 	if (this->extensionUIManager) {
 		this->extensionUIManager->autoLoadExtensions(); //when loading a settings.ini file, this will re-open the previously active extensions
 	}
+
+	// recording scheduler
+	this->recordingSchedulerWidget->setSettings(this->guiSettings->getStoredSettings(this->recordingSchedulerWidget->getName()));
 }
 
 void OCTproZMainWindow::saveWindowStates() {
@@ -390,6 +407,7 @@ void OCTproZMainWindow::saveWindowStates() {
 	//todo: maybe remove settingsfilemanager from sidebar, bscanWindow,enFaceViewWindow and volumeWindow. instead use "getSettings" and "getName" to store settings. just like for plot1D below
 
 	this->guiSettings->storeSettings(this->plot1D->getName(), this->plot1D->getSettings());
+	this->guiSettings->storeSettings(this->recordingSchedulerWidget->getName(), this->recordingSchedulerWidget->getSettings());
 
 	// Save active extensions //todo: move to extensionmanager
 	this->extensionUIManager->saveExtensionStates();
@@ -586,6 +604,13 @@ void OCTproZMainWindow::initMenu() {
 
 	// Extras menu
 	this->extrasMenu = this->menuBar()->addMenu(tr("&Extras"));
+
+	QAction* scheduledRecordingAction = new QAction(tr("&Scheduled Recording"), this);
+	scheduledRecordingAction->setIcon(QIcon(":/icons/octproz_time_icon.png"));
+	scheduledRecordingAction->setStatusTip(tr("Schedule automatic recordings"));
+	connect(scheduledRecordingAction, &QAction::triggered, this, &OCTproZMainWindow::openRecordingScheduler);
+	this->extrasMenu->addAction(scheduledRecordingAction);
+
 	QMenu* klinMenu = this->extrasMenu->addMenu(tr("&Resampling curve for k-linearization"));
 	klinMenu->setToolTipsVisible(true);
 	klinMenu->setStatusTip(tr("Settings for k-linearization resampling curve"));
@@ -609,6 +634,7 @@ void OCTproZMainWindow::initMenu() {
 	QList<QAction*> klinActions;
 	klinActions << this->actionUseSidebarKLinCurve << this->actionUseCustomKLinCurve << klinSeparator << this->actionSetCustomKLinCurve;
 	this->sidebar->addActionsForKlinGroupBoxMenu(klinActions);
+
 
 	// Help menu
 	QMenu *helpMenu = this->menuBar()->addMenu(tr("&Help"));
@@ -878,6 +904,12 @@ void OCTproZMainWindow::openSelectSystemDialog() {
 
 void OCTproZMainWindow::openUserManualDialog() {
 	QDesktopServices::openUrl(QUrl("file:///" + QCoreApplication::applicationDirPath() + "/docs/index.html"));
+}
+
+void OCTproZMainWindow::openRecordingScheduler() {
+	this->recordingSchedulerWidget->show();
+	this->recordingSchedulerWidget->raise();
+	this->recordingSchedulerWidget->activateWindow();
 }
 
 void OCTproZMainWindow::loadGuiSettingsFromFile(const QString &settingsFilePath) {

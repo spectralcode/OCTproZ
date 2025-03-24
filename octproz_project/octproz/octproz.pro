@@ -46,7 +46,9 @@ SOURCES += \
 	$$SOURCEDIR/controlpanel.cpp \
 	$$SOURCEDIR/extensioneventfilter.cpp \
 	$$SOURCEDIR/octalgorithmparametersmanager.cpp \
-	$$SOURCEDIR/pluginmessagebus.cpp
+	$$SOURCEDIR/pluginmessagebus.cpp \
+	$$SOURCEDIR/recordingscheduler.cpp \
+	$$SOURCEDIR/recordingschedulerwidget.cpp
 
 	unix{
 		SOURCES += $$SOURCEDIR/cuda_code.cu
@@ -89,7 +91,9 @@ HEADERS += \
 	$$SOURCEDIR/outputwindow.h \
 	$$SOURCEDIR/octalgorithmparametersmanager.h \
 	$$SOURCEDIR/pluginmessagebus.h \
-	$$SOURCEDIR/settingsconstants.h
+	$$SOURCEDIR/settingsconstants.h \
+	$$SOURCEDIR/recordingscheduler.h \
+	$$SOURCEDIR/recordingschedulerwidget.h
 
 FORMS += \
 	$$SOURCEDIR/sidebar.ui
