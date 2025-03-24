@@ -145,7 +145,14 @@ private:
 	QList<QString> activatedSystems;
 	int rerunCounter = 0;
 
+	bool rawRecordingComplete;
+	bool processedRecordingComplete;
+
 	QStringList activeExtensions;
+
+	void rawRecordingDone();
+	void processedRecordingDone();
+	void checkAllRecordingsComplete();
 };
 
 #endif // OCTPROZAPP_H

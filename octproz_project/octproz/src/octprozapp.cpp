@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QThread>
 #include <QDateTime>
+#include <QTimer>
 
 OCTproZApp::OCTproZApp(QObject* parent) :
 	QObject(parent)
@@ -48,8 +49,8 @@ OCTproZApp::OCTproZApp(QObject* parent) :
 	connect(this->signalProcessing, &Processing::info, this, &OCTproZApp::info);
 	connect(this->signalProcessing, &Processing::error, this, &OCTproZApp::error);
 	connect(this->signalProcessing, &Processing::processedRecordDone, this, &OCTproZApp::slot_resetGpu2HostSettings);
-	connect(this->signalProcessing, &Processing::processedRecordDone, this, &OCTproZApp::slot_recordingDone);
-	connect(this->signalProcessing, &Processing::rawRecordDone, this, &OCTproZApp::slot_recordingDone);
+	connect(this->signalProcessing, &Processing::processedRecordDone, this, &OCTproZApp::processedRecordingDone);
+	connect(this->signalProcessing, &Processing::rawRecordDone, this, &OCTproZApp::rawRecordingDone);
 	connect(this->signalProcessing, &Processing::initializationFailed, this, &OCTproZApp::slot_stop);
 
 	// GPU to CPU notifier
@@ -230,6 +231,10 @@ void OCTproZApp::slot_record() {
 		recName = "_" + recName;
 	}
 
+	// Init recording completion flags
+	this->rawRecordingComplete = !recParams.recordRaw;
+	this->processedRecordingComplete = !recParams.recordProcessed;
+
 	// Enable raw and processed recording
 	if (recParams.recordProcessed) {
 		this->slot_prepareGpu2HostForProcessedRecording();
@@ -237,17 +242,46 @@ void OCTproZApp::slot_record() {
 
 	emit recordingStarted();
 
-	if (recParams.recordRaw || recParams.recordProcessed) {
+	bool rawOrProcessedRecordingEnabled = recParams.recordRaw || recParams.recordProcessed;
+	bool wasSystemRunning = this->currSystem->acqusitionRunning;
+	QString savePath = recParams.savePath;
+	QString fileName = recParams.timestamp + recName + "_";
+
+	// Handle raw and processed recording
+	if (rawOrProcessedRecordingEnabled) {
 		emit this->enableRecording(recParams);
-		if (!this->currSystem->acqusitionRunning) {
+		if (!wasSystemRunning) {
 			this->slot_start();
 		}
 	}
 
-	if (recParams.recordScreenshot) {
-		QString savePath = recParams.savePath;
-		QString fileName = recParams.timestamp + recName + "_";
+	// Handle screenshot-only case when system needs to be started
+	else if (recParams.recordScreenshot && !wasSystemRunning) {
+		this->slot_start();
+
+		// Delay screenshots when system just started
+		QTimer::singleShot(2000, this, [this, savePath, fileName]() {
+			emit screenshotsRequested(savePath, fileName);
+			QTimer::singleShot(500, this, &OCTproZApp::slot_recordingDone);
+		});
+	}
+	// Handle screenshot-only case when system is already running
+	else if (recParams.recordScreenshot) {
 		emit screenshotsRequested(savePath, fileName);
+		QTimer::singleShot(500, this, &OCTproZApp::slot_recordingDone);
+	}
+
+	// Handle screenshot for raw/processed recording case
+	if (recParams.recordScreenshot && rawOrProcessedRecordingEnabled) {
+		if (!wasSystemRunning) {
+			// Delay screenshots when system just started
+			QTimer::singleShot(2000, this, [this, savePath, fileName]() {
+				emit screenshotsRequested(savePath, fileName);
+			});
+		} else {
+			// Take screenshots immediately
+			emit screenshotsRequested(savePath, fileName);
+		}
 	}
 
 	// Check if meta information should be saved
@@ -385,6 +419,22 @@ void OCTproZApp::slot_recordingDone() {
 
 	if(this->octParams->recParams.stopAfterRecord && this->currSystem->acqusitionRunning) {
 		this->slot_stop();
+	}
+}
+
+void OCTproZApp::rawRecordingDone() {
+	this->rawRecordingComplete = true;
+	this->checkAllRecordingsComplete();
+}
+
+void OCTproZApp::processedRecordingDone() {
+	this->processedRecordingComplete = true;
+	this->checkAllRecordingsComplete();
+}
+
+void OCTproZApp::checkAllRecordingsComplete() {
+	if (this->rawRecordingComplete && processedRecordingComplete) {
+		this->slot_recordingDone();
 	}
 }
 
