@@ -1,32 +1,4 @@
-/**
-**  This file is part of OCTproZ.
-**  OCTproZ is an open source software for processig of optical
-**  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2024 Miroslav Zabic
-**
-**  OCTproZ is free software: you can redistribute it and/or modify
-**  it under the terms of the GNU General Public License as published by
-**  the Free Software Foundation, either version 3 of the License, or
-**  (at your option) any later version.
-**
-**  This program is distributed in the hope that it will be useful,
-**  but WITHOUT ANY WARRANTY; without even the implied warranty of
-**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-**  GNU General Public License for more details.
-**
-**  You should have received a copy of the GNU General Public License
-**  along with this program. If not, see http://www.gnu.org/licenses/.
-**
-****
-** Author:	Miroslav Zabic
-** Contact:	zabic
-**			at
-**			spectralcode.de
-****
-**/
-
 #include "plotwindow1d.h"
-
 
 PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	this->setBackground(QColor(50, 50, 50));
@@ -74,7 +46,7 @@ PlotWindow1D::PlotWindow1D(QWidget *parent) : QCustomPlot(parent){
 	connect(this, &QCustomPlot::mousePress, this, &PlotWindow1D::mousePressOnLegend);
 	connect(this, &QCustomPlot::mouseMove, this, &PlotWindow1D::mouseMoveWithLegend);
 	connect(this, &QCustomPlot::mouseRelease, this, &PlotWindow1D::mouseReleaseFromLegend);
-	connect(this, &QCustomPlot::beforeReplot, this, &PlotWindow1D::beforeReplot);
+	connect(this, &QCustomPlot::beforeReplot, this, &PlotWindow1D::preventStretching);
 
 	//this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes | QCP::iSelectPlottables); //plot is slow if iSelectPlottable is set
 	this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
@@ -780,7 +752,7 @@ void PlotWindow1D::mouseReleaseFromLegend(QMouseEvent *event) {
 	}
 }
 
-void PlotWindow1D::beforeReplot() {
+void PlotWindow1D::preventStretching() {
 //this is to prevent the legend from stretching if the plot is stretched.see: https://www.qcustomplot.com/index.php/support/forum/481
 //with the current QCustomPlot version, this may not be necessary anymore --> todo: check if this is necessary.
 if (this->axisRect()->insetLayout()->insetPlacement(0) == QCPLayoutInset::ipFree) {

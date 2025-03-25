@@ -1,29 +1,16 @@
 /**
-**  This file is part of OCTproZ.
-**  OCTproZ is an open source software for processig of optical
-**  coherence tomography (OCT) raw data.
-**  Copyright (C) 2019-2024 Miroslav Zabic
-**
-**  OCTproZ is free software: you can redistribute it and/or modify
-**  it under the terms of the GNU General Public License as published by
-**  the Free Software Foundation, either version 3 of the License, or
-**  (at your option) any later version.
-**
-**  This program is distributed in the hope that it will be useful,
-**  but WITHOUT ANY WARRANTY; without even the implied warranty of
-**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-**  GNU General Public License for more details.
-**
-**  You should have received a copy of the GNU General Public License
-**  along with this program. If not, see http://www.gnu.org/licenses/.
-**
-****
-** Author:	Miroslav Zabic
-** Contact:	zabic
-**			at
-**			spectralcode.de
-****
-**/
+ * PlotWindow1D:
+ * A 1D plotting widget for visualizing single raw spectra
+ * as well as single A-scans
+ *
+ * Notable features:
+ * - Plotting of raw and processed data with separate axes
+ * - User can select axis and customize zoom
+ * - Dragable Legend with optional statistical information display
+ * - Data cursor for coordinate display at mouse position
+ * - Export capabilities to various formats (PNG, PDF, CSV)
+ * - Line selection with a slider in ControlPanel1D
+ */
 
 #ifndef PLOTWINDOW1D_H
 #define PLOTWINDOW1D_H
@@ -59,12 +46,10 @@ public:
 
 	QSize sizeHint() const override;
 
-	//QCustomPlot* customPlot;
 	QVector<qreal> sampleNumbers;
 	QVector<qreal> sampleValues;
 	QVector<qreal> sampleNumbersProcessed;
 	QVector<qreal> sampleValuesProcessed;
-
 
 
 private:
@@ -136,7 +121,7 @@ public slots:
 	void mousePressOnLegend(QMouseEvent *event);
 	void mouseMoveWithLegend(QMouseEvent *event);
 	void mouseReleaseFromLegend(QMouseEvent *event);
-	void beforeReplot();
+	void preventStretching();
 };
 
 
