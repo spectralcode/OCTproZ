@@ -21,10 +21,10 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 
 	this->plot1D = new PlotWindow1D(this);
 	this->plot1D->setName("1d-plot");
-	connect(this, &OCTproZMainWindow::allowRawGrabbing, this->plot1D, &PlotWindow1D::slot_enableRawGrabbing);
+	connect(this, &OCTproZMainWindow::allowRawGrabbing, this->plot1D, &PlotWindow1D::enableRawGrabbing);
 	connect(this->plot1D, &PlotWindow1D::info, this->console, &MessageConsole::displayInfo);
 	connect(this->plot1D, &PlotWindow1D::error, this->console, &MessageConsole::displayError);
-	connect(this->app, &OCTproZApp::linesPerBufferChanged, this->plot1D, &PlotWindow1D::slot_changeLinesPerBuffer);
+	connect(this->app, &OCTproZApp::linesPerBufferChanged, this->plot1D, &PlotWindow1D::changeLinesPerBuffer);
 
 	this->dock1D = new QDockWidget(tr("1D"), this);
 	this->dock1D->setObjectName("1D");
@@ -277,8 +277,8 @@ void OCTproZMainWindow::setupConnections() {
 
 	// Connect app to signal processing
 	connect(this->app->getSignalProcessing(), &Processing::initializationDone, this, &OCTproZMainWindow::slot_enableStopAction);
-	connect(this->app->getSignalProcessing(), &Processing::streamingBufferEnabled, this->plot1D, &PlotWindow1D::slot_enableProcessedGrabbing);
-	connect(this->app->getSignalProcessing(), &Processing::rawData, this->plot1D, &PlotWindow1D::slot_plotRawData);
+	connect(this->app->getSignalProcessing(), &Processing::streamingBufferEnabled, this->plot1D, &PlotWindow1D::enableProcessedGrabbing);
+	connect(this->app->getSignalProcessing(), &Processing::rawData, this->plot1D, &PlotWindow1D::plotRawData);
 	connect(this->app->getSignalProcessing(), &Processing::updateInfoBox, this->sidebar, &Sidebar::slot_updateInfoBox);
 
 	// Connect B-scan window connections
@@ -309,7 +309,7 @@ void OCTproZMainWindow::setupConnections() {
 
 	// Connect with notifier
 	connect(this->app->getProcessedDataNotifier(), &Gpu2HostNotifier::newGpuDataAvailable,
-			this->plot1D, &PlotWindow1D::slot_plotProcessedData);
+			this->plot1D, &PlotWindow1D::plotProcessedData);
 	connect(this->app->getProcessedDataNotifier(), &Gpu2HostNotifier::backgroundRecorded,
 			this->sidebar, &Sidebar::updateBackgroundPlot);
 
