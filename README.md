@@ -72,6 +72,7 @@ __Extensions:__
 |[Axial PSF Analyzer](https://github.com/spectralcode/AxialPsfAnalyzerExtension)| Measuring the FWHM of the axial point spread function.|
 |[Camera](https://github.com/spectralcode/CameraExtension)| Displays live view from a webcam.|
 |[Demo Extension](octproz_project/octproz_plugins/octproz_demo_extension)| This demo extension is for developers. It has no useful functionality, but the code can be used as a template for developing custom extensions.|
+|[Dispersion Estimator](https://github.com/spectralcode/DispersionEstimatorExtension)| Helps determining suitable dispersion parameters d2 and d3 for better axial resolution. |
 |[Image Statistics](https://github.com/spectralcode/ImageStatisticsExtension)| Displays useful image statistics, such as a histogram, in real time of currently acquired B-scans. |
 |[Peak Detector](https://github.com/spectralcode/PeakDetectorExtension)| Detects and displays the position of the highest peak in an A-scan.|
 |[Phase Extraction](https://github.com/spectralcode/PhaseExtractionExtension)| Can be used to determine a suitable resampling curve for k-linearization.|
