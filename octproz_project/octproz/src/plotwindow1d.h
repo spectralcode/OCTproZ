@@ -216,6 +216,8 @@ public:
 	void updateInfoInRawLegend(int lineNr, int bufferNr);
 	void updateInfoInProcessedLegend(int lineNr, int bufferNr);
 	
+	void setDataCursorMode(bool enabled) {this->dataCursorEnabled = enabled; }
+	
 
 protected:
 	void mousePressEvent(QMouseEvent *event) override;
@@ -234,6 +236,7 @@ private:
 	QPointF dragLegendOrigin;
 	
 	bool showInfoInLegend;
+	bool dataCursorEnabled;
 
 public slots:
 	void zoomSelectedAxisWithMouseWheel();

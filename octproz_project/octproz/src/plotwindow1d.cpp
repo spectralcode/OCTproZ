@@ -127,6 +127,7 @@ void PlotWindow1D::setSettings(QVariantMap settings) {
 	this->panel->spinBoxLine->setValue(this->line);
 
 	this->dataCursorEnabled = settings.value(PLOT1D_DATA_CURSOR, false).toBool();
+	this->plotArea->setDataCursorMode(this->dataCursorEnabled);
 	if (this->dataCursorEnabled) {
 		this->plotArea->setCursor(Qt::CrossCursor);
 	} else {
@@ -492,6 +493,7 @@ void PlotWindow1D::enableBitshift(bool enable) {
 
 void PlotWindow1D::toggleDualCoordinates(bool enabled) {
 	this->dataCursorEnabled = enabled;
+	this->plotArea->setDataCursorMode(enabled);
 	if (enabled){
 		this->plotArea->setCursor(Qt::CrossCursor);
 	} else {
@@ -669,7 +671,8 @@ void StatsLabel::enterEvent(QEvent *event) {
 // ---------------------- PlotArea1D Implementation ----------------------
 PlotArea1D::PlotArea1D(QWidget *parent) : QCustomPlot(parent),
 	draggingLegend(false),
-	showInfoInLegend(false)
+	showInfoInLegend(false),
+	dataCursorEnabled(false)
 {
 	this->rawLineName = tr("Raw Line");
 	this->processedLineName = tr("A-scan");
@@ -953,6 +956,8 @@ void PlotArea1D::mouseMoveEvent(QMouseEvent* event) {
 	// Cursor handling
 	if (this->legend->selectTest(event->pos(), false) > 0) {
 		this->setCursor(Qt::OpenHandCursor);
+	} else if (this->dataCursorEnabled) {
+		this->setCursor(Qt::CrossCursor);
 	} else {
 		this->unsetCursor();
 	}
@@ -968,6 +973,8 @@ void PlotArea1D::mouseReleaseEvent(QMouseEvent *event) {
 		// Restore cursor
 		if (this->legend->selectTest(event->pos(), false) > 0) {
 			this->setCursor(Qt::OpenHandCursor);
+		} else if (this->dataCursorEnabled) {
+			this->setCursor(Qt::CrossCursor);
 		} else {
 			this->unsetCursor();
 		}
