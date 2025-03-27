@@ -635,7 +635,7 @@ void StatsLabel::refreshDisplay() {
 		statsText += QString("Max: %1<br>").arg(rawMax, 0, 'f', 2);
 		statsText += QString("Mean: %1<br>").arg(rawMean, 0, 'f', 2);
 		statsText += QString("Std Dev: %1<br>").arg(rawStdDev, 0, 'f', 2);
-		bufferNrStringRaw = QString("Raw Buffer Nr.: %1<br>").arg(this->bufferNrRaw, 2, 10, QChar('0'));
+		bufferNrStringRaw = QString("Raw Buffer Nr.: %1<br>").arg(this->bufferNrRaw, 3, 10, QChar('0'));
 		statsText += "<br>";
 	} else {
 		bufferNrStringRaw = "";
@@ -647,7 +647,7 @@ void StatsLabel::refreshDisplay() {
 		statsText += QString("Max: %1<br>").arg(procMax, 0, 'f', 2);
 		statsText += QString("Mean: %1<br>").arg(procMean, 0, 'f', 2);
 		statsText += QString("Std Dev: %1<br>").arg(procStdDev, 0, 'f', 2);
-		bufferNrStringProcessed = QString("Proc Buffer Nr.: %1<br>").arg(this->bufferNrProcessed, 2, 10, QChar('0'));
+		bufferNrStringProcessed = QString("Proc Buffer Nr.: %1<br>").arg(this->bufferNrProcessed, 3, 10, QChar('0'));
 		statsText += "<br>";
 	} else {
 		bufferNrStringProcessed = "";
@@ -844,13 +844,13 @@ void PlotArea1D::setProcessedData(const QVector<qreal>& xData, const QVector<qre
 
 void PlotArea1D::updateInfoInRawLegend(int lineNr, int bufferNr){
 	QString lineNumberStr = QString("%1").arg(lineNr, 3, 10, QChar('0'));
-	QString bufferNumberStr = "   Buffer Nr.: " + QString("%1").arg(bufferNr, 2, 10, QChar('0'));
+	QString bufferNumberStr = "   Buffer Nr.: " + QString("%1").arg(bufferNr, 3, 10, QChar('0'));
 	this->graph(0)->setName(this->rawLineName + " Nr.: " + lineNumberStr + bufferNumberStr);
 }
 
 void PlotArea1D::updateInfoInProcessedLegend(int lineNr, int bufferNr){
 	QString lineNumberStr = QString("%1").arg(lineNr, 3, 10, QChar('0'));
-	QString bufferNumberStr = "   Buffer Nr.: " + QString("%1").arg(bufferNr, 2, 10, QChar('0'));
+	QString bufferNumberStr = "   Buffer Nr.: " + QString("%1").arg(bufferNr, 3, 10, QChar('0'));
 	this->graph(1)->setName(this->processedLineName + " Nr.: " + lineNumberStr + bufferNumberStr);
 }
 
