@@ -885,7 +885,7 @@ void PlotArea1D::mouseDoubleClickEvent(QMouseEvent *event) {
 
 void PlotArea1D::mousePressEvent(QMouseEvent *event) {
 	//check if this is a legend drag
-	if (event->button() == Qt::LeftButton && this->legend->selectTest(event->pos(), false) > 0) {
+	if (event->button() == Qt::LeftButton && this->legend->visible() && this->legend->selectTest(event->pos(), false) > 0) {
 		draggingLegend = true;
 		this->setCursor(Qt::ClosedHandCursor);
 		emit legendDragging(true);
@@ -935,7 +935,7 @@ void PlotArea1D::mouseMoveEvent(QMouseEvent* event) {
 
 	// Calculate cursor coordinates and emit them
 	QPointF rawCoords, processedCoords;
-	bool isOnPlotting = this->rect().contains(event->pos()) && !(this->legend->selectTest(event->pos(), false) > 0);
+	bool isOnPlotting = this->rect().contains(event->pos()) && !(this->legend->visible() && this->legend->selectTest(event->pos(), false) > 0);
 
 	if (isOnPlotting) {
 		rawCoords = QPointF(
@@ -954,7 +954,7 @@ void PlotArea1D::mouseMoveEvent(QMouseEvent* event) {
 	}
 
 	// Cursor handling
-	if (this->legend->selectTest(event->pos(), false) > 0) {
+	if (this->legend->visible() && this->legend->selectTest(event->pos(), false) > 0) {
 		this->setCursor(Qt::OpenHandCursor);
 	} else if (this->dataCursorEnabled) {
 		this->setCursor(Qt::CrossCursor);
@@ -971,7 +971,7 @@ void PlotArea1D::mouseReleaseEvent(QMouseEvent *event) {
 		draggingLegend = false;
 		emit legendDragging(false);
 		// Restore cursor
-		if (this->legend->selectTest(event->pos(), false) > 0) {
+		if (this->legend->visible() && this->legend->selectTest(event->pos(), false) > 0) {
 			this->setCursor(Qt::OpenHandCursor);
 		} else if (this->dataCursorEnabled) {
 			this->setCursor(Qt::CrossCursor);
