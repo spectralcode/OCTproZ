@@ -105,7 +105,7 @@ bool Processing::waitForCudaOpenGlInteropReady(int interval, int timeout){
 	while (!this->isCudaOpenGlInteropReady()) {
 		QCoreApplication::processEvents();
 		if (timer.elapsed() > timeout){
-			emit error(tr("Cuda-OpenGL Interoperability initialization timeout.Please try restarting the processing."));
+			emit error(tr("Cuda-OpenGL Interoperability initialization timeout. Please try restarting the processing."));
 			return false;
 		}
 		QThread::msleep(interval);
