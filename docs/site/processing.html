@@ -815,7 +815,7 @@ i[z] = 20 \, \log_{10}\!\left|\mathcal{F}^{-1}\{I_k[m]\}\right|
 \]</div>
 <p>In addition, dynamic range adjustment is performed to enable the user to set minimum and maximum values (in dB) that should be displayed:</p>
 <div class="arithmatex">\[
-i_{\text{adj}}[k] = \text{coeff} \left( \frac{i[z]- \text{min}}{\text{max} - \text{min}} + \text{addend} \right),
+i_{\text{adj}}[z] = \text{coeff} \left( \frac{i[z]- \text{min}}{\text{max} - \text{min}} + \text{addend} \right),
 \]</div>
 <p>The parameters <strong>coeff</strong>, <strong>min</strong>, <strong>max</strong>, and <strong>addend</strong> can be set by the user. Usually, <strong>min</strong> and <strong>max</strong> are chosen so that the noise floor in the OCT images appears quite dark and the actual signal of interest appears bright. <strong>Coeff</strong> can be used to adjust the contrast of the image, and <strong>addend</strong> can be used to adjust the brightness. Typically, these values are set to <strong>coeff = 1</strong> and <strong>addend = 0</strong>.</p>
 <h3 id="backward-scan-correction">Backward scan correction</h3>

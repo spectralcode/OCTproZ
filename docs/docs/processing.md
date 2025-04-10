@@ -137,7 +137,7 @@ $$
 In addition, dynamic range adjustment is performed to enable the user to set minimum and maximum values (in dB) that should be displayed:
 
 $$
-i_{\text{adj}}[k] = \text{coeff} \left( \frac{i[z]- \text{min}}{\text{max} - \text{min}} + \text{addend} \right),
+i_{\text{adj}}[z] = \text{coeff} \left( \frac{i[z]- \text{min}}{\text{max} - \text{min}} + \text{addend} \right),
 $$
 
 The parameters **coeff**, **min**, **max**, and **addend** can be set by the user. Usually, **min** and **max** are chosen so that the noise floor in the OCT images appears quite dark and the actual signal of interest appears bright. **Coeff** can be used to adjust the contrast of the image, and **addend** can be used to adjust the brightness. Typically, these values are set to **coeff = 1** and **addend = 0**.
