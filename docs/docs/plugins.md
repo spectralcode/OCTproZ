@@ -33,4 +33,4 @@ __Extensions:__
 |[Socket Stream](https://github.com/spectralcode/SocketStreamExtension)| Controlling OCTproZ remotely and streaming OCT data via TCP/IP, Websocket, IPC.|
 
 ## Custom plugin development
-Have a look at the [plugin developer guide](https://spectralcode.github.io/OCTproZ/developer.html). 
+Have a look at the [plugin developer guide](https://spectralcode.github.io/OCTproZ/site/developer.html). 

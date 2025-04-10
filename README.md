@@ -41,7 +41,7 @@ Processing Pipeline
   <img src="images/octproz_processing_compact.png" >
 </p>
 
-A detailed overview of the OCTproZ processing pipeline can be found [here](https://spectralcode.github.io/OCTproZ/#processing-section).
+A detailed overview of the OCTproZ processing pipeline can be found [here](https://spectralcode.github.io/OCTproZ/site/processing.html).
 
 Performance
 ----------
@@ -80,7 +80,7 @@ __Extensions:__
 |[Socket Stream](https://github.com/spectralcode/SocketStreamExtension)| Controlling OCTproZ remotely and streaming OCT data via TCP/IP, Websocket, IPC.|
 
 
-The easiest way to develop custom plug-ins is to clone/download the entire OCTproZ project, compile the DevKit and OCTproZ and use the existing examples as templates. Have a look at the [plugin developer guide](https://spectralcode.github.io/OCTproZ/developer.html). 
+The easiest way to develop custom plug-ins is to clone/download the entire OCTproZ project, compile the DevKit and OCTproZ and use the existing examples as templates. Have a look at the [plugin developer guide](https://spectralcode.github.io/OCTproZ/site/developer.html). 
 
 
 Download and Installation
@@ -98,11 +98,11 @@ A test dataset that can be used with the Virtual OCT System can be downloaded fr
 
 User Manual
 ----------
-An online version of the user manual can be found [here](https://spectralcode.github.io/OCTproZ/index.html). 
+An online version of the user manual can be found [here](https://spectralcode.github.io/OCTproZ/site/index.html). 
 
 Developer Guide
 ----------
-The plugin developer guide can be found [here](https://spectralcode.github.io/OCTproZ/developer.html). 
+The plugin developer guide can be found [here](https://spectralcode.github.io/OCTproZ/site/developer.html). 
 
 Compiling
 ---------
