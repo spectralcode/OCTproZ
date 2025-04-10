@@ -120,7 +120,7 @@ The inverse Fourier transform is the essential processing step to calculate the 
 
 ### Fixed-pattern noise removal
 
-Fixed pattern noise refers to structural artifacts in OCT images that appear as fixed horizontal lines. These artifacts are caused, for example, by variations in pixel response in the CCD camera in spectrometer based OCT systems or spurious etalons within the optical OCT setup. A common approach to reduce fixed pattern noise is to acquire a reference signal in absence of a sample and subtract it from all subsequent recordings. In OCTproZ we have implemented the minimum-variance mean-line subtraction method that was described by Moon et al. ([https://doi.org/10.1364/OE.18.024395](https://doi.org/10.1364/OE.18.024395)) This approach does not require an additional reference recording and can be applied continuously such that fixed pattern noise due spectral intensity variation of the source is reduced as well.
+Fixed pattern noise refers to structural artifacts in OCT images that appear as fixed horizontal lines. These artifacts are caused, for example, by variations in pixel response in the CCD camera in spectrometer based OCT systems or spurious etalons within the optical OCT setup. A common approach to reduce fixed pattern noise is to acquire a reference signal in absence of a sample and subtract it from all subsequent recordings. In OCTproZ, the minimum-variance mean-line subtraction method that was described by [Moon et al. (2010)](https://doi.org/10.1364/OE.18.024395) can be used. This approach does not require an additional reference recording and can be applied continuously such that fixed pattern noise due spectral intensity variation of the source is reduced as well.
 
 ### Truncate
 
