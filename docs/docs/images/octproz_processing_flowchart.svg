@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="341.29877mm"
+   height="37.373734mm"
+   viewBox="0 0 341.29877 37.373734"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4-dev (131310663, 2023-05-28)"
+   sodipodi:docname="octproz_processing_flowchart.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.67081229"
+     inkscape:cx="587.34762"
+     inkscape:cy="266.0953"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <marker
+       inkscape:stockid="Arrow2Mend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4871-1-6-8-8"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4869-7-8-6-2"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.625;stroke-linejoin:round;stroke-opacity:1"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="scale(-0.6)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Mend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4871-1-6-5-3-4"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4869-7-8-4-3-4"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.625;stroke-linejoin:round;stroke-opacity:1"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="scale(-0.6)" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(99.653368,-104.37289)">
+    <rect
+       style="fill:#d7ccf4;fill-opacity:1;stroke:#8a79b5;stroke-width:1.456;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:45.0142;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect5912-0-5-0"
+       width="23.358957"
+       height="21.56789"
+       x="217.55846"
+       y="115.47727"
+       ry="0.94494051"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m -35.94641,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-2-1-9-1"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m -6.34621,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-3-05-1-9-0"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 23.25409,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-34-3-3-1-0"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 52.85439,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-3-5-1-8-1-7"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 82.45459,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-5-0-9-8-9"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 112.05489,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-3-2-0-9-7-2"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 141.65509,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-34-7-0-4-5-3"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 171.25539,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-3-5-7-01-8-3-4"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="-15.879138"
+       y="124.83733"
+       id="text5450-5-4-4-9-6-6-7-5-1-0-3-6-6-0-1-2-5"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"><tspan
+         sodipodi:role="line"
+         x="-15.879138"
+         y="124.83733"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5524-2-7-8-3-0-1-6-2-6-7-7-1-7-7-2-0">background</tspan><tspan
+         id="tspan6450-1-5-5-7-2-0-3-3-6-2"
+         sodipodi:role="line"
+         x="-15.879222"
+         y="130.129"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094">removal</tspan></text>
+    <path
+       style="fill:#d7e99a;fill-opacity:1;stroke:#b7d845;stroke-width:0.739493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m -65.54665,115.12462 7.40006,11.10009 -7.40006,11.10009 h 29.60024 l 7.40006,-11.10009 -7.40006,-11.10009 z"
+       id="path2928-5-2-1-9-1-6"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="-45.479359"
+       y="124.83735"
+       id="text5450-5-4-4-9-6-6-7-5-1-0-3-6-6-0-1-2-5-9"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"><tspan
+         dy="0.63531768"
+         sodipodi:role="line"
+         x="-45.479359"
+         y="124.83735"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5524-2-7-8-3-0-1-6-2-6-7-7-1-7-7-2-0-0">data</tspan><tspan
+         id="tspan6450-1-5-5-7-2-0-3-3-6-2-8"
+         sodipodi:role="line"
+         x="-45.479443"
+         y="130.12901"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094">conversion</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="40.698864"
+       y="127.76363"
+       id="text5450-5-4-4-9-6-6-7-5-6-6-5-1-6-9-0-1-9-7"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"><tspan
+         sodipodi:role="line"
+         x="40.69878"
+         y="127.76363"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan7491-3-2-8-3-8-2-8-2-3">IFFT</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="73.808395"
+       y="125.6945"
+       id="text5450-5-5-0-3-4-4-5-2-9-6-7-0-2-5-5-7-5-38-9-1-6"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"><tspan
+         dy="0"
+         sodipodi:role="line"
+         x="73.808395"
+         y="125.6945"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.304271px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5602-3-2-9-3-3-4-8-3-7-4-3-1-5-5-8-6-9-9"
+         dx="0">fixed-pattern</tspan><tspan
+         sodipodi:role="line"
+         x="73.656258"
+         y="129.92783"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.304271px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5674-6-5-8-1-5-3-5-7-9-0-9-6-3-9-3">noise removal</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="101.61028"
+       y="122.86605"
+       id="text5450-5-5-0-3-4-4-7-2-22-1-4-1-8-5-5-8-7-9-7-2-8-3"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"><tspan
+         sodipodi:role="line"
+         x="101.61028"
+         y="122.86605"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5674-9-0-8-5-9-3-4-7-1-9-6-7-35-8-6-4"
+         dy="0">truncate</tspan><tspan
+         sodipodi:role="line"
+         x="101.61028"
+         y="125.71177"
+         id="tspan3179-1-7-5-0"
+         style="stroke-width:0.0168094" /><tspan
+         id="tspan8618-7-3-0-9-5-6-2-4"
+         sodipodi:role="line"
+         x="101.61028"
+         y="128.17715"
+         dy="0"
+         style="stroke-width:0.0168094" /><tspan
+         sodipodi:role="line"
+         x="101.6102"
+         y="132.03017"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5702-8-8-3-7-3-5-4-5-5-7-0-24-8-7-7">logarithm</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="131.52238"
+       y="123.5675"
+       id="text5450-5-5-0-3-4-4-7-2-22-1-4-1-8-5-4-1-8-9-89-3-6-4-9"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"><tspan
+         sodipodi:role="line"
+         x="131.52238"
+         y="123.5675"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5702-8-8-3-7-3-5-4-6-6-9-8-3-4-8-5-5">backward </tspan><tspan
+         sodipodi:role="line"
+         x="131.52238"
+         y="127.80083"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan8688-4-4-2-7-4-8-2-4">scan</tspan><tspan
+         sodipodi:role="line"
+         x="131.52229"
+         y="132.03415"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan7727-3-4-1-8-9-4-1-3">correction</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="161.10197"
+       y="123.5675"
+       id="text5450-5-5-0-3-4-4-7-8-3-7-3-7-7-8-9-7-0-2-0-1-3-7-2-2"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"><tspan
+         sodipodi:role="line"
+         x="161.10197"
+         y="123.5675"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5782-0-8-1-2-5-5-6-9-3-52-6-9-3-4-2-3">sinusoidal</tspan><tspan
+         sodipodi:role="line"
+         x="161.10197"
+         y="127.80083"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5219-4-1-7-21-0-7-2">scan</tspan><tspan
+         sodipodi:role="line"
+         x="161.10188"
+         y="132.03415"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5221-9-1-2-4-2-3-4">correction</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="192.69818"
+       y="127.80082"
+       id="text5450-5-5-0-3-4-4-7-8-3-7-3-7-7-8-9-7-0-8-8-7-7-2-6-9-2"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"><tspan
+         sodipodi:role="line"
+         x="192.69809"
+         y="127.80082"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan5782-0-8-1-2-5-5-6-9-3-5-3-8-2-6-5-4-6">visualization</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="11.661023"
+       y="120.4125"
+       id="text5450-5-4-4-9-6-6-7-5-6-0-5-4-7-8-6-5-06-0-9-6"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"><tspan
+         sodipodi:role="line"
+         x="11.442741"
+         y="120.4125"
+         style="font-size:4.23333px;line-height:0.8;text-align:center;letter-spacing:-0.436562px;word-spacing:-13.4938px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan7491-1-0-0-5-1-2-1-10-4-5-5"><tspan
+           dy="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+           id="tspan3321-5-9-5-2"
+           style="font-size:4.23333px;line-height:0.8;text-align:center;letter-spacing:-0.436562px;word-spacing:-13.4938px;text-anchor:middle;stroke-width:0.0168094"><tspan
+             dy="0"
+             id="tspan3316-9-8-4-1"
+             style="font-size:4.23333px;line-height:0.8;text-align:center;letter-spacing:-0.436562px;word-spacing:-13.4938px;text-anchor:middle;stroke-width:0.0168094">k-linearization</tspan></tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="1.3504457"
+       y="125.87853"
+       id="text5450-5-4-4-9-6-6-7-5-6-0-5-4-7-8-6-9-4-0-9-5"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"><tspan
+         sodipodi:role="line"
+         x="7.7652931"
+         y="125.87853"
+         style="font-size:4.23333px;line-height:0.8;text-align:center;letter-spacing:-0.436562px;word-spacing:-13.4938px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan7487-3-0-4-9-8-2-55-9-0-1-4"
+         dy="0 0 0 0 0 0 0 0 0 0 0 -0.63531768">dispersion  </tspan><tspan
+         sodipodi:role="line"
+         x="2.6199803"
+         y="129.3082"
+         style="font-size:4.23333px;line-height:0.8;text-align:center;letter-spacing:-0.436562px;word-spacing:-13.4938px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan7481-6-2-1-7-0-0-4-7-1-7-8">compensation  </tspan><tspan
+         sodipodi:role="line"
+         x="1.3504457"
+         y="131.77359"
+         id="tspan7489-1-6-1-4-1-8-6-1-1-3-3"
+         style="stroke-width:0.0168094" /><tspan
+         sodipodi:role="line"
+         x="1.3504457"
+         y="134.23898"
+         id="tspan7491-1-0-0-5-1-2-7-1-2-9-0"
+         style="stroke-width:0.0168094" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+       x="8.3431215"
+       y="135.16096"
+       id="text5450-5-4-4-9-6-6-7-5-6-0-5-4-7-8-6-0-6-4-5-9"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"><tspan
+         sodipodi:role="line"
+         x="8.1367464"
+         y="135.16096"
+         style="font-size:4.23333px;line-height:0.8;text-align:center;letter-spacing:-0.41275px;word-spacing:-13.4938px;text-anchor:middle;stroke-width:0.0168094"
+         id="tspan7491-1-0-0-5-1-2-9-7-5-3-4"><tspan
+           dy="0 0 0 0 0 0 0 0 0"
+           id="tspan3370-4-7-7-5"
+           style="font-size:4.23333px;line-height:0.8;text-align:center;letter-spacing:-0.41275px;word-spacing:-13.4938px;text-anchor:middle;stroke-width:0.0168094"><tspan
+             dy="0 0 0 0 0 0 0 0 0"
+             id="tspan3364-3-4-9-8"
+             style="font-size:4.23333px;line-height:0.8;text-align:center;letter-spacing:-0.41275px;word-spacing:-13.4938px;text-anchor:middle;stroke-width:0.0168094">windowing</tspan></tspan></tspan></text>
+    <path
+       style="opacity:0.4;fill:none;stroke:#b7d845;stroke-width:0.730957px;stroke-linecap:square;stroke-linejoin:miter;stroke-opacity:1"
+       d="M -1.19463,122.04367 H 27.3127"
+       id="path3385-95-9-28-6-3-7"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="opacity:0.4;fill:none;stroke:#b7d845;stroke-width:0.732105;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M -1.32293,130.60059 H 27.1844"
+       id="path3385-9-9-3-89-2-1-0"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <path
+       style="opacity:0.4;fill:none;stroke:#b7d845;stroke-width:0.73801px;stroke-linecap:square;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 89.86177,126.2247 h 29.06012"
+       id="path3385-95-9-2-7-4-3-5"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#38accd;stroke-width:0.791001;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.791001, 2.373;stroke-dashoffset:7.91001;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect4181-8-3-5"
+       width="276.84662"
+       height="31.768982"
+       x="-67.355026"
+       y="109.57476"
+       ry="6.4255953"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <g
+       id="g2"
+       transform="translate(335.41097,-61.567007)">
+      <rect
+         style="fill:#dae8fc;fill-opacity:1;stroke:#38accd;stroke-width:1.191;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:1.191, 3.57301;stroke-dashoffset:11.91;stroke-opacity:1;paint-order:markers stroke fill"
+         id="rect4183-1-3-3"
+         width="64.946495"
+         height="7.4835386"
+         x="-296.80975"
+         y="166.5354"
+         ry="3.4745009" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0168094"
+         x="-264.30374"
+         y="171.44815"
+         id="text5450-5-5-0-3-4-4-7-8-3-7-3-7-7-8-9-7-0-8-8-7-7-2-1-2-6-5"
+         inkscape:export-xdpi="14.390664"
+         inkscape:export-ydpi="14.390664"><tspan
+           sodipodi:role="line"
+           x="-264.30383"
+           y="171.44815"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke-width:0.0168094"
+           id="tspan5782-0-8-1-2-5-5-6-9-3-5-3-8-2-6-1-7-8-2">OCTproZ GPU Processing</tspan></text>
+    </g>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.665001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4871-1-6-8-8)"
+       d="m 209.79773,126.27463 h 6.07494"
+       id="path5047-1-7-3-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+    <g
+       id="g6775-8-8"
+       transform="translate(298.38807,55.022563)"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265">
+      <rect
+         ry="4.8194861"
+         transform="matrix(0.19606665,0,0,0.19606665,-96.660385,43.715664)"
+         y="85.376831"
+         x="-1533.4236"
+         height="110.00285"
+         width="119.13784"
+         id="rect5912-8-0"
+         style="opacity:1;fill:#f8cecc;fill-opacity:1;stroke:#fe7c7c;stroke-width:7.42429;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:45.0142;stroke-opacity:1;paint-order:markers stroke fill" />
+      <text
+         transform="matrix(0.06353177,0,0,0.06353177,-1517.1551,-47.604409)"
+         id="text5450-5-4-4-9-6-6-7-5-6-6-5-1-6-9-0-6-6-7-4"
+         y="1894.335"
+         x="17808.463"
+         style="font-style:normal;font-weight:normal;font-size:38.8056px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         xml:space="preserve"><tspan
+           style="font-size:66.6333px;text-align:center;letter-spacing:-0.00264583px;text-anchor:middle;stroke-width:0.264583"
+           y="1894.335"
+           x="17808.461"
+           sodipodi:role="line"
+           id="tspan6777-1-7">Raw data</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.46539px;line-height:1;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#fe7c7c;stroke-width:0.0168094;stroke-opacity:1"
+       x="229.22241"
+       y="125.7207"
+       id="text5450-5-4-4-9-6-6-7-5-6-6-5-1-6-9-0-6-6-6-8-3"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265"><tspan
+         sodipodi:role="line"
+         x="229.22241"
+         y="125.7207"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke:#fe7c7c;stroke-width:0.0168094;stroke-opacity:1"
+         id="tspan7491-3-2-8-3-8-2-7-2-7-2-2">Processed</tspan><tspan
+         sodipodi:role="line"
+         x="229.22232"
+         y="129.95404"
+         style="font-size:4.23333px;text-align:center;letter-spacing:-0.000168094px;text-anchor:middle;stroke:#fe7c7c;stroke-width:0.0168094;stroke-opacity:1"
+         id="tspan6781-2-6">data</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.665001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4871-1-6-5-3-4)"
+       d="m -74.87235,126.27422 h 6.07494"
+       id="path5047-1-7-7-8-0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="C:\qt_projects\octproz_master\OCTproZ\paper\figures\processing_pipeline_linear_v2.png"
+       inkscape:export-xdpi="265"
+       inkscape:export-ydpi="265" />
+  </g>
+</svg>

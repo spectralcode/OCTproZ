@@ -1,0 +1,65 @@
+site_name: OCTproZ User Manual
+site_description: OCTproZ is an open source software for optical coherence tomography processing and visualization.
+site_author: Miroslav Zabic
+site_url: https://github.com/spectralcode/OCTproZ
+
+theme:
+  name: material
+  logo: images/octproz_icon.png
+  favicon: images/octproz_icon.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+      default: true
+
+  features:
+#    - navigation.instant  # with this search index survives navigation
+    - header.autohide #  header is automatically hidden when the user scrolls past a certain threshold
+
+#extra_css:
+#    - css/custom.css
+
+extra_javascript:
+  - js/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+
+markdown_extensions:
+# extensions used for image alignement and captions. see https://squidfunk.github.io/mkdocs-material/reference/images/
+  - attr_list
+  - md_in_html
+  - pymdownx.blocks.caption
+
+# for info boxes
+  - admonition
+
+# for display of equations using latex
+  - pymdownx.arithmatex:
+      generic: true
+
+
+nav:
+  - Home: index.md
+  - Quick Start Guide: quickstart.md
+  - Processing Pipeline: processing.md
+  - Visualization: visualization.md
+  - Functionality: functionality.md
+  - Plugins: plugins.md
+  - Troubleshooting: troubleshooting.md
+  - FAQ: faq.md
+
+plugins:
+  - offline
+  - search
