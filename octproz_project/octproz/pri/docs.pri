@@ -36,3 +36,13 @@ win32{
 	#/I "assume destination is a directory if copying more than one file"
 	QMAKE_POST_LINK += $$quote(xcopy $$shell_path($$PWD/$$DOCDIR) $$DOCEXPORTDIR /E /Y /I $$escape_expand(\\n\\t))
 }
+
+#add docs folder to clean directive so that it will be deleted when running "make clean"
+unix{
+	cleandocs.commands = rm -rf $$shell_path($$DOCEXPORTDIR)
+}
+win32{
+	cleandocs.commands = if exist $$shell_path($$DOCEXPORTDIR) rmdir /S /Q $$shell_path($$DOCEXPORTDIR)
+}
+clean.depends = cleandocs
+QMAKE_EXTRA_TARGETS += clean cleandocs
