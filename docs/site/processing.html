@@ -501,9 +501,19 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="plugins.html" class="md-nav__link">
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
   
   <span class="md-ellipsis">
     Plugins
@@ -511,7 +521,63 @@
   </span>
   
 
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Plugins
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="plugins.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="plugin-dispersionestimator.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dispersion Estimator
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -793,8 +859,8 @@ The structure of the csv file with the curve data should be the same as the stru
 <p>and noting that the imaginary part of <span class="arithmatex">\( I_{\mathrm{raw}}[m] \)</span> is zero, the multiplication simplifies to</p>
 <div class="arithmatex">\[
     \begin{aligned}
-        \mathrm{Re}\{ I_{\mathrm{comp}}[m] \} &amp;= I_{\mathrm{raw}}[m] \cdot \cos\bigl(\theta(k)\bigr),\\[1ex]
-        \mathrm{Im}\{ I_{\mathrm{comp}}[m] \} &amp;= -\,I_{\mathrm{raw}}[m] \cdot \sin\bigl(\theta(k)\bigr).
+        \mathrm{Re}\{ I_{\mathrm{comp}}[m] \} &amp;= I_{\mathrm{raw}}[m] \cdot \cos\bigl(\theta(k)\bigr),\\
+        \mathrm{Im}\{ I_{\mathrm{comp}}[m] \} &amp;= -I_{\mathrm{raw}}[m] \cdot \sin\bigl(\theta(k)\bigr).
     \end{aligned}
 \]</div>
 <p>This simplified calculation avoids performing a full complex multiplication. This appraoch is slightly different from the one described by <a href="https://doi.org/10.1364/OPEX.12.002404">Maciej Wojtkowski et al. (2004)</a>. In their method, the Hilbert transform is used to generate the imaginary part of the raw signal, and then a full complex multiplication is performed. Both approaches result in identical OCT data.</p>
@@ -803,7 +869,7 @@ The structure of the csv file with the curve data should be the same as the stru
 <h3 id="windowing">Windowing</h3>
 <p>The raw data is multiplied by a window function, which sets the signal to zero outside of a predefined interval. This reduces side lobes in the resulting signal after IFFT. The GUI allows to choose between different window functions (Gaussian, Hanning, Sine, Lanczos and Rectangular window) and to set their width and center position.</p>
 <h3 id="inverse-fast-fourier-transform-ifft">Inverse Fast Fourier Transform (IFFT)</h3>
-<p>The inverse Fourier transform is the essential processing step to calculate the depth profile from a spectral interferograms. The IFFT output is normalized by dividing each sample by the total number of samples.</p>
+<p>The inverse Fourier transform is the essential processing step to calculate the depth profile from a spectral interferogram. The IFFT output is normalized by dividing each sample by the total number of samples.</p>
 <h3 id="fixed-pattern-noise-removal">Fixed-pattern noise removal</h3>
 <p>Fixed pattern noise refers to structural artifacts in OCT images that appear as fixed horizontal lines. These artifacts are caused, for example, by variations in pixel response in the CCD camera in spectrometer based OCT systems or spurious etalons within the optical OCT setup. A common approach to reduce fixed pattern noise is to acquire a reference signal in absence of a sample and subtract it from all subsequent recordings. In OCTproZ, the minimum-variance mean-line subtraction method that was described by <a href="https://doi.org/10.1364/OE.18.024395">Moon et al. (2010)</a> can be used. This approach does not require an additional reference recording and can be applied continuously such that fixed pattern noise due spectral intensity variation of the source is reduced as well.</p>
 <h3 id="truncate">Truncate</h3>

@@ -56,7 +56,9 @@ nav:
   - Processing Pipeline: processing.md
   - Visualization: visualization.md
   - Functionality: functionality.md
-  - Plugins: plugins.md
+  - Plugins: 
+    - Overview: plugins.md
+    - Dispersion Estimator: plugin-dispersionestimator.md
   - Troubleshooting: troubleshooting.md
   - FAQ: faq.md
 
