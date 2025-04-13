@@ -10,12 +10,13 @@ The following image shows the processing pipeline. Although most processing step
 </figure>
 
 
-
 ## Processing Steps
+
 
 ### Data conversion
 
 The first step of the OCT processing pipeline converts the incoming raw data, that may have a bit depth between 8 bit and 32 bit, to a single-precision, floating-point complex data type with a bit depth of 32 bit. This ensures that the processing pipeline can be executed for a variety of different input data types. Furthermore, a bit shift operation can be applied during the conversion process if necessary. Some digitizers, that are commonly used for swept-source OCT (SS-OCT), can be configured to use 16-bit integers to store 12-bit sample values in the most significant bits (e.g. ATS9373, Alazar Technologies Inc.). To extract the actual 12-bit value a right-shift by 4, which is equal to a division by 16, needs to be applied to every 16-bit integer.
+
 
 ### DC background removal
 The DC component of the OCT signal is usually visible at the top of each B-scan as a bright line. To remove this DC component from each raw spectrum  \( I_{\mathrm{raw}}[m] \), a rolling average with a user-adjustable window size \( W \) can be computed and subtracted from the raw signal. Ignoring boundary checks, the DC‑corrected signal is calculated by
@@ -96,8 +97,8 @@ and noting that the imaginary part of \( I_{\mathrm{raw}}[m] \) is zero, the mul
 
 $$
 	\begin{aligned}
-		\mathrm{Re}\{ I_{\mathrm{comp}}[m] \} &= I_{\mathrm{raw}}[m] \cdot \cos\bigl(\theta(k)\bigr),\\[1ex]
-		\mathrm{Im}\{ I_{\mathrm{comp}}[m] \} &= -\,I_{\mathrm{raw}}[m] \cdot \sin\bigl(\theta(k)\bigr).
+		\mathrm{Re}\{ I_{\mathrm{comp}}[m] \} &= I_{\mathrm{raw}}[m] \cdot \cos\bigl(\theta(k)\bigr),\\
+		\mathrm{Im}\{ I_{\mathrm{comp}}[m] \} &= -I_{\mathrm{raw}}[m] \cdot \sin\bigl(\theta(k)\bigr).
 	\end{aligned}
 $$
 
@@ -115,16 +116,18 @@ The raw data is multiplied by a window function, which sets the signal to zero o
 
 ### Inverse Fast Fourier Transform (IFFT)
 
-The inverse Fourier transform is the essential processing step to calculate the depth profile from a spectral interferograms. The IFFT output is normalized by dividing each sample by the total number of samples.
+The inverse Fourier transform is the essential processing step to calculate the depth profile from a spectral interferogram. The IFFT output is normalized by dividing each sample by the total number of samples.
 
 
 ### Fixed-pattern noise removal
 
 Fixed pattern noise refers to structural artifacts in OCT images that appear as fixed horizontal lines. These artifacts are caused, for example, by variations in pixel response in the CCD camera in spectrometer based OCT systems or spurious etalons within the optical OCT setup. A common approach to reduce fixed pattern noise is to acquire a reference signal in absence of a sample and subtract it from all subsequent recordings. In OCTproZ, the minimum-variance mean-line subtraction method that was described by [Moon et al. (2010)](https://doi.org/10.1364/OE.18.024395) can be used. This approach does not require an additional reference recording and can be applied continuously such that fixed pattern noise due spectral intensity variation of the source is reduced as well.
 
+
 ### Truncate
 
 This step removes the mirror image on the opposite side of zero pathlength by cropping half of the processed OCT data. The mirror image is sometimes referred to as mirror artifact or complex conjugate artifact. It originates from the fact that the inverse Fourier transform is applied to a real-valued signal which results in a conjugate symmetric signal (i.e. the positive and negative distances are complex conjugates of each other).
+
 
 ### Logarithm and dynamic range adjustment
 
@@ -143,8 +146,6 @@ $$
 The parameters **coeff**, **min**, **max**, and **addend** can be set by the user. Usually, **min** and **max** are chosen so that the noise floor in the OCT images appears quite dark and the actual signal of interest appears bright. **Coeff** can be used to adjust the contrast of the image, and **addend** can be used to adjust the brightness. Typically, these values are set to **coeff = 1** and **addend = 0**.
 
 
-
-
 ### Backward scan correction
 
 To increase frame rate, a bidirectional scanning scheme can be used. However, this means that every other frame is flipped. The backward scan correction step unflips these frames.
@@ -154,9 +155,8 @@ To increase frame rate, a bidirectional scanning scheme can be used. However, th
     <figcaption>Bidirectional scanning scheme and the effect of backward scan correction on the en face view</figcaption>
 </figure>
 
-
-
 The image above shows the effect of the backward scan correction on the en face view of an OCT volume that was acquired using a bidirectional scanning scheme. A piece of wood with a laser burned hole was used as sample. Left: Spot path on sample when a bidirectional scanning scheme is applied. Middle: En face view with enabled backward scan correction. Right: En face view when backward scan correction is disabled.
+
 
 ### Sinusoidal scan correction
 
@@ -168,19 +168,14 @@ A resonant scanner can be used for high-speed OCT systems. Due to the sinusoidal
 </figure>
 
 
-
-
 ## Effect of single processing steps
 
 To illustrate the effect of single processing steps, B-scans of an OCT phantom (APL-OP01, Arden Photonics, UK) were acquired with a custom made SS-OCT system without k-klocking and with a slight dispersion imbalance. The acquired raw data was processed multiple times, each time with a different processing step disabled:
-
 
 <figure markdown="span">
     ![Processing Steps Comparison](images/processing_result.png)
     <figcaption>The B-scans show a test pattern of an OCT phantom (APL-OP01, Arden Photonics, UK). Below each B-scan is an enlarged view of a corresponding area framed in red within the B-scan. a) The full processing pipeline is enabled. b) k linearization is disabled (all other steps are enabled). c) Dispersion compensation is disabled (all other steps are enabled). d) Windowing is disabled (all other steps are enabled). e) Fixed-pattern noise removal is disabled (all other steps are enabled). The red arrows point to horizontal structural artifacts that are visible if fixed-pattern noise removal is disabled.</figcaption>
 </figure>
-
-
 
 
 <!---
