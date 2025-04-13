@@ -12,11 +12,13 @@
         <meta name="author" content="Miroslav Zabic">
       
       
-        <link rel="canonical" href="https://github.com/spectralcode/OCTproZ/index.html">
+        <link rel="canonical" href="https://github.com/spectralcode/OCTproZ/plugin-socketstream.html">
       
       
+        <link rel="prev" href="plugin-peakdetector.html">
       
-        <link rel="next" href="quickstart.html">
+      
+        <link rel="next" href="troubleshooting.html">
       
       
       <link rel="icon" href="images/octproz_icon.png">
@@ -24,7 +26,7 @@
     
     
       
-        <title>OCTproZ User Manual</title>
+        <title>Socket Stream - OCTproZ User Manual</title>
       
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#welcome-to-the-octproz-v180-user-manual" class="md-skip">
+        <a href="#socket-stream-extension" class="md-skip">
           Skip to content
         </a>
       
@@ -113,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Socket Stream
             
           </span>
         </div>
@@ -228,31 +230,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Home
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -262,44 +243,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
-    <span class="md-ellipsis">
-      About
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#user-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      User Guide
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -392,17 +335,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -417,7 +362,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Plugins
@@ -560,10 +505,31 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="plugin-socketstream.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Socket Stream
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="plugin-socketstream.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -573,6 +539,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to use
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      User interface
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-header" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data header
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#available-remote-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      Available remote commands
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -654,18 +676,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
+  <a href="#how-to-use" class="md-nav__link">
     <span class="md-ellipsis">
-      About
+      How to use
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#user-guide" class="md-nav__link">
+  <a href="#user-interface" class="md-nav__link">
     <span class="md-ellipsis">
-      User Guide
+      User interface
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-header" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data header
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#available-remote-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      Available remote commands
     </span>
   </a>
   
@@ -687,13 +727,168 @@
 
 
 
-<h1 id="welcome-to-the-octproz-v180-user-manual">Welcome to the OCTproZ v1.8.0 User Manual!</h1>
-<p><em>Date: April 10, 2025 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</em></p>
-<h2 id="about">About</h2>
-<p>OCTproZ is an open source and cross-platform software for optical coherence tomography (OCT) processing and visualization. A plug-in system enables the integration of custom OCT systems and software modules. You can find the most recent software release on the <a href="https://github.com/spectralcode/OCTproZ">GitHub project page</a>.</p>
-<h2 id="user-guide">User Guide</h2>
-<p>This is the user guide for OCTproZ. Browse by categories on the left, or if you are looking for a specific topic, use the search bar at the top of the page.</p>
-<p>Just like OCTproZ itself, this user guide is an ongoing project that undergoes continuous change. If you spot incomplete or incorrect information, feel free to email me or open an issue on the project page on GitHub.</p>
+<h1 id="socket-stream-extension">Socket Stream Extension</h1>
+<p>Socket Stream enables remote control of OCTproZ and allows streaming of processed data to another application, either on the same computer or on a different computer within the same network. 
+Supported communication protocols are: TCP/IP, WebSocket and IPC. IPC is implemented using Qt's <code>QLocalServer</code> and <code>QLocalSocket</code>, which use <em>Unix Domain Sockets</em> on Linux and <em>Named Pipes</em> on Windows.</p>
+<p>One example use case is transferring OCT data to a Python application for post-processing.</p>
+<p>Another example is remotely controlling a small, portable OCT system that either has no display or only a limited display, via a smartphone or tablet.</p>
+<figure>
+    <img alt="Peak Detector Screenshot" src="images/plugins/socketstream_screenshot.png" />
+    <figcaption>Socket Stream Extension Interface</figcaption>
+</figure>
+<h2 id="how-to-use">How to use</h2>
+<ol>
+<li>
+<p>Create a custom client application (<a href="https://github.com/spectralcode/SocketStreamExtension/tree/main/examples">see Python examples here</a>)<br />
+   or use this <a href="https://spectralcode.github.io/SocketStreamExtension/examples/octproz_websocket_client.html">WebSocket client that runs in a browser</a>.</p>
+</li>
+<li>
+<p>Set the communication protocol, IP, and port (or the pipe name in case of IPC) in the Socket Stream extension.</p>
+</li>
+<li>
+<p>Click <em>Start</em> to start the server.</p>
+</li>
+<li>
+<p>Connect your client to the server using the configured IP and port.</p>
+</li>
+<li>
+<p>If you want to stream image data to your client, it is recommended to connect a second client:
+   Use one client for commands only (activate with the command <code>enable_command_only_mode</code>)<br />
+   and a second client for image streaming only.</p>
+</li>
+<li>
+<p>Use commands (see table below).</p>
+</li>
+</ol>
+<h2 id="user-interface">User interface</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mode</td>
+<td>Selects the communication protocol: TCP/IP, IPC (Local Sockets), or WebSocket.</td>
+</tr>
+<tr>
+<td>Pipe name</td>
+<td>Name of the IPC pipe (used only in IPC mode).</td>
+</tr>
+<tr>
+<td>IP</td>
+<td>IP address of the server (used in TCP/IP and WebSocket modes).</td>
+</tr>
+<tr>
+<td>Port</td>
+<td>Port number of the server (used in TCP/IP and WebSocket modes).</td>
+</tr>
+<tr>
+<td>Auto connect on startup</td>
+<td>Automatically starts the server when the extension is activated.</td>
+</tr>
+<tr>
+<td>Include header to data transfer</td>
+<td>Adds a 13-byte header to every data packet containing meta information like image size and bit depth.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="data-header">Data header</h2>
+<p>If enabled, each transmitted data packet starts with a 13-byte header containing meta information about the OCT image. This allows the client to correctly interpret the incoming data. </p>
+<p>The header consists of:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type (Size)</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Magic Number</td>
+<td>unsigned int (4 bytes)</td>
+<td>Fixed value <code>299792458</code> (decimal) for synchronization</td>
+</tr>
+<tr>
+<td>Data Size</td>
+<td>unsigned int (4 bytes)</td>
+<td>Total size of image data in bytes</td>
+</tr>
+<tr>
+<td>Frame Width</td>
+<td>unsigned short (2 bytes)</td>
+<td>Number of pixels per A-scan</td>
+</tr>
+<tr>
+<td>Frame Height</td>
+<td>unsigned short (2 bytes)</td>
+<td>Number of A-scans per frame</td>
+</tr>
+<tr>
+<td>Bit Depth</td>
+<td>unsigned char (1 byte)</td>
+<td>Bits per pixel (e.g., 8 or 16)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="available-remote-commands">Available remote commands</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remote_start</code></td>
+<td>Starts the OCT processing.</td>
+</tr>
+<tr>
+<td><code>remote_stop</code></td>
+<td>Stops the OCT processing.</td>
+</tr>
+<tr>
+<td><code>remote_record</code></td>
+<td>Starts recording the OCT data.</td>
+</tr>
+<tr>
+<td><code>load_settings:&lt;path_to_settings_file&gt;</code></td>
+<td>Loads settings from a specified file. Replace <code>&lt;path_to_settings_file&gt;</code> with the actual file path.</td>
+</tr>
+<tr>
+<td><code>save_settings:&lt;path_to_settings_file&gt;</code></td>
+<td>Saves current settings to a specified file. Replace <code>&lt;path_to_settings_file&gt;</code> with the desired file path.</td>
+</tr>
+<tr>
+<td><code>set_disp_coeff:&lt;coeff1&gt;:&lt;coeff2&gt;:&lt;coeff3&gt;:&lt;coeff4&gt;</code></td>
+<td>Sets dispersion coefficients. Each value can be a double or <code>nullptr</code> / <code>null</code>.</td>
+</tr>
+<tr>
+<td><code>set_grayscale_conversion:&lt;enable_log_scaling&gt;:&lt;max&gt;:&lt;min&gt;:&lt;multiplicator&gt;:&lt;offset&gt;</code></td>
+<td>Configures grayscale conversion. Parameters: <code>enable_log_scaling</code> (<code>true</code>/<code>1</code> or <code>false</code>/<code>0</code>), the rest are double values or <code>nan</code> / <code>null</code> / <code>nullptr</code>.</td>
+</tr>
+<tr>
+<td><code>remote_plugin_control,&lt;PluginName&gt;,&lt;Command&gt;</code></td>
+<td>Sends a command to another OCTproZ plugin. Example: <code>remote_plugin_control, Dispersion Estimator, startSingleFetch</code></td>
+</tr>
+<tr>
+<td><code>enable_command_only_mode</code></td>
+<td>Switches client connection to <em>command-only mode</em> (no image streaming).</td>
+</tr>
+<tr>
+<td><code>disable_command_only_mode</code></td>
+<td>Switches client connection back to <em>command + data streaming mode</em>.</td>
+</tr>
+<tr>
+<td><code>ping</code></td>
+<td>Health-check command — server replies with <code>pong</code>.</td>
+</tr>
+</tbody>
+</table>
 
 
 

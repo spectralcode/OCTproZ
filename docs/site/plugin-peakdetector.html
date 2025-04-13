@@ -12,11 +12,13 @@
         <meta name="author" content="Miroslav Zabic">
       
       
-        <link rel="canonical" href="https://github.com/spectralcode/OCTproZ/index.html">
+        <link rel="canonical" href="https://github.com/spectralcode/OCTproZ/plugin-peakdetector.html">
       
       
+        <link rel="prev" href="plugin-imagestatistics.html">
       
-        <link rel="next" href="quickstart.html">
+      
+        <link rel="next" href="plugin-socketstream.html">
       
       
       <link rel="icon" href="images/octproz_icon.png">
@@ -24,7 +26,7 @@
     
     
       
-        <title>OCTproZ User Manual</title>
+        <title>Peak Detector - OCTproZ User Manual</title>
       
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#welcome-to-the-octproz-v180-user-manual" class="md-skip">
+        <a href="#peak-detector-extension" class="md-skip">
           Skip to content
         </a>
       
@@ -113,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Peak Detector
             
           </span>
         </div>
@@ -228,31 +230,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Home
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -262,44 +243,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
-    <span class="md-ellipsis">
-      About
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#user-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      User Guide
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -392,17 +335,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -417,7 +362,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Plugins
@@ -538,10 +483,31 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="plugin-peakdetector.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Peak Detector
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="plugin-peakdetector.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -551,6 +517,35 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      User interface
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -654,18 +649,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
+  <a href="#user-interface" class="md-nav__link">
     <span class="md-ellipsis">
-      About
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#user-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      User Guide
+      User interface
     </span>
   </a>
   
@@ -687,13 +673,44 @@
 
 
 
-<h1 id="welcome-to-the-octproz-v180-user-manual">Welcome to the OCTproZ v1.8.0 User Manual!</h1>
-<p><em>Date: April 10, 2025 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</em></p>
-<h2 id="about">About</h2>
-<p>OCTproZ is an open source and cross-platform software for optical coherence tomography (OCT) processing and visualization. A plug-in system enables the integration of custom OCT systems and software modules. You can find the most recent software release on the <a href="https://github.com/spectralcode/OCTproZ">GitHub project page</a>.</p>
-<h2 id="user-guide">User Guide</h2>
-<p>This is the user guide for OCTproZ. Browse by categories on the left, or if you are looking for a specific topic, use the search bar at the top of the page.</p>
-<p>Just like OCTproZ itself, this user guide is an ongoing project that undergoes continuous change. If you spot incomplete or incorrect information, feel free to email me or open an issue on the project page on GitHub.</p>
+<h1 id="peak-detector-extension">Peak Detector Extension</h1>
+<p>The Peak Detector displays the depth position of the highest intensity value within an averaged A-scan. The averaged A-scan is generated by averaging all A-scans within a user-defined Region of Interest (ROI) inside the current B-scan.</p>
+<p>This extension can be useful for simple distance measurement tasks or as a starting point for implementing a more advanced OCT peak detection plugin.</p>
+<figure>
+    <img alt="Peak Detector Screenshot" src="images/plugins/peakdetector_screenshot.png" />
+    <figcaption>Peak Detector Extension Interface</figcaption>
+</figure>
+<h2 id="user-interface">User interface</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Buffer</td>
+<td>The buffer number from which you want to grab the frame. If you only use one buffer per volume, or if it does not matter which specific frame is used for the estimation, select All. This will grab the frame from the next available buffer.</td>
+</tr>
+<tr>
+<td>Frame</td>
+<td>The frame number within the buffer. Together with the buffer number, this allows you to select the specific frame within the OCT volume that should be grabbed. If you only use one frame per buffer, or if it does not matter which specific frame is used for the estimation, select 0.</td>
+</tr>
+<tr>
+<td>Minimum threshold</td>
+<td>Minimum A-scan intensity value that a sample must exceed to be considered a possible peak.</td>
+</tr>
+<tr>
+<td>Show</td>
+<td>If enabled, the position of the minimum threshold is shown in the A-scan plot below as a horizontal line.</td>
+</tr>
+<tr>
+<td>Autoscaling</td>
+<td>If enabled, the A-scan plot is automatically scaled so that the entire A-scan is visible.</td>
+</tr>
+</tbody>
+</table>
 
 
 

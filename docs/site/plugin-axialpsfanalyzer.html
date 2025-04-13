@@ -12,11 +12,13 @@
         <meta name="author" content="Miroslav Zabic">
       
       
-        <link rel="canonical" href="https://github.com/spectralcode/OCTproZ/index.html">
+        <link rel="canonical" href="https://github.com/spectralcode/OCTproZ/plugin-axialpsfanalyzer.html">
       
       
+        <link rel="prev" href="plugins.html">
       
-        <link rel="next" href="quickstart.html">
+      
+        <link rel="next" href="plugin-camera.html">
       
       
       <link rel="icon" href="images/octproz_icon.png">
@@ -24,7 +26,7 @@
     
     
       
-        <title>OCTproZ User Manual</title>
+        <title>Axial PSF Analyzer - OCTproZ User Manual</title>
       
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#welcome-to-the-octproz-v180-user-manual" class="md-skip">
+        <a href="#axial-psf-analyzer-extension" class="md-skip">
           Skip to content
         </a>
       
@@ -113,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Axial PSF Analyzer
             
           </span>
         </div>
@@ -228,31 +230,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Home
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -262,44 +243,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
-    <span class="md-ellipsis">
-      About
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#user-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      User Guide
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -392,17 +335,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -417,7 +362,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Plugins
@@ -450,10 +395,31 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="plugin-axialpsfanalyzer.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Axial PSF Analyzer
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="plugin-axialpsfanalyzer.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -463,6 +429,44 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to use
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      User interface
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -654,18 +658,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
+  <a href="#how-to-use" class="md-nav__link">
     <span class="md-ellipsis">
-      About
+      How to use
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#user-guide" class="md-nav__link">
+  <a href="#user-interface" class="md-nav__link">
     <span class="md-ellipsis">
-      User Guide
+      User interface
     </span>
   </a>
   
@@ -687,13 +691,49 @@
 
 
 
-<h1 id="welcome-to-the-octproz-v180-user-manual">Welcome to the OCTproZ v1.8.0 User Manual!</h1>
-<p><em>Date: April 10, 2025 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</em></p>
-<h2 id="about">About</h2>
-<p>OCTproZ is an open source and cross-platform software for optical coherence tomography (OCT) processing and visualization. A plug-in system enables the integration of custom OCT systems and software modules. You can find the most recent software release on the <a href="https://github.com/spectralcode/OCTproZ">GitHub project page</a>.</p>
-<h2 id="user-guide">User Guide</h2>
-<p>This is the user guide for OCTproZ. Browse by categories on the left, or if you are looking for a specific topic, use the search bar at the top of the page.</p>
-<p>Just like OCTproZ itself, this user guide is an ongoing project that undergoes continuous change. If you spot incomplete or incorrect information, feel free to email me or open an issue on the project page on GitHub.</p>
+<h1 id="axial-psf-analyzer-extension">Axial PSF Analyzer Extension</h1>
+<p>The Axial PSF Analyzer can be used to measure the axial resolution of an OCT system, defined as the Full Width at Half Maximum (FWHM) of the axial Point Spread Function (PSF).</p>
+<p>To perform the measurement, place a mirror as the sample and set the Region of Interest (ROI) so that it covers the horizontal line in the B-scan corresponding to the mirror surface. All A-scans within the selected ROI are averaged and displayed in the 1D plot on the right side. A Gaussian function is then fitted to this averaged A-scan to estimate the FWHM.</p>
+<figure>
+    <img alt="Axial PSF Analyzer Screenshot" src="images/plugins/axialpsfanalyzer_screenshot.png" />
+    <figcaption>Axial PSF Analyzer Extension Interface</figcaption>
+</figure>
+<h2 id="how-to-use">How to use</h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For a correct measurement, make sure to disable logarithmic scaling in the Processing tab of the OCTproZ sidebar. The Axial PSF Analyzer currently only supports Gaussian fits to linearly scaled A-scans.</p>
+</div>
+<h2 id="user-interface">User interface</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Buffer</td>
+<td>The buffer number from which you want to grab the frame. If you only use one buffer per volume, or if it does not matter which specific frame is used for the estimation, select All. This will grab the frame from the next available buffer.</td>
+</tr>
+<tr>
+<td>Frame</td>
+<td>The frame number within the buffer. Together with the buffer number, this allows you to select the specific frame within the OCT volume that should be grabbed. If you only use one frame per buffer, or if it does not matter which specific frame is used for the estimation, select 0.</td>
+</tr>
+<tr>
+<td>Auto fetch every nth buffer</td>
+<td>Automatically updates the OCT data every n-th buffer. Useful during live measurements, for example when moving the mirror through the entire axial imaging range to record the roll-off.</td>
+</tr>
+<tr>
+<td>Fit model</td>
+<td>currently not used</td>
+</tr>
+<tr>
+<td>Autoscaling</td>
+<td>If enabled, the A-scan plot with the Gaussian fit is automatically scaled so that the entire A-scan is visible.</td>
+</tr>
+</tbody>
+</table>
 
 
 

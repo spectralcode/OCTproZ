@@ -59,7 +59,7 @@ The approach of grabbing a single frame and using it for the entire optimization
 | Peak Value | Returns the maximum value within the A-scan. This metric is independent of the *Threshold* parameter and works well when the signal has a distinct peak. |  
 | Mean Sobel | Calculates the sum of the absolute values of the axial gradient within each A-scan and averages these sums across all A-scans. This metric is independent of the *Threshold* parameter. It probably works well for structures with multiple layers. |
 
-## User Interface
+## User interface
 | Button | Description |
 |-----------|-------------|
 | Fetch data and estimate dispersion values| When pressed, a single raw frame is grabbed from the current acquisition. For this to work, OCTproZ processing must be running. |
@@ -80,7 +80,7 @@ The approach of grabbing a single frame and using it for the entire optimization
 | Number of samples | The number of \(d_2\) and \(d_3\)​ values to test within the defined sample range. This directly controls the step size between each sample. |
 
 
-### Remote Control
+### Remote control
 
 You can start the estimation process remotely using the [SocketStreamExtension](https://github.com/spectralcode/SocketStreamExtension) by sending the command:
 

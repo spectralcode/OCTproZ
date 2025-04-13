@@ -58,7 +58,12 @@ nav:
   - Functionality: functionality.md
   - Plugins: 
     - Overview: plugins.md
+    - Axial PSF Analyzer: plugin-axialpsfanalyzer.md
+    - Camera: plugin-camera.md
     - Dispersion Estimator: plugin-dispersionestimator.md
+    - Image Statistics: plugin-imagestatistics.md
+    - Peak Detector: plugin-peakdetector.md
+    - Socket Stream: plugin-socketstream.md
   - Troubleshooting: troubleshooting.md
   - FAQ: faq.md
 

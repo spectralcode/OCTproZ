@@ -12,11 +12,13 @@
         <meta name="author" content="Miroslav Zabic">
       
       
-        <link rel="canonical" href="https://github.com/spectralcode/OCTproZ/index.html">
+        <link rel="canonical" href="https://github.com/spectralcode/OCTproZ/plugin-imagestatistics.html">
       
       
+        <link rel="prev" href="plugin-dispersionestimator.html">
       
-        <link rel="next" href="quickstart.html">
+      
+        <link rel="next" href="plugin-peakdetector.html">
       
       
       <link rel="icon" href="images/octproz_icon.png">
@@ -24,7 +26,7 @@
     
     
       
-        <title>OCTproZ User Manual</title>
+        <title>Image Statistics - OCTproZ User Manual</title>
       
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#welcome-to-the-octproz-v180-user-manual" class="md-skip">
+        <a href="#image-statistics-extension" class="md-skip">
           Skip to content
         </a>
       
@@ -113,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Image Statistics
             
           </span>
         </div>
@@ -228,31 +230,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Home
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -262,44 +243,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
-    <span class="md-ellipsis">
-      About
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#user-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      User Guide
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -392,17 +335,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -417,7 +362,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Plugins
@@ -516,10 +461,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="plugin-imagestatistics.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="plugin-imagestatistics.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -529,6 +483,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -647,32 +602,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
-    <span class="md-ellipsis">
-      About
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#user-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      User Guide
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -687,13 +616,12 @@
 
 
 
-<h1 id="welcome-to-the-octproz-v180-user-manual">Welcome to the OCTproZ v1.8.0 User Manual!</h1>
-<p><em>Date: April 10, 2025 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</em></p>
-<h2 id="about">About</h2>
-<p>OCTproZ is an open source and cross-platform software for optical coherence tomography (OCT) processing and visualization. A plug-in system enables the integration of custom OCT systems and software modules. You can find the most recent software release on the <a href="https://github.com/spectralcode/OCTproZ">GitHub project page</a>.</p>
-<h2 id="user-guide">User Guide</h2>
-<p>This is the user guide for OCTproZ. Browse by categories on the left, or if you are looking for a specific topic, use the search bar at the top of the page.</p>
-<p>Just like OCTproZ itself, this user guide is an ongoing project that undergoes continuous change. If you spot incomplete or incorrect information, feel free to email me or open an issue on the project page on GitHub.</p>
+<h1 id="image-statistics-extension">Image Statistics Extension</h1>
+<p>The Image Statistics Extension displays a histogram of processed or raw OCT data during acquisition. A movable and resizable red rectangle in the preview window defines a region of interest. Zooming inside the preview window is possible with Ctrl + mouse wheel.</p>
+<figure>
+    <img alt="Peak Detector Screenshot" src="images/plugins/imagestatistics_screenshot.png" />
+    <figcaption>Image Statistics Extension Interface</figcaption>
+</figure>
 
 
 
