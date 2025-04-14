@@ -168,6 +168,26 @@ A resonant scanner can be used for high-speed OCT systems. Due to the sinusoidal
 </figure>
 
 
+### Post-processing background subtraction
+
+In some cases, residual horizontal lines may persist even after DC background removal and fixed-pattern noise correction. Additionally, other types of artifacts, such as axial intensity gradients, can still be present. This post-processing background subtraction step can be used to reduce these artifacts.
+
+A background A-scan \( i_{\text{bg}}[z] \) is first computed by averaging all A-scans from a separate background recording. During processing, each A-scan \( i[z] \) is then corrected by subtracting a scaled and offset version of this background:
+
+$$
+i_{\text{corr}}[z] = i[z] - (w \cdot i_{\text{bg}}[z] + o)
+$$
+
+where \( w \) is a user-defined weight factor and \( o \) is a user-defined offset.
+
+
+### Final data conversion and export
+
+Before the processed OCT data is transferred to CPU memory — either for saving to disk or for use by other plugins — it is converted back to the original raw data bit depth. During this conversion, out-of-range values are clamped, and the data is scaled to the entire value range of the target bit depth (e.g., 0–255 for 8-bit, 0–65535 for 16-bit).
+
+Alternatively, for saving to disk, this conversion can be disabled. In this case, the internal 32-bit floating-point data is transferred to CPU memory and saved directly to disk without any additional scaling or clamping (except for the scaling already applied in the _Logarithm and dynamic range adjustment_ step). Note that this option only affects saving to disk — processed data streamed to plugins is always converted to the original raw data bit depth.
+
+
 ## Effect of single processing steps
 
 To illustrate the effect of single processing steps, B-scans of an OCT phantom (APL-OP01, Arden Photonics, UK) were acquired with a custom made SS-OCT system without k-klocking and with a slight dispersion imbalance. The acquired raw data was processed multiple times, each time with a different processing step disabled:

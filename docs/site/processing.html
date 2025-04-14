@@ -431,6 +431,24 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#post-processing-background-subtraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Post-processing background subtraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#final-data-conversion-and-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      Final data conversion and export
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -869,6 +887,24 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#post-processing-background-subtraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Post-processing background subtraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#final-data-conversion-and-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      Final data conversion and export
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1007,6 +1043,16 @@ i_{\text{adj}}[z] = \text{coeff} \left( \frac{i[z]- \text{min}}{\text{max} - \te
     <img alt="Sinusoidal Scan Correction" src="images/processing_sinusoidalcorrection.png" />
     <figcaption>En face view of a grid structure acquired with sinusoidal scanning. Left: sinusoidal scann correction not applied, distortions visible. Right: en face view after applying sinusoidal scan correction, </figcaption>
 </figure>
+<h3 id="post-processing-background-subtraction">Post-processing background subtraction</h3>
+<p>In some cases, residual horizontal lines may persist even after DC background removal and fixed-pattern noise correction. Additionally, other types of artifacts, such as axial intensity gradients, can still be present. This post-processing background subtraction step can be used to reduce these artifacts.</p>
+<p>A background A-scan <span class="arithmatex">\( i_{\text{bg}}[z] \)</span> is first computed by averaging all A-scans from a separate background recording. During processing, each A-scan <span class="arithmatex">\( i[z] \)</span> is then corrected by subtracting a scaled and offset version of this background:</p>
+<div class="arithmatex">\[
+i_{\text{corr}}[z] = i[z] - (w \cdot i_{\text{bg}}[z] + o)
+\]</div>
+<p>where <span class="arithmatex">\( w \)</span> is a user-defined weight factor and <span class="arithmatex">\( o \)</span> is a user-defined offset.</p>
+<h3 id="final-data-conversion-and-export">Final data conversion and export</h3>
+<p>Before the processed OCT data is transferred to CPU memory — either for saving to disk or for use by other plugins — it is converted back to the original raw data bit depth. During this conversion, out-of-range values are clamped, and the data is scaled to the entire value range of the target bit depth (e.g., 0–255 for 8-bit, 0–65535 for 16-bit).</p>
+<p>Alternatively, for saving to disk, this conversion can be disabled. In this case, the internal 32-bit floating-point data is transferred to CPU memory and saved directly to disk without any additional scaling or clamping (except for the scaling already applied in the <em>Logarithm and dynamic range adjustment</em> step). Note that this option only affects saving to disk — processed data streamed to plugins is always converted to the original raw data bit depth.</p>
 <h2 id="effect-of-single-processing-steps">Effect of single processing steps</h2>
 <p>To illustrate the effect of single processing steps, B-scans of an OCT phantom (APL-OP01, Arden Photonics, UK) were acquired with a custom made SS-OCT system without k-klocking and with a slight dispersion imbalance. The acquired raw data was processed multiple times, each time with a different processing step disabled:</p>
 <figure>
