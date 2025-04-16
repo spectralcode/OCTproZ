@@ -63,6 +63,7 @@ nav:
     - Dispersion Estimator: plugin-dispersionestimator.md
     - Image Statistics: plugin-imagestatistics.md
     - Peak Detector: plugin-peakdetector.md
+    - Phase Extraction: plugin-phaseextraction.md
     - Socket Stream: plugin-socketstream.md
   - Troubleshooting: troubleshooting.md
   - FAQ: faq.md
