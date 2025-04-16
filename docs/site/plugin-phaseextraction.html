@@ -768,10 +768,10 @@ The processing steps are shown in the figure below. </p>
 <h2 id="how-to-use">How to Use</h2>
 <ol>
 <li>Start OCTproZ processing.  </li>
-<li>Generate a calibration signal, for example by placing a optical window in front of the OCT reference mirror.  </li>
+<li>Generate a calibration signal, for example by placing an optical window in front of the OCT reference mirror.  </li>
 <li>Open the Phase Extraction Extension and fetch raw data using the <em>Fetch</em> button.  </li>
 <li>Select A-scans for averaging (typically, selecting <em>All</em> works best, but you can also choose a specific range) and click on <em>Average</em>.  </li>
-<li>Select the calibration peak by setting the <em>Start</em> and <em>Dnd</em> positions, then click on <em>Analyze</em>.  </li>
+<li>Select the calibration peak by setting the <em>Start</em> and <em>End</em> positions, then click on <em>Analyze</em>.  </li>
 <li>In the <em>Results</em> area, you can choose to ignore a number of samples at the beginning and end of your signal. This is useful if your interferogram is zero or close to zero at the edges. Then, click on <em>Fit</em>.  </li>
 <li>Use the result by either transferring the coefficients of the polynomial fit to the OCTproZ sidebar via click on <em>Transfer coeffs</em>, or by using the raw resampling curve. For the latter, click on <em>Transfer curve</em> to automatically apply the curve to OCTproZ processing, or click on <em>Save curve</em> to export the raw resampling curve as a CSV file.</li>
 </ol>
@@ -783,7 +783,7 @@ The processing steps are shown in the figure below. </p>
 <p>The following image illustrates the basic idea of how the autocorrelation signal is generated using the optical window–mirror combination.</p>
 <figure>
     <img alt="Phase Extraction Screenshot" src="images/plugins/phase_extraction_calibration_signal.png" />
-    <figcaption>Generation of a calibration signal using a optical window–mirror setup.
+    <figcaption>Generation of a calibration signal using an optical window–mirror setup.
 </figcaption>
 </figure>
 <p>A video demonstrating the use can be found <a href="https://www.youtube.com/watch?v=nlBWCv9TDJ8">here</a></p>

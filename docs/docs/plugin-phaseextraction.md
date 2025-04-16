@@ -25,17 +25,14 @@ This method also works in the presence of a sample signal, as the averaging and 
 Further details can be found in this conference [paper](https://doi.org/10.15488/11355).
 
 
-
-
 ## How to Use
 1. Start OCTproZ processing.  
-2. Generate a calibration signal, for example by placing a optical window in front of the OCT reference mirror.  
+2. Generate a calibration signal, for example by placing an optical window in front of the OCT reference mirror.  
 3. Open the Phase Extraction Extension and fetch raw data using the _Fetch_ button.  
 4. Select A-scans for averaging (typically, selecting _All_ works best, but you can also choose a specific range) and click on _Average_.  
-5. Select the calibration peak by setting the _Start_ and _Dnd_ positions, then click on _Analyze_.  
+5. Select the calibration peak by setting the _Start_ and _End_ positions, then click on _Analyze_.  
 6. In the _Results_ area, you can choose to ignore a number of samples at the beginning and end of your signal. This is useful if your interferogram is zero or close to zero at the edges. Then, click on _Fit_.  
 7. Use the result by either transferring the coefficients of the polynomial fit to the OCTproZ sidebar via click on _Transfer coeffs_, or by using the raw resampling curve. For the latter, click on _Transfer curve_ to automatically apply the curve to OCTproZ processing, or click on _Save curve_ to export the raw resampling curve as a CSV file.
-
 
 !!! note
 	It is important that the calibration signal is free from phase distortions caused by dispersion imbalance. Otherwise, the extracted instantaneous phase will include both the dispersion-related phase and the phase caused by non-linear k-sampling, and the resulting resampling curve will not correctly linearize the data in k-space.
@@ -46,7 +43,7 @@ The following image illustrates the basic idea of how the autocorrelation signal
 
 <figure markdown="span">
 	![Phase Extraction Screenshot](images/plugins/phase_extraction_calibration_signal.png)
-	<figcaption>Generation of a calibration signal using a optical window–mirror setup.
+	<figcaption>Generation of a calibration signal using an optical window–mirror setup.
 </figcaption>
 </figure>
 
@@ -84,4 +81,3 @@ You can use it with the Virtual OCT System to test the Phase Extraction Extensio
 | Transfer coeffs | Transfer the fitted coefficients \(c_0\) to \(c_3\) to OCTproZ. |
 | Transfer curve | Transfer the raw resampling curve to OCTproZ. |
 | Save curve | Save the resampling curve to a file. |
-
