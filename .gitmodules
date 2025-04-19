@@ -1,3 +1,24 @@
 [submodule "octproz_project/octproz_plugins/octproz-axial-psf-analyzer-extension"]
 	path = octproz_project/octproz_plugins/octproz-axial-psf-analyzer-extension
 	url = https://github.com/spectralcode/octproz-axial-psf-analyzer-extension
+[submodule "octproz_project/octproz_plugins/octproz-camera-extension"]
+	path = octproz_project/octproz_plugins/octproz-camera-extension
+	url = https://github.com/spectralcode/octproz-camera-extension
+[submodule "octproz_project/octproz_plugins/octproz-dispersion-estimator-extension"]
+	path = octproz_project/octproz_plugins/octproz-dispersion-estimator-extension
+	url = https://github.com/spectralcode/octproz-dispersion-estimator-extension
+[submodule "octproz_project/octproz_plugins/octproz-image-statistics-extension"]
+	path = octproz_project/octproz_plugins/octproz-image-statistics-extension
+	url = https://github.com/spectralcode/octproz-image-statistics-extension
+[submodule "octproz_project/octproz_plugins/octproz-peak-detector-extension"]
+	path = octproz_project/octproz_plugins/octproz-peak-detector-extension
+	url = https://github.com/spectralcode/octproz-peak-detector-extension
+[submodule "octproz_project/octproz_plugins/octproz-phase-extraction-extension"]
+	path = octproz_project/octproz_plugins/octproz-phase-extraction-extension
+	url = https://github.com/spectralcode/octproz-phase-extraction-extension
+[submodule "octproz_project/octproz_plugins/octproz-signal-monitor-extension"]
+	path = octproz_project/octproz_plugins/octproz-signal-monitor-extension
+	url = https://github.com/spectralcode/octproz-signal-monitor-extension
+[submodule "octproz_project/octproz_plugins/octproz-socket-stream-extension"]
+	path = octproz_project/octproz_plugins/octproz-socket-stream-extension
+	url = https://github.com/spectralcode/octproz-socket-stream-extension
