@@ -1,6 +1,43 @@
  # <img style="vertical-align:middle" img src="images/octproz_icon.png" width="64"> Building OCTproZ
 
-OCTproZ can be build on Windows and Linux. 
+
+# Clone Repository
+
+You can clone OCTproZ with or without plugin submodules.
+
+### Clone with all plugins
+
+```bash
+git clone --recurse-submodules https://github.com/spectralcode/OCTproZ.git
+```
+
+### Clone without plugins
+
+```bash
+git clone https://github.com/spectralcode/OCTproZ.git
+```
+
+Add a specific plugin later:
+
+```bash
+git submodule add https://github.com/spectralcode/octproz-axial-psf-analyzer-extension octproz_project/octproz_plugins/octproz-axial-psf-analyzer-extension
+```
+
+### Update submodules
+
+After pulling new changes from the main repository, update submodules as well:
+
+```bash
+git pull
+git submodule update --init --recursive
+```
+
+Update to latest plugin versions:
+
+```bash
+git submodule update --remote --merge
+```
+
 
 # Compiling
 Building OCTproZ from source requires: 
