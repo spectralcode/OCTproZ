@@ -1,0 +1,3 @@
+[submodule "octproz_project/octproz_plugins/octproz-axial-psf-analyzer-extension"]
+	path = octproz_project/octproz_plugins/octproz-axial-psf-analyzer-extension
+	url = https://github.com/spectralcode/octproz-axial-psf-analyzer-extension
