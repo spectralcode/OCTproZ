@@ -122,7 +122,7 @@ CONFIG(release, debug|release) {
 	}
 }
 
-#Open GL libs
+#OpenGL libs
 unix{
 	LIBS += -lGL -lGLU -lX11 -lglut
 }
@@ -147,6 +147,9 @@ include(pri/docs.pri)
 
 #include pri file to copy color lookup tables to build folder
 include(pri/luts.pri)
+
+#include pri file to copy thirdpary dlls to build folder
+include(pri/thirdparty.pri)
 
 #set application icon
 RC_ICONS = icons/OCTproZ_icon.ico
