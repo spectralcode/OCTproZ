@@ -1,16 +1,6 @@
 LUTDIR = ../luts
 
-LUT_FILES += \
-	$$LUTDIR/blue_lut.png \
-	$$LUTDIR/fire_lut.png \
-	$$LUTDIR/hotter_lut.png \
-	$$LUTDIR/ice_lut.png \
-	$$LUTDIR/six_shades_lut.png \
-	$$LUTDIR/sixteen_colors_lut.png \
-	$$LUTDIR/deep_red_lut.png \
-	$$LUTDIR/deep_blue_lut.png \
-	$$LUTDIR/depth_colors.png
-
+#set path for lookup tables
 unix{
 	LUTEXPORTDIR = $$shell_path($$OUT_PWD/luts)
 }
@@ -23,7 +13,7 @@ win32{
 	}
 }
 
-##Create lut directory
+#create lookup tables folder
 exists($$LUTEXPORTDIR){
 	message("lutdir already existing")
 }else{
@@ -35,8 +25,24 @@ exists($$LUTEXPORTDIR){
 	}
 }
 
-##Copy lookup table folder to "LUTEXPORTDIR"
-for(file, LUT_FILES):QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$shell_path($$PWD/$${file})) $$quote($$LUTEXPORTDIR) $$escape_expand(\\n\\t)
+#copy all lookup table files from source directory to destination folder
+unix{
+	QMAKE_POST_LINK += $$quote(cp -R $$shell_path($$PWD/$$LUTDIR)/* $$LUTEXPORTDIR $$escape_expand(\\n\\t))
+}
+win32{
+	#xcopy with
+	#/E "copy all subdirectories, including empty ones",
+	#/Y "suppresses prompts to confirm overwriting existing destination files",
+	#/I "assume destination is a directory if copying more than one file"
+	QMAKE_POST_LINK += $$quote(xcopy $$shell_path($$PWD/$$LUTDIR) $$LUTEXPORTDIR /E /Y /I $$escape_expand(\\n\\t))
+}
 
-##Add lookup table files to clean directive. When running "make clean" lookup table files will be deleted
-#for(file, LUT_FILES):QMAKE_CLEAN += $$shell_path($$LUTEXPORTDIR/$${file}) #todo: this does not work probably because LUT_FILES contains the full paths of the files and not just the file name. Find a nice and easy way to add doc files to QMAKE_CLEAN
+#add luts folder to clean directive so that it will be deleted when running "make clean"
+unix{
+	cleanluts.commands = rm -rf $$shell_path($$LUTEXPORTDIR)
+}
+win32{
+	cleanluts.commands = if exist $$shell_path($$LUTEXPORTDIR) rmdir /S /Q $$shell_path($$LUTEXPORTDIR)
+}
+clean.depends += cleanluts
+QMAKE_EXTRA_TARGETS += clean cleanluts
