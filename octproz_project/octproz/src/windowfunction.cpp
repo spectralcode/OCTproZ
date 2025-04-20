@@ -63,7 +63,7 @@ void WindowFunction::setFunctionParams(WindowType type, float centerPosition, fl
 		this->type = type;
 
 		if (centerPosition > 1) {
-			this->centerPosition = 1.0;
+			this->centerPosition = 1.0f;
 		}
 		else if (centerPosition < 0) {
 			this->centerPosition = 0;
@@ -119,103 +119,103 @@ void WindowFunction::updateData() {
 }
 
 void WindowFunction::calculateRectangular() {
-	int width = static_cast<int>(this->fillFactor * this->size);
-	int center = static_cast<int>(this->centerPosition * this->size);
-	int minPos = center - width / 2;
-	int maxPos = minPos + width;
+	unsigned int width = static_cast<unsigned int>(this->fillFactor * this->size);
+	unsigned int center = static_cast<unsigned int>(this->centerPosition * this->size);
+	int minPos = static_cast<int>(center - width / 2);
+	int maxPos = minPos + static_cast<int>(width);
 	if (maxPos < minPos) {
 		int tmp = minPos;
 		minPos = maxPos;
 		maxPos = tmp;
 	}
-	for (int i = 0; i < this->size; i++) {
-		int xi = i - minPos;
+	for (unsigned int i = 0; i < this->size; i++) {
+		int xi = static_cast<int>(i) - minPos;
 		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
 		if (xiNorm > 0.999f || xiNorm < 0.0001f) {
-			data[i] = 0.0;
+			data[i] = 0.0f;
 		}
 		else {
-			data[i] = 1.0;
+			data[i] = 1.0f;
 		}
 	}
 }
 
 void WindowFunction::calculateHanning() {
-	int width = static_cast<int>(this->fillFactor * this->size);
-	int center = static_cast<int>(this->centerPosition * this->size);
-	int minPos = center - width / 2;
-	int maxPos = minPos + width;
+	unsigned int width = static_cast<unsigned int>(this->fillFactor * this->size);
+	unsigned int center = static_cast<unsigned int>(this->centerPosition * this->size);
+	int minPos = static_cast<int>(center - width / 2);
+	int maxPos = minPos + static_cast<int>(width);
 	if (maxPos < minPos) {
 		int tmp = minPos;
 		minPos = maxPos;
 		maxPos = tmp;
 	}
-	for (int i = 0; i < this->size; i++) {
-		int xi = i - minPos;
+	for (unsigned int i = 0; i < this->size; i++) {
+		int xi = static_cast<int>(i) - minPos;
 		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
 		if (xiNorm > 0.999f || xiNorm < 0.0001f) {
-			data[i] = 0.0;
+			data[i] = 0.0f;
 		}
 		else {
-			data[i] = (0.5) * (1 - cos(2.0 * M_PI * (xiNorm)));
+			data[i] = static_cast<float>(0.5 * (1.0 - cos(2.0 * M_PI * static_cast<double>(xiNorm))));
 		}
 	}
 }
 
 void WindowFunction::calculateGauss(){
-	int center = static_cast<int>(this->centerPosition * this->size);
-	for (int i = 0; i < this->size; i++) {
-		int xi = i - center;
+	unsigned int center = static_cast<unsigned int>(this->centerPosition * this->size);
+	for (unsigned int i = 0; i < this->size; i++) {
+		int xi = static_cast<int>(i) - static_cast<int>(center);
 		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(this->size) - 1.0f))/ (this->fillFactor);
 		data[i] = expf(-10.0f*(powf(xiNorm,2.0f)));
 	}
 }
 
 void WindowFunction::calculateSineWindow(){
-	int width = static_cast<int>(this->fillFactor * this->size);
-	int center = static_cast<int>(this->centerPosition * this->size);
-	int minPos = center - width / 2;
-	int maxPos = minPos + width;
+	unsigned int width = static_cast<unsigned int>(this->fillFactor * this->size);
+	unsigned int center = static_cast<unsigned int>(this->centerPosition * this->size);
+	int minPos = static_cast<int>(center - width / 2);
+	int maxPos = minPos + static_cast<int>(width);
 	if (maxPos < minPos) {
 		int tmp = minPos;
 		minPos = maxPos;
 		maxPos = tmp;
 	}
-	for (int i = 0; i < this->size; i++) {
-		int xi = i - minPos;
+	for (unsigned int i = 0; i < this->size; i++) {
+		int xi = static_cast<int>(i) - minPos;
 		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
 		if (xiNorm > 0.999f || xiNorm < 0.0001f) {
-			data[i] = 0.0;
+			data[i] = 0.0f;
 		}
 		else {
-			data[i] = sin(M_PI * xiNorm);
+			data[i] = static_cast<float>(sin(M_PI * static_cast<double>(xiNorm)));
 		}
 	}
 }
 
 void WindowFunction::calculateLanczosWindow() {
-	int width = static_cast<int>(this->fillFactor * this->size);
-	int center = static_cast<int>(this->centerPosition * this->size);
-	int minPos = center - width / 2;
-	int maxPos = minPos + width;
+	unsigned int width = static_cast<unsigned int>(this->fillFactor * this->size);
+	unsigned int center = static_cast<unsigned int>(this->centerPosition * this->size);
+	int minPos = static_cast<int>(center - width / 2);
+	int maxPos = minPos + static_cast<int>(width);
 	if (maxPos < minPos) {
 		int tmp = minPos;
 		minPos = maxPos;
 		maxPos = tmp;
 	}
-	for (int i = 0; i < this->size; i++) {
-		int xi = i - minPos;
+	for (unsigned int i = 0; i < this->size; i++) {
+		int xi = static_cast<int>(i) - minPos;
 		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
 		if (xiNorm > 0.999f || xiNorm < 0.0001f) {
-			data[i] = 0.0;
+			data[i] = 0.0f;
 		}
 		else {
-			float argument = 2 * xiNorm - 1;
-			if (argument == 0) {
-				data[i] = 1;
+			float argument = 2.0f * xiNorm - 1.0f;
+			if (argument == 0.0f) {
+				data[i] = 1.0f;
 			}
 			else {
-				data[i] = sin(M_PI * argument) / (M_PI * argument);
+				data[i] = static_cast<float>(sin(M_PI * static_cast<double>(argument)) / (M_PI * static_cast<double>(argument)));
 			}
 		}
 	}
@@ -223,57 +223,60 @@ void WindowFunction::calculateLanczosWindow() {
 
 
 void WindowFunction::calculateFlatTopWindow(){
-	int width = static_cast<int>(this->fillFactor * this->size);
-	int center = static_cast<int>(this->centerPosition * this->size);
-	int minPos = center - width / 2;
-	int maxPos = minPos + width;
+	unsigned int width = static_cast<unsigned int>(this->fillFactor * this->size);
+	unsigned int center = static_cast<unsigned int>(this->centerPosition * this->size);
+	int minPos = static_cast<int>(center - width / 2);
+	int maxPos = minPos + static_cast<int>(width);
 	if (maxPos < minPos) {
 		int tmp = minPos;
 		minPos = maxPos;
 		maxPos = tmp;
 	}
-	float a0 = 0.215578948;
-	float a1 = 0.416631580;
-	float a2 = 0.277263158;
-	float a3 = 0.083578947;
-	float a4 = 0.006947368;
-	for (int i = 0; i < this->size; i++) {
-		int xi = i - minPos;
+	float a0 = 0.215578948f;
+	float a1 = 0.416631580f;
+	float a2 = 0.277263158f;
+	float a3 = 0.083578947f;
+	float a4 = 0.006947368f;
+	for (unsigned int i = 0; i < this->size; i++) {
+		int xi = static_cast<int>(i) - minPos;
 		float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
 		if (xiNorm > 0.999f || xiNorm < 0.0001f) {
-			data[i] = 0.0;
+			data[i] = 0.0f;
 		}
 		else {
-			data[i] = a0 - a1*cos(2*M_PI*xiNorm) + a2*cos(4*M_PI*xiNorm) - a3*cos(6*M_PI*xiNorm) +a4*cos(8*M_PI*xiNorm);
+			data[i] = a0 - a1*static_cast<float>(cos(2.0*M_PI*static_cast<double>(xiNorm))) + 
+                     a2*static_cast<float>(cos(4.0*M_PI*static_cast<double>(xiNorm))) - 
+                     a3*static_cast<float>(cos(6.0*M_PI*static_cast<double>(xiNorm))) +
+                     a4*static_cast<float>(cos(8.0*M_PI*static_cast<double>(xiNorm)));
 		}
 	}
 }
 
 void WindowFunction::calculateTaylorWindow(){
 //see: Doerry, Armin W. "Catalog of window taper functions for sidelobe control." Sandia National Laboratories (2017).
-	int width = static_cast<int>(this->fillFactor * this->size);
-	int center = static_cast<int>(this->centerPosition * this->size);
-	int minPos = center - width / 2;
-	int maxPos = minPos + width;
+	unsigned int width = static_cast<unsigned int>(this->fillFactor * this->size);
+	unsigned int center = static_cast<unsigned int>(this->centerPosition * this->size);
+	int minPos = static_cast<int>(center - width / 2);
+	int maxPos = minPos + static_cast<int>(width);
 	if (maxPos < minPos) {
 		int tmp = minPos;
 		minPos = maxPos;
 		maxPos = tmp;
 	}
-	for (unsigned i = 0; i < this->size; i++) {
-		data[i] = 0.0;
+	for (unsigned int i = 0; i < this->size; i++) {
+		data[i] = 0.0f;
 	}
 
-	float nbar = 7;
-	float sidelobeLevel = -50;
+	float nbar = 7.0f;
+	float sidelobeLevel = -50.0f;
 
-	float nbarf = static_cast<float>(nbar);
+	float nbarf = nbar;
 	float nbarf2 = nbarf*nbarf;
 
-	float eta = pow(10.0, - sidelobeLevel / 20.0);
-	float a = acosh(eta) / M_PI;
+	float eta = static_cast<float>(pow(10.0, - static_cast<double>(sidelobeLevel) / 20.0));
+	float a = static_cast<float>(acosh(static_cast<double>(eta)) / M_PI);
 	float a2 = a*a;
-	float sigma2 = (nbarf2) / (a2 + (((nbarf - 0.5)*((nbarf - 0.5)))));
+	float sigma2 = (nbarf2) / (a2 + (((nbarf - 0.5f)*((nbarf - 0.5f)))));
 
 	for (int m = 1; m < static_cast<int>(nbar); m++) {
 		float numerator = 1.0f;
@@ -290,40 +293,39 @@ void WindowFunction::calculateTaylorWindow(){
 				denominator *= (1.0f - (mf2 / (nf*nf)));
 			}
 		}
-		float sign = pow(-1, m);
+		float sign = static_cast<float>(pow(-1.0, static_cast<double>(m)));
 		numerator = numerator * sign;
 
 		float Fm = (numerator / denominator);
 
-		for (int i = 0; i < this->size; i++) {
-			int xi = i - minPos;
+		for (unsigned int i = 0; i < this->size; i++) {
+			int xi = static_cast<int>(i) - minPos;
 			float xiNorm = (static_cast<float>(xi) / (static_cast<float>(width) - 1.0f));
 			if (xiNorm > 0.999f || xiNorm < 0.0001f) {
-				data[i] = -999.99;
+				data[i] = -999.99f;
 			}
 			else {
-				data[i] += Fm * cos(mf * 2.0f * M_PI * xiNorm);
+				data[i] += Fm * static_cast<float>(cos(static_cast<double>(mf) * 2.0 * M_PI * static_cast<double>(xiNorm)));
 			}
 		}
 	}
 
 	//normalize window to 1
-	double maxVal = 0;
-	double minVal = 100000;
-	for (int i = 0; i < this->size; i++) {
-		if(data[i]>maxVal){
-		maxVal = data[i];
+	double maxVal = 0.0;
+	double minVal = 100000.0;
+	for (unsigned int i = 0; i < this->size; i++) {
+		if(data[i]>static_cast<float>(maxVal)){
+			maxVal = static_cast<double>(data[i]);
 		}
-		if(data[i] > -999 && data[i]<minVal){
-		minVal = data[i];
+		if(data[i] > -999.0f && data[i]<static_cast<float>(minVal)){
+			minVal = static_cast<double>(data[i]);
 		}
 	}
-	for (int i = 0; i < this->size; i++) {
-		if(data[i] < -999){
-			data[i] = minVal;
+	for (unsigned int i = 0; i < this->size; i++) {
+		if(data[i] < -999.0f){
+			data[i] = static_cast<float>(minVal);
 		}
-		data[i] -= minVal;
-		data[i] /= (maxVal-minVal);
+		data[i] -= static_cast<float>(minVal);
+		data[i] /= static_cast<float>(maxVal-minVal);
 	}
-
 }

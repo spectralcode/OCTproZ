@@ -68,7 +68,7 @@ QVector3D toVector3D(const QColor& colour) {
 	return QVector3D(colour.redF(), colour.greenF(), colour.blueF());
 }
 
-GLWindow3D::GLWindow3D(QWidget *parent) :
+GLWindow3D::GLWindow3D(QWidget* parent) :
 	QOpenGLWidget(parent),
 	raycastingVolume(nullptr),
 	delayedUpdatingRunning(false),
@@ -215,7 +215,7 @@ void GLWindow3D::setMode(const QString &mode) {
 	}
 }
 
-void GLWindow3D::setBackground(const QColor &colour) {
+void GLWindow3D::setBackground(const QColor& colour) {
 	this->background = colour;
 	update();
 }
@@ -288,6 +288,8 @@ void GLWindow3D::initializeGL() {
 }
 
 void GLWindow3D::resizeGL(int w, int h) {
+	Q_UNUSED(w);
+	Q_UNUSED(h);
 	this->viewportSize = {static_cast<float>(this->scaledWidth()), static_cast<float>(this->scaledHeight())};
 	this->aspectRatio = static_cast<float>(this->scaledWidth()) / static_cast<float>(this->scaledHeight());
 	glViewport(0, 0, this->scaledWidth(), this->scaledHeight());
@@ -316,7 +318,7 @@ void GLWindow3D::paintGL() {
 	}else{
 		if(!this->delayedUpdatingRunning){
 			this->delayedUpdatingRunning = true;
-			QTimer::singleShot(REFRESH_INTERVAL_IN_ms, this, QOverload<>::of(&GLWindow3D::delayedUpdate)); //todo: consider using Gpu2HostNotifier to notify GLWindow3D when new volume data is available
+			QTimer::singleShot(GLW3D_REFRESH_INTERVAL_IN_ms, this, QOverload<>::of(&GLWindow3D::delayedUpdate)); //todo: consider using Gpu2HostNotifier to notify GLWindow3D when new volume data is available
 		}
 	}
 
@@ -383,24 +385,27 @@ QPointF GLWindow3D::pixelPosToViewPos(const QPointF& p) {
 	return QPointF(2.0 * static_cast<float>(p.x()) / width() - 1.0, 1.0 - 2.0 * static_cast<float>(p.y()) / height());
 }
 
-void GLWindow3D::mouseDoubleClickEvent(QMouseEvent *event) {
+void GLWindow3D::mouseDoubleClickEvent(QMouseEvent* event) {
 	if(!this->panel->underMouse()){
 		this->distExp = -500;
 		this->viewPos.setX(0);
 		this->viewPos.setY(0);
 		update();
 	}
+	event->accept();
 }
 
-void GLWindow3D::enterEvent(QEvent *event) {
+void GLWindow3D::enterEvent(QEvent* event) {
 	this->panel->setVisible(true);
+	event->accept();
 }
 
-void GLWindow3D::leaveEvent(QEvent *event) {
+void GLWindow3D::leaveEvent(QEvent* event) {
 	this->panel->setVisible(false);
+	event->accept();
 }
 
-void GLWindow3D::mouseMoveEvent(QMouseEvent *event) {
+void GLWindow3D::mouseMoveEvent(QMouseEvent* event) {
 	if (event->buttons() & Qt::LeftButton && !this->panel->underMouse()) {
 		this->trackBall.move(pixelPosToViewPos(event->pos()), this->sceneTrackBall.rotation().conjugated());
 	}else if(event->buttons() &Qt::MiddleButton && !this->panel->underMouse()){
@@ -416,7 +421,7 @@ void GLWindow3D::mouseMoveEvent(QMouseEvent *event) {
 	update();
 }
 
-void GLWindow3D::mousePressEvent(QMouseEvent *event) {
+void GLWindow3D::mousePressEvent(QMouseEvent* event) {
 	this->mousePos = event->pos();
 	if (event->buttons() & Qt::LeftButton && !this->panel->underMouse()) {
 		this->trackBall.push(pixelPosToViewPos(event->pos()), this->sceneTrackBall.rotation().conjugated());
@@ -424,14 +429,14 @@ void GLWindow3D::mousePressEvent(QMouseEvent *event) {
 	update();
 }
 
-void GLWindow3D::mouseReleaseEvent(QMouseEvent *event) {
+void GLWindow3D::mouseReleaseEvent(QMouseEvent* event) {
 	if (event->button() == Qt::LeftButton && !this->panel->underMouse()) {
 		this->trackBall.release(pixelPosToViewPos(event->pos()), this->sceneTrackBall.rotation().conjugated());
 	}
 	update();
 }
 
-void GLWindow3D::wheelEvent(QWheelEvent * event) {
+void GLWindow3D::wheelEvent(QWheelEvent* event) {
 	if(!this->panel->underMouse()){
 		this->distExp += event->delta();
 		if (this->distExp < -2800)
@@ -442,7 +447,7 @@ void GLWindow3D::wheelEvent(QWheelEvent * event) {
 	}
 }
 
-void GLWindow3D::contextMenuEvent(QContextMenuEvent *event) {
+void GLWindow3D::contextMenuEvent(QContextMenuEvent* event) {
 	this->contextMenu->exec(event->globalPos());
 }
 
@@ -478,7 +483,7 @@ void GLWindow3D::changeTextureSize(unsigned int width, unsigned int height, unsi
 	emit registerBufferCudaGL(this->raycastingVolume->getVolumeTexture());
 }
 
-void GLWindow3D::createOpenGLContextForProcessing(QOpenGLContext *processingContext, QOffscreenSurface *processingSurface, QThread *processingThread) {
+void GLWindow3D::createOpenGLContextForProcessing(QOpenGLContext* processingContext, QOffscreenSurface* processingSurface, QThread* processingThread) {
 	QOpenGLContext* renderContext = this->context();
 	(processingContext)->setFormat(renderContext->format());
 	(processingContext)->setShareContext(renderContext);

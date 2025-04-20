@@ -73,6 +73,6 @@ Mesh::~Mesh()
 void Mesh::paint(void)
 {
 	glBindVertexArray(m_vao);
-	glDrawElements(GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indices_count), GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 }

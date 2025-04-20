@@ -86,13 +86,13 @@ float* d_postProcBackgroundLine = NULL;
 bool cudaInitialized = false;
 bool saveToDisk = false;
 
-size_t signalLength = 0;
-size_t ascansPerBscan = 0;
-size_t bscansPerBuffer = 0;
-size_t samplesPerBuffer = 0;
-size_t samplesPerVolume = 0;
-size_t buffersPerVolume = 0;
-size_t bytesPerSample = 0;
+int signalLength = 0;
+int ascansPerBscan = 0;
+int bscansPerBuffer = 0;
+int samplesPerBuffer = 0;
+int samplesPerVolume = 0;
+int buffersPerVolume = 0;
+int bytesPerSample = 0;
 
 float* d_processedBuffer = NULL;
 float* d_sinusoidalScanTmpBuffer = NULL;
@@ -850,7 +850,7 @@ __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* pro
 		//todo: optimize averaging and MIP for very large number of displayFunctionFrames! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
 		if(displayFunctionFrames > 1){
 			switch(displayFunction){
-			case 0: //Averaging
+			case 0: {//Averaging
 				int frameCount = 0;
 				float sum = 0;
 				for (int j = 0; j < displayFunctionFrames; j++){
@@ -862,7 +862,8 @@ __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* pro
 				}
 				displayBuffer[i] = sum/frameCount;
 				break;
-			case 1: //MIP
+			}
+			case 1: {//MIP
 				float maxValue = 0;
 				float currentValue = 0;
 				if(displayFunctionFrames > 1){
@@ -878,6 +879,7 @@ __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* pro
 					displayBuffer[i] = maxValue;
 				}
 				break;
+			}
 			default:
 				break;
 			}
@@ -894,7 +896,7 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 		//todo: optimize averaging and MIP for very large number of displayFunctionFrames! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
 		if(displayFunctionFrames > 1){
 			switch(displayFunction){
-			case 0: //Averaging
+			case 0: {//Averaging
 				int frameCount = 0;
 				float sum = 0;
 				for (int j = 0; j < displayFunctionFrames; j++){
@@ -906,7 +908,8 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 				}
 				displayBuffer[(samplesInSingleFrame-1)-i] = sum/frameCount;
 				break;
-			case 1: //MIP
+			}
+			case 1: {//MIP
 				float maxValue = 0;
 				float currentValue = 0;
 				if(displayFunctionFrames > 1){
@@ -922,6 +925,7 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 					displayBuffer[(samplesInSingleFrame-1)-i] = maxValue;
 				}
 				break;
+			}
 			default:
 				break;
 			}
@@ -1074,10 +1078,10 @@ int getMaxThreadsPerBlock(){
 }
 
 extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmParameters* parameters) {
-	signalLength = parameters->samplesPerLine;
-	ascansPerBscan = parameters->ascansPerBscan;
-	bscansPerBuffer = parameters->bscansPerBuffer;
-	buffersPerVolume = parameters->buffersPerVolume;
+	signalLength = static_cast<int>(parameters->samplesPerLine);
+	ascansPerBscan = static_cast<int>(parameters->ascansPerBscan);
+	bscansPerBuffer = static_cast<int>(parameters->bscansPerBuffer);
+	buffersPerVolume = static_cast<int>(parameters->buffersPerVolume);
 	samplesPerBuffer = signalLength*ascansPerBscan*bscansPerBuffer;
 	samplesPerVolume = samplesPerBuffer * buffersPerVolume;
 	host_buffer1 = h_buffer1;
@@ -1237,10 +1241,10 @@ extern "C" void changeDisplayedBscanFrame(unsigned int frameNr, unsigned int dis
 	//update 2D b-scan display
 	int width = signalLength;
 	int height = ascansPerBscan;
-	int depth = bscansPerBuffer*buffersPerVolume;
+	unsigned int depth = static_cast<unsigned int>(bscansPerBuffer*buffersPerVolume);
 	int samplesPerFrame = width * height;
 	if (d_bscanDisplayBuffer != NULL) {
-		frameNr = frameNr >= 0 && frameNr < depth ? frameNr : 0;
+		frameNr = frameNr < depth ? frameNr : 0;
 		updateDisplayedBscanFrame<<<gridSize/2, blockSize, 0, userRequestStream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / 2, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleBscan != NULL) {
@@ -1255,9 +1259,9 @@ extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int di
 		d_enFaceViewDisplayBuffer = cuda_map(cuBufHandleEnFaceView, userRequestStream);
 	}
 	//update 2D en face view display
-	unsigned int width = bscansPerBuffer*buffersPerVolume;
-	unsigned int height = ascansPerBscan;
-	unsigned int samplesPerFrame = width * height;
+	int width = bscansPerBuffer*buffersPerVolume;
+	int height = ascansPerBscan;
+	int samplesPerFrame = width * height;
 	int gridSizeDisplay = width;
 	int blockSizeDisplay = height;
 	if(height > threadsPerBlockLimit){
@@ -1265,7 +1269,7 @@ extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int di
 		gridSizeDisplay = (samplesPerFrame + blockSizeDisplay - 1)/blockSizeDisplay;
 	}
 	if (d_enFaceViewDisplayBuffer != NULL) {
-		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
+		frameNr = frameNr < static_cast<unsigned int>(signalLength/2) ? frameNr : 0;
 		updateDisplayedEnFaceViewFrame<<<gridSizeDisplay, blockSizeDisplay, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
@@ -1281,10 +1285,10 @@ extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned i
 	//update 2D b-scan display
 	int width = signalLength;
 	int height = ascansPerBscan;
-	int depth = bscansPerBuffer * buffersPerVolume;
+	unsigned int depth = static_cast<unsigned int>(bscansPerBuffer * buffersPerVolume);
 	int samplesPerFrame = width * height;
 	if (d_bscanDisplayBuffer != NULL) {
-		frameNr = frameNr >= 0 && frameNr < depth ? frameNr : 0;
+		frameNr = frameNr < depth ? frameNr : 0;
 		updateDisplayedBscanFrame<<<gridSize/2, blockSize, 0, stream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / 2, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleBscan != NULL) {
@@ -1298,9 +1302,9 @@ extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned 
 		d_enFaceViewDisplayBuffer = cuda_map(cuBufHandleEnFaceView, stream);
 	}
 	//update 2D en face view display
-	unsigned int width = bscansPerBuffer * buffersPerVolume;
-	unsigned int height = ascansPerBscan;
-	unsigned int samplesPerFrame = width * height;
+	int width = bscansPerBuffer * buffersPerVolume;
+	int height = ascansPerBscan;
+	int samplesPerFrame = width * height;
 	int gridSizeDisplay = width;
 	int blockSizeDisplay = height;
 	if(height > threadsPerBlockLimit){
@@ -1308,7 +1312,7 @@ extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned 
 		gridSizeDisplay = (samplesPerFrame + blockSizeDisplay - 1)/blockSizeDisplay;
 	}
 	if (d_enFaceViewDisplayBuffer != NULL) {
-		frameNr = frameNr >= 0 && frameNr < signalLength/2 ? frameNr : 0;
+		frameNr = frameNr < static_cast<unsigned int>(signalLength/2) ? frameNr : 0;
 		updateDisplayedEnFaceViewFrame<<<gridSizeDisplay, blockSizeDisplay, 0, stream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {

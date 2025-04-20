@@ -76,9 +76,20 @@ void DemoExtension::setParameters(demoParams params) {
 
 void DemoExtension::rawDataReceived(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr) {
 	//the raw data buffer may be accessed similar to the processed data buffer. See processedDataReceived() below
+	Q_UNUSED(buffer);
+	Q_UNUSED(bitDepth);
+	Q_UNUSED(samplesPerLine);
+	Q_UNUSED(linesPerFrame);
+	Q_UNUSED(framesPerBuffer);
+	Q_UNUSED(buffersPerVolume);
+	Q_UNUSED(currentBufferNr);
 }
 
 void DemoExtension::processedDataReceived(void* buffer, unsigned bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr) {
+	Q_UNUSED(linesPerFrame);
+	Q_UNUSED(framesPerBuffer);
+	Q_UNUSED(buffersPerVolume);
+	Q_UNUSED(currentBufferNr);
 	//check if extension is active, if this slot is already running and if buffer can be accessed
 	if(this->active && !this->isCalculating && this->processedGrabbingAllowed){
 
@@ -93,7 +104,7 @@ void DemoExtension::processedDataReceived(void* buffer, unsigned bitDepth, unsig
 
 			//access buffer for short calculation (sum of pixel values of first line in buffer)
 			unsigned int sum = 0;
-			for(int i = 0; i < samplesPerLine && this->processedGrabbingAllowed; i++){
+			for(unsigned int i = 0; i < samplesPerLine && this->processedGrabbingAllowed; i++){
 				sum += bufferArray[i];
 			}
 			//Note: if you want to perform larger calculations you should copy the received buffer first and use the copied buffer for your calculations

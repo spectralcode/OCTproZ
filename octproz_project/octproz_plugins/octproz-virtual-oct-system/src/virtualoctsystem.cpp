@@ -166,7 +166,7 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 	uint sizeOfElement = ceil((double)this->currParams.bitDepth / 8.0);
 	size_t offsetInBytes = this->currParams.bscanOffset * this->currParams.width * this->currParams.height * sizeOfElement;
 
-	fseek(this->file, offsetInBytes, SEEK_SET);
+	fseek(this->file, static_cast<long>(offsetInBytes), SEEK_SET);
 
 	//read data from file into first buffer
 	void* buf = static_cast<void*>(this->buffer->bufferArray[0]);
@@ -174,9 +174,9 @@ void VirtualOCTSystem::acqcuisitionSimulation(){
 
 	//set position indicater associated with this->file
 	if(currParams.buffersFromFile == 2){
-		fseek(this->file, numberOfElements*sizeOfElement + offsetInBytes, SEEK_SET);
+		fseek(this->file, static_cast<long>(numberOfElements*sizeOfElement + offsetInBytes), SEEK_SET);
 	}else{
-		fseek(this->file, offsetInBytes, SEEK_SET);
+		fseek(this->file, static_cast<long>(offsetInBytes), SEEK_SET);
 	}
 
 	//read data from file into second buffer
@@ -301,8 +301,8 @@ void VirtualOCTSystem::acquisitionSimulationWithMultiFileBuffers() {
 	//read data from file into file buffers
 	for(int i = 0; i < currParams.buffersFromFile; i++){
 		void* buf = static_cast<void*>(this->streamBuffer->bufferArray[i]);
-		fseek(this->file, i*numberOfElements*sizeOfElement + offsetInBytes, SEEK_SET);
-		fread(buf, sizeOfElement, numberOfElements, this->file);
+		fseek(this->file, static_cast<long>(i*numberOfElements*sizeOfElement + offsetInBytes), SEEK_SET);
+		fread(buf, static_cast<size_t>(sizeOfElement), static_cast<size_t>(numberOfElements), this->file);
 	}
 
 	//close file

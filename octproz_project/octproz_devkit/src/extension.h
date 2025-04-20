@@ -91,7 +91,7 @@ protected:
 	DISPLAY_STYLE displayStyle; ///< Determines how the extension is displayed to the user. displayStle can be SIDEBAR_TAB or SEPARATE_WINDOW
 	QString toolTip; ///< Tooltip that is displayed in OCTproZ
 
-
+	
 public slots:
 	/*!
 	 * \brief rawDataReceived is called automatically every time as soon as new raw data is available. This slot can be used to grab raw OCT data, i.e. spectral fringe patterns.
@@ -103,7 +103,15 @@ public slots:
 	 * \param buffersPerVolume number of buffers in volume
 	 * \param currentBufferNr current buffer id within volume. This is number in the range of 0 to buffersPerVolume-1
 	 */
-	virtual void rawDataReceived(void* buffer, unsigned int bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){}
+	virtual void rawDataReceived(void* buffer, unsigned int bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){
+		Q_UNUSED(buffer);
+		Q_UNUSED(bitDepth);
+		Q_UNUSED(samplesPerLine);
+		Q_UNUSED(linesPerFrame);
+		Q_UNUSED(framesPerBuffer);
+		Q_UNUSED(buffersPerVolume);
+		Q_UNUSED(currentBufferNr);
+	}
 
 	/*!
 	 * \brief processedDataReceived is called automatically every time as soon as new processed data is available and the "stream processed data to ram" option is activated. This slot can be used to grab processed OCT data, i.e. A-scans.
@@ -115,8 +123,16 @@ public slots:
 	 * \param buffersPerVolume number of buffers in volume
 	 * \param currentBufferNr current buffer id within volume. This is number in the range of 0 to buffersPerVolume-1
 	 */
-	virtual void processedDataReceived(void* buffer, unsigned int bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){}
-
+	virtual void processedDataReceived(void* buffer, unsigned int bitDepth, unsigned int samplesPerLine, unsigned int linesPerFrame, unsigned int framesPerBuffer, unsigned int buffersPerVolume, unsigned int currentBufferNr){
+		Q_UNUSED(buffer);
+		Q_UNUSED(bitDepth);
+		Q_UNUSED(samplesPerLine);
+		Q_UNUSED(linesPerFrame);
+		Q_UNUSED(framesPerBuffer);
+		Q_UNUSED(buffersPerVolume);
+		Q_UNUSED(currentBufferNr);
+	}
+	
 	/*!
 	 * \brief enableRawDataGrabbing is called by OCTproZ to indicate if grabbing of raw data is safe
 	 */

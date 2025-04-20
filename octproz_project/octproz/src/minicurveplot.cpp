@@ -28,7 +28,7 @@
 #include "minicurveplot.h"
 #include <QPainterPathStroker>
 
-MiniCurvePlot::MiniCurvePlot(QWidget *parent) : QCustomPlot(parent){
+MiniCurvePlot::MiniCurvePlot(QWidget* parent) : QCustomPlot(parent){
 	//default colors
 	this->referenceCurveAlpha = 100;
 	this->setBackground( QColor(50, 50, 50));
@@ -78,7 +78,7 @@ void MiniCurvePlot::setReferenceCurveColor(QColor color) {
 	this->graph(1)->setPen(referenceCurvePen);
 }
 
-void MiniCurvePlot::plotCurves(float *curve, float *referenceCurve, unsigned int samples) {
+void MiniCurvePlot::plotCurves(float* curve, float *referenceCurve, unsigned int samples) {
 	if(samples == 0){return;}
 	int size = static_cast<int>(samples);
 
@@ -138,7 +138,7 @@ void MiniCurvePlot::zoomOutSlightly() {
 }
 
 
-void MiniCurvePlot::contextMenuEvent(QContextMenuEvent *event){
+void MiniCurvePlot::contextMenuEvent(QContextMenuEvent* event){
 	QMenu menu(this);
 	QAction savePlotAction(tr("Save Plot as..."), this);
 	connect(&savePlotAction, &QAction::triggered, this, &MiniCurvePlot::slot_saveToDisk);
@@ -146,7 +146,7 @@ void MiniCurvePlot::contextMenuEvent(QContextMenuEvent *event){
 	menu.exec(event->globalPos());
 }
 
-void MiniCurvePlot::mouseMoveEvent(QMouseEvent *event){
+void MiniCurvePlot::mouseMoveEvent(QMouseEvent* event){
 	if(!(event->buttons() & Qt::LeftButton)){
 		double x = this->xAxis->pixelToCoord(event->pos().x());
 		double y = this->yAxis->pixelToCoord(event->pos().y());
@@ -156,7 +156,7 @@ void MiniCurvePlot::mouseMoveEvent(QMouseEvent *event){
 	}
 }
 
-void MiniCurvePlot::resizeEvent(QResizeEvent *event) {
+void MiniCurvePlot::resizeEvent(QResizeEvent* event) {
 	if(this->drawRoundCorners){
 		QRect plotRect = this->rect();
 		const int radius = 6;
@@ -168,7 +168,7 @@ void MiniCurvePlot::resizeEvent(QResizeEvent *event) {
 	QCustomPlot::resizeEvent(event);
 }
 
-void MiniCurvePlot::changeEvent(QEvent *event) {
+void MiniCurvePlot::changeEvent(QEvent* event) {
 	if(event->ActivationChange){
 		if(!this->isEnabled()){
 			this->curveColor.setAlpha(55);
@@ -185,13 +185,13 @@ void MiniCurvePlot::changeEvent(QEvent *event) {
 		}
 	}
 	QCustomPlot::changeEvent(event);
-
 }
 
-void MiniCurvePlot::mouseDoubleClickEvent(QMouseEvent *event) {
+void MiniCurvePlot::mouseDoubleClickEvent(QMouseEvent* event) {
 	this->rescaleAxes();
 	this->zoomOutSlightly();
 	this->replot();
+	QCustomPlot::changeEvent(event);
 }
 
 void MiniCurvePlot::slot_saveToDisk() {

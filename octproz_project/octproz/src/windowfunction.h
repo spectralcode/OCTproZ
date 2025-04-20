@@ -28,10 +28,11 @@
 #ifndef WINDOWFUNCTION_H
 #define WINDOWFUNCTION_H
 
-#ifndef _USE_MATH_DEFINES
-	#define _USE_MATH_DEFINES
-#endif
-#include "math.h"
+// #ifndef _USE_MATH_DEFINES
+// 	#define _USE_MATH_DEFINES
+// #endif
+// #include "math.h" //using math.h instead of QtMath causes "macro redefinition" compiler warnings.
+#include <QtMath>
 #include <stdlib.h>
 
 class WindowFunction

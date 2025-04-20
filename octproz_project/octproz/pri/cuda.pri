@@ -42,7 +42,7 @@ unix{
 	NVCC_OPTIONS = --use_fast_math -std=c++11 --compiler-options -fPIC
 }
 win32{
-	NVCC_OPTIONS = --use_fast_math
+	NVCC_OPTIONS = --use_fast_math -diag-suppress 1723,1394 #diag-suppress is used to ignore Qt-related warnings coming from Qt's header files	
 	#NVCC_OPTIONS = --use_fast_math -std=c++11 --compiler-options -fPIC
 }
 

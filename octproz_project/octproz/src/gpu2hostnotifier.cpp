@@ -81,6 +81,7 @@ void CUDART_CB Gpu2HostNotifier::dh2FloatStreamingCallback(void* currFloatStream
 }
 
 void CUDART_CB Gpu2HostNotifier::backgroundSignalCallback(void* backgroundSignal) {
+	Q_UNUSED(backgroundSignal);
 	Gpu2HostNotifier::getInstance()->emitBackgroundRecorded();
 }
 

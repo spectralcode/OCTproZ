@@ -81,7 +81,7 @@
 #include "controlpanel.h"
 #include "settingsfilemanager.h"
 
-#define REFRESH_INTERVAL_IN_ms 80
+#define GLW3D_REFRESH_INTERVAL_IN_ms 80
 
 
 class GLWindow3D : public QOpenGLWidget, protected QOpenGLExtraFunctions, public OutputWindow

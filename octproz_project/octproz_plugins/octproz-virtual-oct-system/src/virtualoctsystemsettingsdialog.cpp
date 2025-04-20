@@ -25,9 +25,10 @@ SOFTWARE.
 #include "virtualoctsystemsettingsdialog.h"
 #include "virtualoctsystem.h"
 
-VirtualOCTSystemSettingsDialog::VirtualOCTSystemSettingsDialog(QWidget *parent)
+VirtualOCTSystemSettingsDialog::VirtualOCTSystemSettingsDialog(QWidget* parent)
 	: ui(new Ui::VirtualOCTSystemSettingsDialog) //QDialog(parent)
 {
+	Q_UNUSED(parent);
 	ui->setupUi(this);
 	initGui();
 

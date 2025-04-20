@@ -634,7 +634,7 @@ void GLWindow2D::wheelEvent(QWheelEvent *event) {
 			QPoint numSteps = numDegrees/15;
 			this->scaleFactor += (float)numSteps.y()/30.0;
 			if(this->scaleFactor<0.05){
-				this->scaleFactor = 0.05;
+				this->scaleFactor = 0.05f;
 			}
 		}
 		event->accept();

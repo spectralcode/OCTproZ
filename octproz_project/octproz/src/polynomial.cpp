@@ -94,7 +94,7 @@ void Polynomial::setCoeff(float coeff, unsigned int coeffNr) {
 }
 
 float Polynomial::getCoeff(unsigned int coeffNr) {
-	return coeffNr <= this->order ? this->coeffs[coeffNr] : 0.0;
+	return coeffNr <= this->order ? this->coeffs[coeffNr] : 0.0f;
 }
 
 void Polynomial::setSize(unsigned int size) {
@@ -107,10 +107,10 @@ void Polynomial::setSize(unsigned int size) {
 
 float Polynomial::getValueAt(float x) {
 	//Horner's method
-	float result = 0.0;
+	float result = 0.0f;
 	for (unsigned int i = 0; i <= this->order; i++) {
 		int j = this->order - i;
-		result = fma(result, x, coeffs[j]);
+		result = static_cast<float>(fma(result, x, coeffs[j]));
 	}
 	return result;
 }
@@ -139,7 +139,7 @@ void Polynomial::clamp(float* inputData, unsigned int inputLength, float min, fl
 void Polynomial::updateData() {
 	if (this->data != nullptr && this->coeffs != nullptr) {
 		for (unsigned int i = 0; i < this->size; i++) {
-			this->data[i] = this->getValueAt(i);
+			this->data[i] = this->getValueAt(static_cast<float>(i));
 		}
 	}
 }
