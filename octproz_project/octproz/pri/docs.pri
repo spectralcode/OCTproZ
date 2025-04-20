@@ -44,5 +44,5 @@ unix{
 win32{
 	cleandocs.commands = if exist $$shell_path($$DOCEXPORTDIR) rmdir /S /Q $$shell_path($$DOCEXPORTDIR)
 }
-clean.depends = cleandocs
+clean.depends += cleandocs
 QMAKE_EXTRA_TARGETS += clean cleandocs
