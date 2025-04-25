@@ -42,7 +42,7 @@ class VirtualOCTSystem : public AcquisitionSystem
 {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID AcquisitionSystem_iid)
-	Q_INTERFACES(AcquisitionSystem)
+	Q_INTERFACES(AcquisitionSystem Plugin)
 
 public:
 	explicit VirtualOCTSystem();
