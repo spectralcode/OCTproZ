@@ -41,7 +41,9 @@ public:
 	Plugin(){}
 	~Plugin(){}
 
-	virtual void settingsLoaded(QVariantMap settings){}
+	virtual void settingsLoaded(QVariantMap settings){
+		Q_UNUSED(settings);
+	}
 
 	virtual void receiveCommand(const QString &command, const QVariantMap &params) {
 		Q_UNUSED(command);
