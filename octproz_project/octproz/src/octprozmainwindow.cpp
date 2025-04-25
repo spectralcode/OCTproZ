@@ -1,5 +1,5 @@
 #include "octprozmainwindow.h"
-#include <QApplication>
+#include <QGuiApplication>
 #include <QDesktopWidget>
 #include <QStyleFactory>
 
@@ -109,11 +109,11 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 	connect(this->sidebar, &Sidebar::loadResamplingCurveRequested,
 			this->app->getParamsManager(), &OctAlgorithmParametersManager::loadCustomResamplingCurveFromFile);
 
-	// Set window position
-	QRect screenGeometry = QApplication::desktop()->availableGeometry();
-	int x = (screenGeometry.width()) / 10;
-	int y = (screenGeometry.height()) / 10;
-	this->move(x, y);
+	// Set window position (applies only to the first OCTproZ start, before gui_settings.ini exists)
+	QScreen *screen = QGuiApplication::primaryScreen();
+	QRect availableGeometry = screen->availableGeometry();
+	QPoint offset(availableGeometry.width() / 10, availableGeometry.height() / 10);
+	this->move(availableGeometry.topLeft() + offset);
 
 	// Initialize UI
 	setWindowTitle("OCTproZ");
