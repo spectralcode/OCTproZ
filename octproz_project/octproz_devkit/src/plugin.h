@@ -91,4 +91,8 @@ signals:
 	void sendCommand(const QString &sender, const QString &targetPlugin, const QString &command, const QVariantMap &params = QVariantMap());
 };
 
+#define Plugin_iid "octproz.plugin.interface"
+
+Q_DECLARE_INTERFACE(Plugin, Plugin_iid)
+
 #endif // PLUGIN_H

@@ -124,7 +124,14 @@ void OCTproZApp::loadSystemsAndExtensions() {
 
 	for (auto fileName : pluginsDir.entryList(QDir::Files)) {
 		QPluginLoader loader(pluginsDir.absoluteFilePath(fileName));
-		QObject *plugin = loader.instance(); //todo: figure out why qobject_cast<Plugin*>(loader.instance()) does not work. probably because Qt plugin API is not used correctly; see https://github.com/spectralcode/OCTproZ/issues/11
+		QObject* plugin = loader.instance(); //todo: figure out why qobject_cast<Plugin*>(loader.instance()) does not work. probably because Qt plugin API is not used correctly; see https://github.com/spectralcode/OCTproZ/issues/11
+		// qobject_cast<Plugin*>(loader.instance()) did not work because the Plugin interface
+		// was not properly declared in plugin.h. And: All plugins are required to register both
+		// Extension and Plugin in their header files using Q_INTERFACES(Extension Plugin).
+		// However, since most existing plugins only register one interface (Extension or AcquisitionSystem,
+		// but not Plugin), switching to qobject_cast<Plugin*> could break functionality for some users.
+		// Therefore, for now, the old-style cast will be used to maintain compatibility.
+		// In the future, this should be replaced with qobject_cast for safer type checking.
 		if (plugin) {
 			Plugin* actualPlugin = (Plugin*)(plugin);
 
