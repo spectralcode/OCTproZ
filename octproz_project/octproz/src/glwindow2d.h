@@ -136,7 +136,7 @@ public:
 	QAction* getMarkerAction(){return this->markerAction;}
 
 	void setSettings(QVariantMap settings) override;
-	QVariantMap getSettings() override;
+	QVariantMap getSettings() final override;
 
 
 private:

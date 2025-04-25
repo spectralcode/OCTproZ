@@ -92,7 +92,7 @@ public:
 	~GLWindow3D();
 
 	void setSettings(QVariantMap settings) override;
-	QVariantMap getSettings() override;
+	QVariantMap getSettings() final override;
 
 	void setStepLength(const GLfloat stepLength);
 	void setThreshold(const GLfloat threshold);
