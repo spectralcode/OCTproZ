@@ -33,7 +33,7 @@ class DemoExtension : public Extension
 {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID Extension_iid)
-	Q_INTERFACES(Extension)
+	Q_INTERFACES(Extension Plugin)
 
 public:
 	DemoExtension();
