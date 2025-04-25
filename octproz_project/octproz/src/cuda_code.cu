@@ -1390,9 +1390,8 @@ inline void streamProcessedFloatData(float* d_currProcessedBuffer, cudaStream_t 
 	floatStreamingBufferNumber = (floatStreamingBufferNumber + 1) % 2;
 	void* hostDestBuffer = floatStreamingBufferNumber == 0 ? host_floatStreamingBuffer1 : host_floatStreamingBuffer2;
 
-	size_t bufferSizeInBytes = (samplesPerBuffer / 2) * sizeof(float);
-
 	#if !defined(__aarch64__) || !defined(ENABLE_CUDA_ZERO_COPY)
+		size_t bufferSizeInBytes = (samplesPerBuffer / 2) * sizeof(float);
 		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, d_currProcessedBuffer, bufferSizeInBytes, cudaMemcpyDeviceToHost, stream));
 	#endif
 
