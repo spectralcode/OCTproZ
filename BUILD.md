@@ -17,10 +17,26 @@ git clone --recurse-submodules https://github.com/spectralcode/OCTproZ.git
 git clone https://github.com/spectralcode/OCTproZ.git
 ```
 
-Add a specific plugin later:
+To initialize a specific **existing** plugin (already part of OCTproZ and tracked in `.gitmodules`):
 
 ```bash
-git submodule add https://github.com/spectralcode/octproz-axial-psf-analyzer-extension octproz_project/octproz_plugins/octproz-axial-psf-analyzer-extension
+git submodule update --init octproz_project/octproz_plugins/<plugin-folder>
+```
+
+Example for the Phase Extraction Extension:
+
+```bash
+git submodule update --init octproz_project/octproz_plugins/octproz-phase-extraction-extension
+```
+
+---
+
+### Add a **new** plugin manually (if not yet tracked)
+
+If the plugin is **not yet listed in `.gitmodules`**, you can add it manually:
+
+```bash
+git submodule add <plugin-repo-url> octproz_project/octproz_plugins/<plugin-folder>
 ```
 
 ### Update submodules
@@ -162,7 +178,10 @@ git clone https://code.qt.io/qt/qt5.git
 cd qt5
 git checkout 5.12.10
 ```
-then
+> **Note:**  
+You can also use the latest Qt 5 version: `git checkout 5.15`
+It works, but it has not been thoroughly tested with OCTproZ on the Jetson Nano. Use at your own risk.
+
 ```
 git submodule update --init --recursive
 cd ~
@@ -176,6 +195,8 @@ In this step you configure Qt for _OpenGL desktop_ (this is necessary!) and remo
 ```
 ../qt5/configure -qt-xcb -opengl desktop -nomake examples -nomake tests -skip qtwebengine -skip qtandroidextras -skip qtcanvas3d -skip qtcharts -skip qtconnectivity -skip qtdatavis3d -skip qtdeclarative -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtwinextras
 ```
+> **Note for Qt 5.15 and later:**  
+The `-qt-xcb` option was removed. Use `-bundled-xcb-xinput` instead.
 
 After the configuration was done a _Configure summary_ will be displayed. Please verify that there is a _yes_ in the line with _Desktop OpenGL_. Now you can start the build process:
 
