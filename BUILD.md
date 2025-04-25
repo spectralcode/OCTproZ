@@ -39,16 +39,19 @@ If the plugin is **not yet listed in `.gitmodules`**, you can add it manually:
 git submodule add <plugin-repo-url> octproz_project/octproz_plugins/<plugin-folder>
 ```
 
-### Update submodules
+---
 
-After pulling new changes from the main repository, update submodules as well:
+### Pull updates (main repo + plugins)
 
 ```bash
-git pull
+git pull --recurse-submodules
 git submodule update --init --recursive
 ```
 
-Update to latest plugin versions:
+
+### (Optional) Update plugins to latest versions
+
+If you want the **latest plugin commits** (not just the versions pinned by the main repo):
 
 ```bash
 git submodule update --remote --merge
