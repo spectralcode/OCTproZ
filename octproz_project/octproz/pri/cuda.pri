@@ -16,7 +16,7 @@ CUDA_SOURCES += $$SOURCEDIR/cuda_code.cu \
 #-gencode=arch=compute_61,code=sm_61 \
 #-gencode=arch=compute_70,code=sm_70
 
-#use this for maximum compatibility with CUDA 11.0
+##use this for maximum compatibility with CUDA 11.0
 CUDA_ARCH += sm_52 \
 -gencode=arch=compute_52,code=sm_52 \
 -gencode=arch=compute_60,code=sm_60 \
@@ -27,10 +27,14 @@ CUDA_ARCH += sm_52 \
 -gencode=arch=compute_86,code=sm_86 \
 -gencode=arch=compute_86,code=compute_86
 
-#use this for Jetson Nano with JetPack 4.6.1 (Cuda 10.2, Ubuntu 18.04)
-#CUDA_ARCH += sm_53 \
-#-gencode=arch=compute_53,code=sm_53 \
-#-gencode=arch=compute_53,code=compute_53
+#if the host architecture is aarch64, assume Jetson Nano and override CUDA_ARCH accordingly
+message(host architecture is: $$QMAKE_HOST.arch)
+contains(QMAKE_HOST.arch, aarch64){
+	CUDA_ARCH = sm_53 \
+	-gencode=arch=compute_53,code=sm_53 \
+	-gencode=arch=compute_53,code=compute_53
+}
+
 
 
 #include addtional macro definitions
