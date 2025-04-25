@@ -47,7 +47,7 @@ void PluginMessageBus::broadcastCommand(const QString &sender,
 										const QVariantMap &params)
 {
 	//Send the command to all registered plugins.
-	for(Plugin* plugin : this->plugins){
+	for(Plugin* plugin : qAsConst(this->plugins)){
 		QMetaObject::invokeMethod(plugin, "receiveCommand", Qt::QueuedConnection,
 			Q_ARG(QString, command),
 			Q_ARG(QVariantMap, params));

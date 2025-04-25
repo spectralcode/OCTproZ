@@ -53,7 +53,7 @@ SystemChooser::~SystemChooser()
 
 void SystemChooser::populate(QList<QString> systems) {
 	this->listView->clear();
-	for(auto system : systems){
+	for(const auto& system : systems){
 		this->listView->addItem(new QListWidgetItem(system));
 	}
 }

@@ -41,7 +41,7 @@ MessageConsole::MessageConsole(QWidget *parent) : QWidget(parent){
 
 	this->messages = QVector<QString>(MAX_MESSAGES);
 
-	for(auto string : this->messages){
+	for(auto& string : this->messages){
 		string = "";
 	}
 	this->messagesIndex = 0;
