@@ -79,7 +79,7 @@ unsigned int streamingBufferNumber = 0;
 static int floatStreamingBufferNumber = 0;
 
 cufftComplex* d_fftBuffer = NULL;
-cufftHandle d_plan = NULL;
+cufftHandle d_plan = 0;
 cufftComplex* d_meanALine = NULL;
 float* d_postProcBackgroundLine = NULL;
 
