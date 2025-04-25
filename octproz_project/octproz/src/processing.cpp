@@ -121,16 +121,16 @@ bool Processing::isCudaOpenGlInteropReady(){
 			this->surface->isValid();
 }
 
-void Processing::blockBuffersForAcquisitionSystem(AcquisitionSystem *system) {
-		foreach(auto flag, system->buffer->bufferReadyArray){
-			flag = true;
-		}
+void Processing::blockBuffersForAcquisitionSystem(AcquisitionSystem* system) {
+	for(int i = 0; i < system->buffer->bufferReadyArray.size(); ++i) {
+		system->buffer->bufferReadyArray[i] = true;
+	}
 }
 
-void Processing::unblockBuffersForAcquisitionSystem(AcquisitionSystem *system) {
-		foreach(auto flag, system->buffer->bufferReadyArray){
-			flag = false;
-		}
+void Processing::unblockBuffersForAcquisitionSystem(AcquisitionSystem* system) {
+	for(int i = 0; i < system->buffer->bufferReadyArray.size(); ++i) {
+		system->buffer->bufferReadyArray[i] = false;
+	}
 }
 
 void Processing::slot_start(AcquisitionSystem* system){
