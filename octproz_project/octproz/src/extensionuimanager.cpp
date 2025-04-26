@@ -22,8 +22,7 @@ ExtensionUIManager::~ExtensionUIManager()
 
 }
 
-void ExtensionUIManager::initialize(ExtensionManager* extManager)
-{
+void ExtensionUIManager::initialize(ExtensionManager* extManager) {
 	this->extManager = extManager;
 
 	// Create extension actions for each extension
@@ -98,10 +97,8 @@ void ExtensionUIManager::saveExtensionStates() {
 }
 
 void ExtensionUIManager::autoLoadExtensions() {
-	// Get settings from app
 	QVariantMap mainWindowSettings = this->appSettings->getStoredSettings(MAIN_WINDOW_SETTINGS_GROUP);
 
-	// Check if the settings contain autoload extension list
 	if (!mainWindowSettings.contains(MAIN_ACTIVE_EXTENSIONS)) {
 		return;
 	}
@@ -111,11 +108,10 @@ void ExtensionUIManager::autoLoadExtensions() {
 		return;
 	}
 
-	// Iterate through all extension actions and trigger those in the autoload list
 	foreach (QAction* action, this->extensionActions) {
 		if (autoloadExtensions.contains(action->text())) {
 			if (!action->isChecked()) {
-				// Triggering the action will call slot_menuExtensions with the action as sender
+				//triggering the action will call slot_menuExtensions with the action as sender
 				action->trigger();
 			}
 		}
@@ -130,7 +126,6 @@ void ExtensionUIManager::slot_menuExtensions() {
 }
 
 void ExtensionUIManager::slot_uncheckExtensionInMenu(Extension* extension) {
-	// Get corresponding action to closed extension
 	QString extensionName = extension->getName();
 	QAction* currAction = nullptr;
 	foreach(auto action, this->extensionActions) {
@@ -140,12 +135,10 @@ void ExtensionUIManager::slot_uncheckExtensionInMenu(Extension* extension) {
 		}
 	}
 
-	// Uncheck action in menu if found
 	if(currAction) {
 		currAction->setChecked(false);
 	}
 
-	// Emit signal to deactivate extension
 	emit extensionActivationRequested(extensionName, false);
 }
 
@@ -161,27 +154,22 @@ void ExtensionUIManager::slot_handleExtensionLoading(Extension* extension, bool 
 	}
 }
 
-void ExtensionUIManager::slot_enableRawGrabbing(bool allowed)
-{
+void ExtensionUIManager::slot_enableRawGrabbing(bool allowed) {
 	this->extManager->slot_enableRawGrabbing(allowed);
 }
 
-void ExtensionUIManager::connectExtensionWithSidebar(Extension* extension)
-{
+void ExtensionUIManager::connectExtensionWithSidebar(Extension* extension) {
 	if (!extension) return;
 
-	// Connect coefficient exchange signals
 	connect(extension, &Plugin::setKLinCoeffsRequest, this->app, &OCTproZApp::slot_setKLinCoeffs);
 	connect(extension, &Plugin::setDispCompCoeffsRequest, this->sidebar, &Sidebar::slot_setDispCompCoeffs);
 	connect(this->sidebar, &Sidebar::klinCoeffs, extension, &Plugin::setKLinCoeffsRequestAccepted);
 	connect(this->sidebar, &Sidebar::dispCompCoeffs, extension, &Plugin::setDispCompCoeffsRequestAccepted);
 }
 
-void ExtensionUIManager::disconnectExtensionFromSidebar(Extension* extension)
-{
+void ExtensionUIManager::disconnectExtensionFromSidebar(Extension* extension) {
 	if (!extension) return;
 
-	// Disconnect coefficient exchange signals
 	disconnect(extension, &Plugin::setKLinCoeffsRequest, this->app, &OCTproZApp::slot_setKLinCoeffs);
 	disconnect(extension, &Plugin::setDispCompCoeffsRequest, this->sidebar, &Sidebar::slot_setDispCompCoeffs);
 	disconnect(this->sidebar, &Sidebar::klinCoeffs, extension, &Plugin::setKLinCoeffsRequestAccepted);
@@ -205,31 +193,37 @@ void ExtensionUIManager::removeExtensionFromSidebar(QTabWidget* tabWidget, Exten
 	}
 }
 
-void ExtensionUIManager::createExtensionWindow(Extension* extension)
-{
-    if (!extension) return;
+void ExtensionUIManager::createExtensionWindow(Extension* extension) {
+	if (!extension) return;
 
-    QWidget* extensionWidget = extension->getWidget();
-    extensionWidget->setWindowFlags(Qt::Window);
-    extensionWidget->setWindowFlag(Qt::WindowStaysOnTopHint);
-    extensionWidget->setAttribute(Qt::WA_DeleteOnClose, false);
-    extensionWidget->setWindowTitle(extension->getName());
+	QWidget* extensionWidget = extension->getWidget();
+	extensionWidget->setParent(qobject_cast<QWidget*>(this->parent()), Qt::Tool);
+	extensionWidget->setAttribute(Qt::WA_DeleteOnClose, false);
+	extensionWidget->setWindowTitle(extension->getName());
 
-    // Add window closing event filter - make sure ExtensionEventFilter is properly included
-    ExtensionEventFilter* extensionCloseSignalForwarder = new ExtensionEventFilter(extensionWidget);
-    extensionCloseSignalForwarder->setExtension(extension);
-    extensionWidget->installEventFilter(extensionCloseSignalForwarder);
+	if (!extensionWidget->property("eventFilterInstalled").toBool()) {
+		//first-time setup only: create and install the event filter
+		ExtensionEventFilter* extensionCloseSignalForwarder = new ExtensionEventFilter(extensionWidget);
+		extensionCloseSignalForwarder->setExtension(extension);
+		extensionWidget->installEventFilter(extensionCloseSignalForwarder);
 
-    // Use the proper signal name from ExtensionEventFilter
-    connect(extensionCloseSignalForwarder, &ExtensionEventFilter::extensionWidgetClosed,
-            this, &ExtensionUIManager::slot_uncheckExtensionInMenu);
+		connect(extensionCloseSignalForwarder, &ExtensionEventFilter::extensionWidgetClosed,
+			this, &ExtensionUIManager::slot_uncheckExtensionInMenu);
 
-    extensionWidget->show();
+		extensionWidget->setProperty("eventFilterInstalled", true);
+	}
+
+	//delay show() to the next event loop cycle (0ms in QTimer::singleShot means it runs after pending events)
+	//to ensure proper window initialization before starting extension logic (required for the camera extension to work on startup, and maybe for other extensions too)
+	QTimer::singleShot(0, this, [this, extension, extensionWidget]() {
+		extensionWidget->show();
+	});
 }
 
 void ExtensionUIManager::closeExtensionWindow(Extension* extension) {
 	if (!extension) return;
 
 	QWidget* extensionWidget = extension->getWidget();
+	extensionWidget->setParent(nullptr); //prevents the app from crashing on close. Each extensionWidget is deleted by its respective extension; if it still has a parent, use-after-free might occur because the parent will attempt to access or delete it during its own destruction.
 	extensionWidget->close();
 }
