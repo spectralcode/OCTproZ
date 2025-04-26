@@ -10,6 +10,8 @@ class RecordingScheduler : public QObject
 	Q_OBJECT
 
 public:
+	const int DELAY_RETRY_SECONDS = 10;
+
 	explicit RecordingScheduler(QObject* parent = nullptr);
 	~RecordingScheduler();
 
@@ -32,6 +34,7 @@ signals:
 	void progressUpdated(int recordingsCompleted, int totalRecordings);
 	void timeUntilNextRecordingUpdated(int seconds);
 	void scheduleCompleted();
+	void delayOccurred(int delaySeconds);
 	void info(QString infoMessage);
 	void error(QString errorMessage);
 

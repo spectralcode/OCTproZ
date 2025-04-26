@@ -109,11 +109,6 @@ void RecordingScheduler::recordingFinished() {
 		emit scheduleCompleted();
 		return;
 	}
-
-	// Schedule next recording
-	this->nextRecordingTime = QDateTime::currentDateTime().addSecs(this->intervalSeconds);
-	this->intervalTimer->start(this->intervalSeconds * 1000);
-	emit info(tr("Next scheduled recording in %1 seconds").arg(this->intervalSeconds));
 }
 
 void RecordingScheduler::startDelayFinished() {
@@ -121,9 +116,20 @@ void RecordingScheduler::startDelayFinished() {
 		return;
 	}
 
+	if (!this->previousRecordingComplete) {
+		emit error(tr("Previous recording is still in progress. Delaying first recording by 10 seconds."));
+		this->nextRecordingTime = QDateTime::currentDateTime().addSecs(DELAY_RETRY_SECONDS);
+		this->startDelayTimer->start(DELAY_RETRY_SECONDS * 1000);
+		return;
+	}
+
 	this->previousRecordingComplete = false;
 	emit info(tr("Starting scheduled recording 1 of %1").arg(this->totalRecordings));
 	emit recordingTriggered();
+
+	// Schedule next start time (start-to-start)
+	this->nextRecordingTime = QDateTime::currentDateTime().addSecs(this->intervalSeconds);
+	this->intervalTimer->start(this->intervalSeconds * 1000);
 }
 
 void RecordingScheduler::interval() {
@@ -131,18 +137,23 @@ void RecordingScheduler::interval() {
 		return;
 	}
 
-	// Only start next recording if previous one completed
-	if (this->previousRecordingComplete) {
-		this->previousRecordingComplete = false;
-		emit info(tr("Starting scheduled recording %1 of %2").arg(this->recordingsCompleted + 1).arg(this->totalRecordings));
-		emit recordingTriggered();
-	} else {
-		emit error(tr("Previous recording is still in progress. Next recording delayed. Consider increasing the interval between recordings."));
+	// Schedule next start time (start-to-start timing)
+	this->nextRecordingTime = QDateTime::currentDateTime().addSecs(this->intervalSeconds);
+	this->intervalTimer->start(this->intervalSeconds * 1000);
 
-		// Reschedule for another attempt after a short delay (10 seconds)
-		this->nextRecordingTime = QDateTime::currentDateTime().addSecs(10);
-		this->intervalTimer->start(10 * 1000);
+	// If the previous recording hasn't completed, delay this attempt
+	if (!this->previousRecordingComplete) {
+		emit error(tr("Previous recording is still in progress. Delaying this recording by 10 seconds."));
+		emit delayOccurred(DELAY_RETRY_SECONDS);
+		this->nextRecordingTime = QDateTime::currentDateTime().addSecs(DELAY_RETRY_SECONDS);
+		this->intervalTimer->start(DELAY_RETRY_SECONDS * 1000);
+		return;
 	}
+
+	// Safe to start the next recording
+	this->previousRecordingComplete = false;
+	emit info(tr("Starting scheduled recording %1 of %2").arg(this->recordingsCompleted + 1).arg(this->totalRecordings));
+	emit recordingTriggered();
 }
 
 void RecordingScheduler::updateTimeUntilNext() {
