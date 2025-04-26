@@ -11,7 +11,8 @@ RecordingSchedulerWidget::RecordingSchedulerWidget(QObject* parent)
 	  scheduler(new RecordingScheduler(this)),
 	  name("recording-scheduler"),
 	  startDelaySeconds(0),
-	  intervalSeconds(0)
+	  intervalSeconds(0),
+	  delayCount(0)
 {
 	this->setWindowTitle(tr("Recording Scheduler"));
 	//this->setWindowIcon(QIcon(":/icons/octproz_time_icon.png"));
@@ -86,6 +87,7 @@ void RecordingSchedulerWidget::scheduleStarted() {
 	this->startDelayTimeEdit->setEnabled(false);
 	this->intervalTimeEdit->setEnabled(false);
 	this->totalRecordingsSpinBox->setEnabled(false);
+	this->delayCount = 0;
 }
 
 void RecordingSchedulerWidget::scheduleStopped() {
@@ -124,6 +126,12 @@ void RecordingSchedulerWidget::progressUpdated(int completed, int total) {
 
 void RecordingSchedulerWidget::timeUntilNextUpdated(int seconds) {
 	this->nextRecordingLabel->setVisible(seconds > 0);
+
+	// Reset style back to default if it's showing a delay warning
+	if (seconds > 0) {
+		this->nextRecordingTimeLabel->setStyleSheet(DEFAULT_TIME_LABEL_STYLE);
+	}
+
 	this->nextRecordingTimeLabel->setText(this->formatTimeRemaining(seconds));
 }
 
@@ -138,6 +146,8 @@ void RecordingSchedulerWidget::startSchedule() {
 	this->nextRecordingTimeLabel->setStyleSheet(DEFAULT_TIME_LABEL_STYLE);
 
 	this->scheduler->startSchedule(this->startDelaySeconds, this->intervalSeconds, this->totalRecordingsSpinBox->value());
+
+	this->warningLabel->setVisible(false);
 }
 
 void RecordingSchedulerWidget::stopSchedule() {
@@ -267,13 +277,20 @@ void RecordingSchedulerWidget::initGui() {
 	this->nextRecordingLayout = new QHBoxLayout();
 	this->nextRecordingLabel = new QLabel(tr("Next recording in:"));
 	this->nextRecordingTimeLabel = new QLabel(tr("Waiting to Start"));
-	this->nextRecordingTimeLabel->setStyleSheet("QLabel { font-weight: bold; }");
+	this->nextRecordingTimeLabel->setStyleSheet(DEFAULT_TIME_LABEL_STYLE);
 
 	this->nextRecordingLabel->setVisible(false);
 	this->nextRecordingLayout->addWidget(nextRecordingLabel);
 	this->nextRecordingLayout->addWidget(nextRecordingTimeLabel);
 	this->nextRecordingLayout->addStretch(1);
 	this->statusLayout->addLayout(nextRecordingLayout);
+
+	// Warning label (hidden by default)
+	this->warningLabel = new QLabel();
+	this->warningLabel->setWordWrap(true); // Enable word wrap
+	this->warningLabel->setStyleSheet("QLabel { font-weight: bold; color: orange; }");
+	this->warningLabel->setVisible(false);
+	this->statusLayout->addWidget(this->warningLabel);
 
 	// Add groups to main layout
 	this->mainLayout->addWidget(settingsGroup);
@@ -294,4 +311,12 @@ void RecordingSchedulerWidget::setupConnections() {
 	connect(this->scheduler, &RecordingScheduler::scheduleCompleted, this, &RecordingSchedulerWidget::scheduleCompleted);
 	connect(this->scheduler, &RecordingScheduler::info, this, &RecordingSchedulerWidget::info);
 	connect(this->scheduler, &RecordingScheduler::error, this, &RecordingSchedulerWidget::error);
+
+	connect(this->scheduler, &RecordingScheduler::delayOccurred, this, [this](int delaySeconds) {
+		this->delayCount++;
+		QString warning = tr("Warning: The system couldn't keep up. Please increase the interval between recordings. Delay of %1 seconds applied. Total delays: %2")
+			.arg(delaySeconds).arg(this->delayCount);
+		this->warningLabel->setText(warning);
+		this->warningLabel->setVisible(true);
+	});
 }

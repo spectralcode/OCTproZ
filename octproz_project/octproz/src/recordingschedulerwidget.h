@@ -62,6 +62,7 @@ private:
 	QString name;
 	int startDelaySeconds;
 	int intervalSeconds;
+	int delayCount;
 	QString formatTimeRemaining(int seconds);
 	void initGui();
 	void setupConnections();
@@ -99,6 +100,7 @@ private:
 	QHBoxLayout* nextRecordingLayout;
 	QLabel* nextRecordingLabel;
 	QLabel* nextRecordingTimeLabel;
+	QLabel* warningLabel;
 };
 
 #endif // RECORDINGSCHEDULERWIDGET_H
