@@ -1,6 +1,12 @@
+<div class="manual-header">
+	<h1>Welcome to the OCTproZ v1.8.0 User Manual!</h1>
+	<p><em>Date: April 27, 2025 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</e></p>
+</div>
 
-# Welcome to the OCTproZ v1.8.0 User Manual!
-*Date: April 10, 2025 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)*
+<figure markdown="span">
+	![Screenshot of OCTproZ user interface](images/octproz_screenshot_ubuntu_strawberry.png)
+	<figcaption></figcaption>
+</figure>
 
 ## About
 

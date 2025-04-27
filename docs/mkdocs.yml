@@ -28,8 +28,8 @@ theme:
 #    - navigation.instant  # with this search index survives navigation
     - header.autohide #  header is automatically hidden when the user scrolls past a certain threshold
 
-#extra_css:
-#    - css/custom.css
+extra_css:
+    - css/custom.css
 
 extra_javascript:
   - js/mathjax.js

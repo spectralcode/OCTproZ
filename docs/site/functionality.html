@@ -54,6 +54,8 @@
       
     
     
+      <link rel="stylesheet" href="css/custom.css">
+    
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -389,6 +391,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Recording tab">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filename-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filename breakdown
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recording-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recording parameter
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -410,9 +436,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#saving-and-loading-view" class="md-nav__link">
+  <a href="#saving-and-loading-view-layout" class="md-nav__link">
     <span class="md-ellipsis">
-      Saving and loading view
+      Saving and loading view layout
     </span>
   </a>
   
@@ -738,6 +764,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Recording tab">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filename-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filename breakdown
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recording-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recording parameter
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -759,9 +809,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#saving-and-loading-view" class="md-nav__link">
+  <a href="#saving-and-loading-view-layout" class="md-nav__link">
     <span class="md-ellipsis">
-      Saving and loading view
+      Saving and loading view layout
     </span>
   </a>
   
@@ -784,16 +834,255 @@
 
 
 <h1 id="core-functionality">Core Functionality</h1>
-<div class="admonition failure">
-<p class="admonition-title">Failure</p>
-<p>This part of the documentation is still work in progress.</p>
-</div>
+<p>This section explains the core functionality accessible through the GUI, excluding any plugin features.</p>
 <h2 id="overview-of-the-graphical-user-interface">Overview of the graphical user interface</h2>
+<figure>
+    <img alt="Screenshot of OCTproZ with labeled GUI elements" src="images/functionality/screenshot_overview.png" />
+    <figcaption>Overview of the main GUI elements of OCTproZ</figcaption>
+</figure>
+<ul>
+<li><strong>Menu Bar</strong>: Contains the menus <code>File</code>, <code>View</code>, <code>Extras</code>, and <code>Help</code>. Plugins can be accessed through <code>Extras → Extension</code>.</li>
+<li><strong>Toolbar</strong>: Provides direct access to frequently used functionalities, such as opening output windows, displaying the messaging console, and enabling/disabling the orientation marker within the B-scan and en face view.</li>
+<li><strong>Sidebar</strong>: This is the central control interface. At the top, it contains the <em>Start Acquisition</em>, <em>Stop Acquisition</em>, <em>Start Recording</em>, <em>Connect OCT System</em>, and <em>OCT System Settings</em> buttons. The sidebar also includes the Processing and Recording tabs, as well as additional plugin-related tabs (if activated). At the bottom, it features an information area that displays current acquisition speed.</li>
+<li><strong>Messaging Console</strong>: Displays info and error messages.</li>
+<li><strong>Output Windows</strong>:  Includes 1D, B-scan, en face view, and volume windows, which can be enabled through the toolbar or the <code>View</code> menu in the menu bar. </li>
+</ul>
 <h2 id="processing-tab">Processing tab</h2>
+<p>The processing tab in the sidebar allows you to control all signal processing settings. For an in-depth explanation of each processing step, refer to the <a href="processing.html">processing section</a>. Below is a brief description of each parameter available in the processing tab:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bit shift raw sample values by 4</td>
+<td>Divides each raw sample value by 16 (for digitizers storing 12-bit samples in 16-bit words).</td>
+</tr>
+<tr>
+<td>Sinusoidal scan correction</td>
+<td>Corrects distortions from sinusoidal scanning motion via linear interpolation.</td>
+</tr>
+<tr>
+<td>Flip every second B-scan</td>
+<td>Unflips every second B-scan in bidirectional scanning schemes.</td>
+</tr>
+<tr>
+<td>Rolling average background removal</td>
+<td>Removes the DC background using a rolling average filter.</td>
+</tr>
+<tr>
+<td>Window size</td>
+<td>Number of samples used for rolling average background removal.</td>
+</tr>
+<tr>
+<td>k-linearization</td>
+<td>Resamples raw data for uniform k-space sampling.</td>
+</tr>
+<tr>
+<td>Interpolation</td>
+<td>Method used for resampling during k-linearization (Linear, Cubic Spline, Lanczos).</td>
+</tr>
+<tr>
+<td>c<sub>0</sub> to c<sub>3</sub></td>
+<td>Coefficients for resampling curve polynomial used for k-linearization.</td>
+</tr>
+<tr>
+<td>Dispersion compensation</td>
+<td>Numerically compensates for dispersion mismatch between OCT sample and reference arms.</td>
+</tr>
+<tr>
+<td>d<sub>0</sub> to d<sub>3</sub></td>
+<td>Coefficients for dispersion compensation phase function. d<sub>0</sub>: no effect, d<sub>1</sub>, shifts OCT image axially, d<sub>2</sub> and d<sub>3</sub>: affect axial resolution</td>
+</tr>
+<tr>
+<td>Windowing</td>
+<td>Applies a window function to reduce side lobes in the IFFT result.</td>
+</tr>
+<tr>
+<td>Window Type</td>
+<td>Selects the window function type (Gaussian, Hann, Sine, Lanczos, Rectangular).</td>
+</tr>
+<tr>
+<td>Fill Factor</td>
+<td>Controls the width of the window function.</td>
+</tr>
+<tr>
+<td>Center Position</td>
+<td>Defines the center of the window function. Typically set to 0.5, but can be adjusted (especially with a narrow window width) to select a specific spectral range for OCT processing.</td>
+</tr>
+<tr>
+<td>Fixed-pattern noise removal</td>
+<td>Removes structural artifacts (static horizontal lines).</td>
+</tr>
+<tr>
+<td>B-scans for noise determination</td>
+<td>Number of B-scans used to determine the fixed-pattern noise profile.</td>
+</tr>
+<tr>
+<td>Log scaling</td>
+<td>Applies logarithmic scaling.</td>
+</tr>
+<tr>
+<td>Max value</td>
+<td>Sets the upper limit for grayscale scaling (in dB if log scaling is enabled; linear otherwise).</td>
+</tr>
+<tr>
+<td>Min value</td>
+<td>Sets the lower limit for grayscale scaling. (in dB if log scaling is enabled; linear otherwise).</td>
+</tr>
+<tr>
+<td>Multiplicator</td>
+<td>Adjusts image contrast in grayscale conversion. Typically this is set to 1.0.</td>
+</tr>
+<tr>
+<td>Offset</td>
+<td>Adjusts image brightness in grayscale conversion. Typically this is set to 0.0.</td>
+</tr>
+<tr>
+<td>Post processing background removal</td>
+<td>Subtracts a pre-recorded background A-scan to reduce static artifacts that are not removed by DC background removal and fixed pattern noise removal.</td>
+</tr>
+<tr>
+<td>Weight</td>
+<td>Scaling factor for background subtraction.</td>
+</tr>
+</tbody>
+</table>
+<p>For easy access, you can load custom resampling curves not only through <code>Extras → Resampling Curve for K-linearization</code>, but also by right-clicking inside the <em>k-linearization</em> group box (outside of the plot). For example, you can right-click right next to the <em>Interpolation</em> drop-down menu and a context menu will appear where you can select to load a custom resampling curve.</p>
 <h2 id="recording-tab">Recording tab</h2>
+<p>The Recording tab in the sidebar allows you to configure recording settings.</p>
+<p>Before pressing the <em>Record</em> button, you must configure these settings—especially the <strong>recording path</strong>. If the recording path is not set, recording will not occur, and you will receive an error message in the message console.</p>
+<p>The configured settings are applied to all recordings. Each recorded file will be automatically named using the following format:</p>
+<pre><code>yyyyMMdd_hhmmsszzz_&lt;yourfilename&gt;_&lt;processed|raw&gt;.raw
+</code></pre>
+<h3 id="filename-breakdown">Filename breakdown</h3>
+<ul>
+<li><code>yyyy</code> = <strong>Year</strong> (4 digits)  </li>
+<li><code>MM</code> = <strong>Month</strong> (2 digits)  </li>
+<li><code>dd</code> = <strong>Day</strong> (2 digits)  </li>
+<li><code>hh</code> = <strong>Hour</strong> (2 digits, 24-hour format)  </li>
+<li><code>mm</code> = <strong>Minute</strong> (2 digits)  </li>
+<li><code>ss</code> = <strong>Second</strong> (2 digits)  </li>
+<li><code>zzz</code> = <strong>Milliseconds</strong> (3 digits)  </li>
+<li><code>&lt;yourfilename&gt;</code> = The custom filename you provide in the recording settings  </li>
+<li><code>&lt;processed|raw&gt;</code> = Indicates whether the recording is <strong>processed</strong> or <strong>raw</strong> data  </li>
+<li><code>.raw</code> = The file extension (recording is saved as a raw binary file)</li>
+</ul>
+<p><strong>Example filename:</strong></p>
+<pre><code>20250427_153045123_apple1_processed.raw
+</code></pre>
+<p>In this example:</p>
+<ul>
+<li>The recording was made on <strong>April 27, 2025</strong>, at <strong>15:30:45.123</strong> (3:30 PM and 45.123 seconds).</li>
+<li>The user-provided filename was <code>apple1</code>.</li>
+<li>The file contains <strong>processed</strong> data.</li>
+</ul>
+<p>You also have the option to set a description text, which is saved in a meta file alongside the recording (if save meta information is enabled). The meta file contains all the processing and recording settings used at the time of recording. This meta file is the same as the settings file that can be saved and loaded through the menu bar (see section <a href="#saving-and-loading-settings">Saving and Loading Settings</a>).</p>
+<h3 id="recording-parameter">Recording parameter</h3>
+<p>Below is a brief description of each parameter available in the recording tab:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Recordings folder</td>
+<td>Sets the destination folder where recordings are saved.</td>
+</tr>
+<tr>
+<td>Screenshots</td>
+<td>Enables saving of screenshots of the currently visible output windows (B-scan, en face view, volume) during recording.</td>
+</tr>
+<tr>
+<td>Raw buffers</td>
+<td>Enables recording of raw spectral buffers.</td>
+</tr>
+<tr>
+<td>Processed buffers</td>
+<td>Enables recording of processed data buffers.</td>
+</tr>
+<tr>
+<td>Recording name</td>
+<td>Specifies the name of the recording session. This name will be included as part of the file name.</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>Adds a text description that is saved in the meta file.</td>
+</tr>
+<tr>
+<td>Start recording with first buffer of volume</td>
+<td>Starts recording with the first buffer of a volume. This is only useful if you have multiple buffers per volume and want to guarantee that recording begins with the first buffer of the volume, rather than the buffer that is currently being acquired when the record button is pressed.</td>
+</tr>
+<tr>
+<td>Stop acquisition after record</td>
+<td>Stops data acquisition and processing automatically after the recording is complete.</td>
+</tr>
+<tr>
+<td>Save meta information</td>
+<td>Saves additional meta information alongside recorded data. Same as <code>File → Save Settings to File</code>.</td>
+</tr>
+<tr>
+<td>Save processed buffers as 32-bit float</td>
+<td>Saves processed data buffers in 32-bit floating-point format. If disabled, the data will be saved using the same bit depth as the input raw data.</td>
+</tr>
+<tr>
+<td>Buffers to record</td>
+<td>Sets the number of buffers to record.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="scheduled-recording">Scheduled recording</h2>
+<p>The Recording Scheduler (screenshot below) is available under <code>Extras → Scheduled Recording</code>. It allows you to automatically perform recordings at defined intervals, useful for generating time-series. </p>
+<figure>
+    <img alt="Screenshot of Recording Scheduler Interface" src="images/functionality/recording_scheduler_screenshot.png" />
+    <figcaption>Recording Scheduler Interface</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ensure the interval between recordings is longer than the total time needed for a single recording (data acquisition + saving to disk). Overlapping recordings are not possible. If a recording takes longer than the defined interval a warning is shown, and the scheduler will retry after a 10-second delay.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start first recording in</td>
+<td>Time delay before the first recording starts after clicking <em>Start Schedule</em> (format: hh:mm:ss).</td>
+</tr>
+<tr>
+<td>Wait between recordings</td>
+<td>Interval between the start times of consecutive recordings (format: hh:mm:ss).</td>
+</tr>
+<tr>
+<td>Total recordings</td>
+<td>Total number of recordings to perform in the scheduled task.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="saving-and-loading-settings">Saving and loading settings</h2>
-<h2 id="saving-and-loading-view">Saving and loading view</h2>
+<ul>
+<li><code>File → Save Settings to File</code>: Saves the current configuration (processing parameters, recording setup, system settings, and active plugins) to an <code>*.ini</code> file.</li>
+<li><code>File → Load Settings from File</code>: Loads a previously saved settings file.</li>
+</ul>
+<h2 id="saving-and-loading-view-layout">Saving and loading view layout</h2>
+<ul>
+<li><code>View → Save Current Layout to File</code>: Saves the current window arrangement, visibility states, and panel sizes to an <code>*.ini</code> file.</li>
+<li><code>View → Load Layout from File</code>: Restores a previously saved layout file.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All extension settings (including layout information, if provided by the extension) are currently stored in the settings file. This behavior may change in the future.</p>
+</div>
 
 
 
