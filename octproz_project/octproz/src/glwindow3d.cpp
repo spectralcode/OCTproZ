@@ -588,6 +588,15 @@ void GLWindow3D::saveSettings() {
 }
 
 void GLWindow3D::saveScreenshot(QString savePath, QString fileName) {
+	QDir dir(savePath);
+	if (savePath.isEmpty() || !dir.exists()) {
+		emit error(tr("Save path is empty or invalid. Screenshot not saved."));
+		return;
+	}
+	if (fileName.isEmpty()) {
+		emit error(tr("File name is empty. Screenshot not saved."));
+		return;
+	}
 	QImage screenshot = this->grabFramebuffer();
 	QString filePath = savePath + "/" + fileName;
 	screenshot.save(filePath);

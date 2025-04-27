@@ -26,6 +26,7 @@
 **/
 
 #include "recorder.h"
+#include <QDir>
 
 Recorder::Recorder(QString name){
 	this->name = name;
@@ -62,11 +63,20 @@ void Recorder::slot_abortRecording(){
 
 void Recorder::slot_init(OctAlgorithmParameters::RecordingParams recParams){
 	this->currRecParams = recParams;
+
+	QDir dir(this->currRecParams.savePath);
+	if (this->currRecParams.savePath.isEmpty() || !dir.exists()) {
+		emit error(tr("Recording not initialized: save path is empty or invalid."));
+		this->uninit();
+		return;
+	}
+
 	this->recBuffer = (char*)malloc(this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes);
 	QString userSetFileName = this->currRecParams.fileName;
 		if (userSetFileName != "") {
 		userSetFileName = "_" + userSetFileName;
 	}
+
 	this->savePath = this->currRecParams.savePath + "/" + this->currRecParams.timestamp + userSetFileName + "_" + this->name + ".raw";
 	this->initialized = true;
 	this->recordingFinished = false;
