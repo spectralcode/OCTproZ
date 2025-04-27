@@ -382,6 +382,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Processing tab">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#loading-custom-resampling-curves" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading custom resampling curves
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -755,6 +770,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Processing tab">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#loading-custom-resampling-curves" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading custom resampling curves
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -951,7 +981,18 @@
 </tr>
 </tbody>
 </table>
-<p>For easy access, you can load custom resampling curves not only through <code>Extras → Resampling Curve for K-linearization</code>, but also by right-clicking inside the <em>k-linearization</em> group box (outside of the plot). For example, you can right-click right next to the <em>Interpolation</em> drop-down menu and a context menu will appear where you can select to load a custom resampling curve.</p>
+<h3 id="loading-custom-resampling-curves">Loading custom resampling curves</h3>
+<p>There are two ways to load a custom resampling curve for <em>k</em>-linearization:</p>
+<ol>
+<li>
+<p>Use the menu bar:<br />
+   Navigate to <code>Extras → Resampling curve for k-linearization → Load custom curve from file...</code>.</p>
+</li>
+<li>
+<p>Use right-click in the sidebar:<br />
+   Right-click anywhere within the <em>k-linearization</em> group box, outside the plot area, to open a context menu. For example, right-clicking in the empty area next to the <em>Interpolation</em> drop-down menu to access the option for loading a custom resampling curve.</p>
+</li>
+</ol>
 <h2 id="recording-tab">Recording tab</h2>
 <p>The Recording tab in the sidebar allows you to configure recording settings.</p>
 <p>Before pressing the <em>Record</em> button, you must configure these settings—especially the <strong>recording path</strong>. If the recording path is not set, recording will not occur, and you will receive an error message in the message console.</p>
@@ -960,15 +1001,15 @@
 </code></pre>
 <h3 id="filename-breakdown">Filename breakdown</h3>
 <ul>
-<li><code>yyyy</code> = <strong>Year</strong> (4 digits)  </li>
-<li><code>MM</code> = <strong>Month</strong> (2 digits)  </li>
-<li><code>dd</code> = <strong>Day</strong> (2 digits)  </li>
-<li><code>hh</code> = <strong>Hour</strong> (2 digits, 24-hour format)  </li>
-<li><code>mm</code> = <strong>Minute</strong> (2 digits)  </li>
-<li><code>ss</code> = <strong>Second</strong> (2 digits)  </li>
-<li><code>zzz</code> = <strong>Milliseconds</strong> (3 digits)  </li>
+<li><code>yyyy</code> = Year (4 digits)  </li>
+<li><code>MM</code> = Month (2 digits)  </li>
+<li><code>dd</code> = Day (2 digits)  </li>
+<li><code>hh</code> = Hour (2 digits, 24-hour format)  </li>
+<li><code>mm</code> = Minute (2 digits)  </li>
+<li><code>ss</code> = Second (2 digits)  </li>
+<li><code>zzz</code> = Milliseconds (3 digits)  </li>
 <li><code>&lt;yourfilename&gt;</code> = The custom filename you provide in the recording settings  </li>
-<li><code>&lt;processed|raw&gt;</code> = Indicates whether the recording is <strong>processed</strong> or <strong>raw</strong> data  </li>
+<li><code>&lt;processed|raw&gt;</code> = Indicates whether the recording is processed or raw data  </li>
 <li><code>.raw</code> = The file extension (recording is saved as a raw binary file)</li>
 </ul>
 <p><strong>Example filename:</strong></p>
@@ -977,10 +1018,10 @@
 <p>In this example:</p>
 <ul>
 <li>The recording was made on <strong>April 27, 2025</strong>, at <strong>15:30:45.123</strong> (3:30 PM and 45.123 seconds).</li>
-<li>The user-provided filename was <code>apple1</code>.</li>
+<li>The user-provided filename was <strong>apple1</strong>.</li>
 <li>The file contains <strong>processed</strong> data.</li>
 </ul>
-<p>You also have the option to set a description text, which is saved in a meta file alongside the recording (if save meta information is enabled). The meta file contains all the processing and recording settings used at the time of recording. This meta file is the same as the settings file that can be saved and loaded through the menu bar (see section <a href="#saving-and-loading-settings">Saving and Loading Settings</a>).</p>
+<p>You also have the option to set a description text, which is saved in a meta file alongside the recording (if save meta information is enabled). The meta file contains all the processing and recording settings used at the time of recording. This meta file is the same as the settings file that can be saved and loaded through the menu bar (see section <a href="#saving-and-loading-settings">Saving and loading settings</a>).</p>
 <h3 id="recording-parameter">Recording parameter</h3>
 <p>Below is a brief description of each parameter available in the recording tab:</p>
 <table>

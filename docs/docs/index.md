@@ -1,6 +1,6 @@
 <div class="manual-header">
 	<h1>Welcome to the OCTproZ v1.8.0 User Manual!</h1>
-	<p><em>Date: April 27, 2025 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</e></p>
+	<p><em>Date: April 27, 2025 &emsp; Author: Miroslav Zabic (zabic<span style="display:none">magic</span>@spectralcode.de)</em></p>
 </div>
 
 <figure markdown="span">
@@ -10,7 +10,7 @@
 
 ## About
 
-OCTproZ is an open source and cross-platform software for optical coherence tomography (OCT) processing and visualization. A plug-in system enables the integration of custom OCT systems and software modules. You can find the most recent software release on the [GitHub project page](https://github.com/spectralcode/OCTproZ).
+OCTproZ is an open source and cross-platform software for optical coherence tomography (OCT) processing and visualization. A plugin system enables the integration of custom OCT systems and software modules. You can find the most recent software release on the [GitHub project page](https://github.com/spectralcode/OCTproZ).
 
 ## User Guide
 This is the user guide for OCTproZ. Browse by categories on the left, or if you are looking for a specific topic, use the search bar at the top of the page.

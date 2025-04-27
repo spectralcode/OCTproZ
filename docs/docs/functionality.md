@@ -46,7 +46,16 @@ The processing tab in the sidebar allows you to control all signal processing se
 | Post processing background removal | Subtracts a pre-recorded background A-scan to reduce static artifacts that are not removed by DC background removal and fixed pattern noise removal. |
 | Weight                             | Scaling factor for background subtraction. |
 
-For easy access, you can load custom resampling curves not only through `Extras → Resampling Curve for K-linearization`, but also by right-clicking inside the *k-linearization* group box (outside of the plot). For example, you can right-click right next to the *Interpolation* drop-down menu and a context menu will appear where you can select to load a custom resampling curve.
+
+### Loading custom resampling curves
+
+There are two ways to load a custom resampling curve for *k*-linearization:
+
+1. Use the menu bar:  
+   Navigate to `Extras → Resampling curve for k-linearization → Load custom curve from file...`.
+
+2. Use right-click in the sidebar:  
+   Right-click anywhere within the *k-linearization* group box, outside the plot area, to open a context menu. For example, right-clicking in the empty area next to the *Interpolation* drop-down menu to access the option for loading a custom resampling curve.
 
 
 ## Recording tab
@@ -62,15 +71,15 @@ yyyyMMdd_hhmmsszzz_<yourfilename>_<processed|raw>.raw
 ```
 
 ### Filename breakdown
-- `yyyy` = **Year** (4 digits)  
-- `MM` = **Month** (2 digits)  
-- `dd` = **Day** (2 digits)  
-- `hh` = **Hour** (2 digits, 24-hour format)  
-- `mm` = **Minute** (2 digits)  
-- `ss` = **Second** (2 digits)  
-- `zzz` = **Milliseconds** (3 digits)  
+- `yyyy` = Year (4 digits)  
+- `MM` = Month (2 digits)  
+- `dd` = Day (2 digits)  
+- `hh` = Hour (2 digits, 24-hour format)  
+- `mm` = Minute (2 digits)  
+- `ss` = Second (2 digits)  
+- `zzz` = Milliseconds (3 digits)  
 - `<yourfilename>` = The custom filename you provide in the recording settings  
-- `<processed|raw>` = Indicates whether the recording is **processed** or **raw** data  
+- `<processed|raw>` = Indicates whether the recording is processed or raw data  
 - `.raw` = The file extension (recording is saved as a raw binary file)
 
 **Example filename:**
@@ -82,10 +91,10 @@ yyyyMMdd_hhmmsszzz_<yourfilename>_<processed|raw>.raw
 In this example:
 
 - The recording was made on **April 27, 2025**, at **15:30:45.123** (3:30 PM and 45.123 seconds).
-- The user-provided filename was `apple1`.
+- The user-provided filename was **apple1**.
 - The file contains **processed** data.
 
-You also have the option to set a description text, which is saved in a meta file alongside the recording (if save meta information is enabled). The meta file contains all the processing and recording settings used at the time of recording. This meta file is the same as the settings file that can be saved and loaded through the menu bar (see section [Saving and Loading Settings](#saving-and-loading-settings)).
+You also have the option to set a description text, which is saved in a meta file alongside the recording (if save meta information is enabled). The meta file contains all the processing and recording settings used at the time of recording. This meta file is the same as the settings file that can be saved and loaded through the menu bar (see section [Saving and loading settings](#saving-and-loading-settings)).
 
 ###Recording parameter
 

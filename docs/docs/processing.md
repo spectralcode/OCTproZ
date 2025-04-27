@@ -2,7 +2,7 @@
 
 The OCT signal processing is entirely performed on the GPU. The spectral interferograms acquired by the OCT system are transferred to RAM until a user-defined number of B-scans is collected. This raw data batch is then copied to GPU memory for processing and display. Finally, the processed data is copied back to RAM, where it can be used for further analysis by plugins or saved to disk.
 
-The following image shows the processing pipeline. Although most processing steps are optional, data conversion, IFFT, and truncation are essential steps that can not be disabled.
+The following image shows the processing pipeline. While most steps can be enabled or disabled by the user, data conversion, IFFT, and truncation are always active.
 
 <figure markdown="span">
     ![OCTproZ Processing Flowchart](images/octproz_processing_flowchart_stations.png)
@@ -62,7 +62,7 @@ $$
 
 
 !!! note
-    A custom resampling curve (that does not need to be a polynomial fit) can be loaded by clicking on *Extras → Resampling curve for k-linearization → Load custom curve from file...*  
+    A custom resampling curve (that does not need to be a polynomial fit) can be loaded by clicking on `Extras → Resampling curve for k-linearization → Load custom curve from file...`  
     The structure of the csv file with the curve data should be the same as the structure of the csv file that you get by right clicking on the resampling curve plot in the sidebar and saving the plot as csv file.
 
 !!! note 
