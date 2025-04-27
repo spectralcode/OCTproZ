@@ -16,7 +16,7 @@ Another example is remotely controlling a small, portable OCT system that either
 ## How to use
 
 1. Create a custom client application ([see Python examples here](https://github.com/spectralcode/SocketStreamExtension/tree/main/examples))  
-   or use this [WebSocket client that runs in a browser](https://spectralcode.github.io/SocketStreamExtension/examples/octproz_websocket_client.html).
+   or use this [WebSocket client that runs in a browser](https://spectralcode.github.io/octproz-socket-stream-extension/examples/octproz_websocket_client.html).
 
 2. Set the communication protocol, IP, and port (or the pipe name in case of IPC) in the Socket Stream extension.
 
