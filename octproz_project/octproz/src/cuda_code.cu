@@ -586,146 +586,45 @@ __global__ void fillSinusoidalScanCorrectionCurve(float* sinusoidalResampleCurve
 	}
 }
 
-/*	Algorithm implemented by Ben Matthias after S.Moon et al., "Reference spectrum extraction and fixed-pattern noise removal in
-optical coherence tomography", Optics Express 18(23):24395-24404, 2010	*/
-//todo: optimize cuda code
-//__global__ void getMinimumVarianceMean(cufftComplex *meanLine, cufftComplex *in, int width, int height, int segs) {
-//	int index = threadIdx.x + blockIdx.x * blockDim.x;
-//	if (index < width) {
-//		int i, j;
-//		cufftComplex cur, segMean, meanAtMinVariance;
-//		float segVariance, minVariance;
-//		int segWidth = height / segs;
-//		int offset;
-//		float factor = 1.0f / (float)segWidth;
+__global__ void getMinimumVarianceMean(cufftComplex *meanLine, const cufftComplex *in, int width, int height, int segs) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index >= width) return;
 
-//		for (i = 0; i<segs; i++) {
-//			segMean.x = 0.0f;
-//			segMean.y = 0.0f;
-//			segVariance = 0.0f;
-//			offset = i*segWidth*width + index;
+	int segWidth = height / segs;
+	int stride = width;
+	float factor = 1.0f / segWidth;
 
-//			// calculate segmental mean
-//			for (j = 0; j < segWidth; j++) {
-//				cur = in[offset + j*width];
-//				segMean.x = segMean.x + cur.x;
-//				segMean.y = segMean.y + cur.y;
-//			}
-//			segMean.x = segMean.x*factor;
-//			segMean.y = segMean.y*factor;
+	float minVariance = FLT_MAX;
+	cufftComplex meanAtMinVariance = {0.0f, 0.0f};
 
-//			// calculate segmental variance
-//			for (j = 0; j<segWidth; j++) {
-//				cur = in[offset + j*width];
-//				segVariance += pow(cur.x - segMean.x, 2) + pow(cur.y - segMean.y, 2);
-//			}
-//			segVariance *= factor;
+	for (int i = 0; i < segs; i++) {
+		int offset = i * segWidth * stride + index;
 
-//			if (i == 0) {
-//				minVariance = segVariance;
-//				meanAtMinVariance = segMean;
-//			}
-//			else { // remember segmental mean with minimum segmental variance
-//				if (segVariance < minVariance) {
-//					minVariance = segVariance;
-//					meanAtMinVariance = segMean;
-//				}
-//			}
-//		}
+		float sumX = 0.0f, sumY = 0.0f;
+		float sumXX = 0.0f;
 
-//		// set segmental mean of minimum-variance segment to meanLine
-//		meanLine[index] = meanAtMinVariance;
-//	}
-//}
-//__global__ void getMinimumVarianceMean(cufftComplex *meanLine, const cufftComplex *in, int width, int height, int segs) {
-//    int index = blockIdx.x * blockDim.x + threadIdx.x;
-//    if (index >= width) return;
+		for (int j = 0; j < segWidth; j++) {
+			cufftComplex val = in[offset + j * stride];
+			float dx = val.x;
+			float dy = val.y;
+			sumX += dx;
+			sumY += dy;
+			sumXX += dx * dx + dy * dy;
+		}
 
-//    int segWidth = height / segs;
-//    int stride = width;
-//    float factor = 1.0f / segWidth;
+		float meanX = sumX * factor;
+		float meanY = sumY * factor;
+		float variance = (sumXX * factor) - (meanX * meanX + meanY * meanY);
 
-//    float minVariance = FLT_MAX;
-//    cufftComplex meanAtMinVariance = {0.0f, 0.0f};
+		if (variance < minVariance) {
+			minVariance = variance;
+			meanAtMinVariance.x = meanX;
+			meanAtMinVariance.y = meanY;
+		}
+	}
 
-//    for (int i = 0; i < segs; i++) {
-//        int offset = i * segWidth * stride + index;
-
-//        float sumX = 0.0f, sumY = 0.0f;
-//        float sumXX = 0.0f;
-
-//        // Fused mean and variance calculation
-//        for (int j = 0; j < segWidth; j++) {
-//            cufftComplex val = in[offset + j * stride];
-//            float dx = val.x;
-//            float dy = val.y;
-//            sumX += dx;
-//            sumY += dy;
-//            sumXX += dx * dx + dy * dy;
-//        }
-
-//        float meanX = sumX * factor;
-//        float meanY = sumY * factor;
-//        float variance = (sumXX * factor) - (meanX * meanX + meanY * meanY);
-
-//        if (variance < minVariance) {
-//            minVariance = variance;
-//            meanAtMinVariance.x = meanX;
-//            meanAtMinVariance.y = meanY;
-//        }
-//    }
-
-//    meanLine[index] = meanAtMinVariance;
-//}
-
-__global__ void getMinimumVarianceMean(cufftComplex * __restrict__ meanLine, const cufftComplex * __restrict__ in, int width, int height, int segs) {
-    int index = blockIdx.x * blockDim.x * 2 + threadIdx.x;
-
-    int segWidth = height / segs;
-    int stride = width;
-    float factor = 1.0f / segWidth;
-
-    #pragma unroll
-    for (int col = 0; col < 2; col++) {
-        int curIdx = index + col * blockDim.x;
-        if (curIdx >= width) continue;
-
-        float minVariance = FLT_MAX;
-        cufftComplex meanAtMinVariance = {0.0f, 0.0f};
-
-        #pragma unroll
-        for (int i = 0; i < segs; i++) {
-            int offset = i * segWidth * stride + curIdx;
-
-            float sumX = 0.0f, sumY = 0.0f;
-            float sumXX = 0.0f;
-
-            #pragma unroll 4
-            for (int j = 0; j < segWidth; j++) {
-                cufftComplex val = in[offset + j * stride];
-                float dx = val.x;
-                float dy = val.y;
-                sumX += dx;
-                sumY += dy;
-                sumXX += dx * dx + dy * dy;
-            }
-
-            float meanX = sumX * factor;
-            float meanY = sumY * factor;
-            float variance = (sumXX * factor) - (meanX * meanX + meanY * meanY);
-
-            if (variance < minVariance) {
-                minVariance = variance;
-                meanAtMinVariance.x = meanX;
-                meanAtMinVariance.y = meanY;
-            }
-        }
-
-        meanLine[curIdx] = meanAtMinVariance;
-    }
+	meanLine[index] = meanAtMinVariance;
 }
-
-
 
 __global__ void meanALineSubtraction(cufftComplex *in_out, cufftComplex *meanLine, int width, int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
@@ -1230,8 +1129,8 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 		return false;
 	}
 
-	//register existing host memory for use by cuda to accelerate cudaMemcpy. 
-	//this is not necessary for Jetson Nano since the acquisition buffer is created with 
+	//register existing host memory for use by cuda to accelerate cudaMemcpy.
+	//this is not necessary for Jetson Nano since the acquisition buffer is created with
 	//cudaHostAlloc and the cudaHostAllocMapped flag, which allows for zero-copy access.
 #ifndef __aarch64__
 	checkCudaErrors(cudaHostRegister(host_buffer1, samplesPerBuffer * bytesPerSample, cudaHostRegisterPortable));
@@ -1426,13 +1325,13 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 	        surfRes.resType = cudaResourceTypeArray;
 	        surfRes.res.array.array = d_volumeViewDisplayBuffer;
 	        cudaSurfaceObject_t surfaceWrite;
-	
+
 	        cudaError_t error_id = cudaCreateSurfaceObject(&surfaceWrite, &surfRes);
 	        if (error_id != cudaSuccess) {
 	            printf("Cuda: Failed to create surface object: %d\n-> %s\n", (int)error_id, cudaGetErrorString(error_id));
 	            return;
 	        }
-	
+
 	        dim3 texture_dim(height, width, depth); //todo: use consistent naming of width, height, depth, x, y, z, ...
 	        updateDisplayedVolume<< <gridSize/2, blockSize, 0, stream>>>(surfaceWrite, d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
 	        cudaDestroySurfaceObject(surfaceWrite);
@@ -1514,7 +1413,7 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	else {
 		inputToCufftComplex<<<gridSize, blockSize, 0, stream[currStream]>>> (d_fftBuffer, d_inputBuffer[currBuffer], signalLength, signalLength, params->bitDepth, samplesPerBuffer);
 	}
-	
+
 	//synchronization: block the host during cudaMemcpyAsync and inputToCufftComplex to prevent the data acquisition of the virtual OCT system from outpacing the processing, ensuring proper synchronization in the pipeline.
 #if !defined(__aarch64__) || !defined(ENABLE_CUDA_ZERO_COPY)
 	cudaEventRecord(syncEvent, stream[currStream]);
@@ -1611,7 +1510,7 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		d_fftBuffer2 = d_inputLinearized;
 		dispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>> (d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, signalLength, samplesPerBuffer);
 	}
-	
+
 	//IFFT
 	cufftSetStream(d_plan, stream[currStream]);
 	checkCudaErrors(cufftExecC2C(d_plan, d_fftBuffer2, d_fftBuffer2, CUFFT_INVERSE));
@@ -1654,7 +1553,7 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		checkCudaErrors(cudaMemcpyAsync(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/2, cudaMemcpyDeviceToDevice,stream[currStream]));
 		sinusoidalScanCorrection<<<gridSize/2, blockSize, 0, stream[currStream]>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/2, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/2);
 	}
-	
+
 	//post process background removal
 	if(params->postProcessBackgroundRemoval){
 		if(params->postProcessBackgroundRecordingRequested){
@@ -1698,7 +1597,7 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	if (params->recParams.saveAs32bitFloat) {
 		streamProcessedFloatData(d_currBuffer, stream[currStream]);
 	}
-	
+
 	//Copy/Stream processed data to host continuously
 	if (params->streamToHost && !params->streamingParamsChanged) {
 		params->currentBufferNr = bufferNumberInVolume;
