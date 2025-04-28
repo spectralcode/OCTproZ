@@ -29,6 +29,7 @@
 #define CUDA_CODE_CU
 
 #include "kernels.h"
+#include <cfloat>
 
 #define EIGHT_OVER_PI_SQUARED 0.8105694691f
 #define PI_OVER_8 0.3926990817f
