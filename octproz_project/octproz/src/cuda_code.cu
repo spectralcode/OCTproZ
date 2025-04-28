@@ -589,54 +589,143 @@ __global__ void fillSinusoidalScanCorrectionCurve(float* sinusoidalResampleCurve
 /*	Algorithm implemented by Ben Matthias after S.Moon et al., "Reference spectrum extraction and fixed-pattern noise removal in
 optical coherence tomography", Optics Express 18(23):24395-24404, 2010	*/
 //todo: optimize cuda code
-__global__ void getMinimumVarianceMean(cufftComplex *meanLine, cufftComplex *in, int width, int height, int segs) {
-	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	if (index < width) {
-		int i, j;
-		cufftComplex cur, segMean, meanAtMinVariance;
-		float segVariance, minVariance;
-		int segWidth = height / segs;
-		int offset;
-		float factor = 1.0f / (float)segWidth;
+//__global__ void getMinimumVarianceMean(cufftComplex *meanLine, cufftComplex *in, int width, int height, int segs) {
+//	int index = threadIdx.x + blockIdx.x * blockDim.x;
+//	if (index < width) {
+//		int i, j;
+//		cufftComplex cur, segMean, meanAtMinVariance;
+//		float segVariance, minVariance;
+//		int segWidth = height / segs;
+//		int offset;
+//		float factor = 1.0f / (float)segWidth;
 
-		for (i = 0; i<segs; i++) {
-			segMean.x = 0.0f;
-			segMean.y = 0.0f;
-			segVariance = 0.0f;
-			offset = i*segWidth*width + index;
+//		for (i = 0; i<segs; i++) {
+//			segMean.x = 0.0f;
+//			segMean.y = 0.0f;
+//			segVariance = 0.0f;
+//			offset = i*segWidth*width + index;
 
-			// calculate segmental mean
-			for (j = 0; j < segWidth; j++) {
-				cur = in[offset + j*width];
-				segMean.x = segMean.x + cur.x;
-				segMean.y = segMean.y + cur.y;
-			}
-			segMean.x = segMean.x*factor;
-			segMean.y = segMean.y*factor;
+//			// calculate segmental mean
+//			for (j = 0; j < segWidth; j++) {
+//				cur = in[offset + j*width];
+//				segMean.x = segMean.x + cur.x;
+//				segMean.y = segMean.y + cur.y;
+//			}
+//			segMean.x = segMean.x*factor;
+//			segMean.y = segMean.y*factor;
 
-			// calculate segmental variance
-			for (j = 0; j<segWidth; j++) {
-				cur = in[offset + j*width];
-				segVariance += pow(cur.x - segMean.x, 2) + pow(cur.y - segMean.y, 2);
-			}
-			segVariance *= factor;
+//			// calculate segmental variance
+//			for (j = 0; j<segWidth; j++) {
+//				cur = in[offset + j*width];
+//				segVariance += pow(cur.x - segMean.x, 2) + pow(cur.y - segMean.y, 2);
+//			}
+//			segVariance *= factor;
 
-			if (i == 0) {
-				minVariance = segVariance;
-				meanAtMinVariance = segMean;
-			}
-			else { // remember segmental mean with minimum segmental variance
-				if (segVariance < minVariance) {
-					minVariance = segVariance;
-					meanAtMinVariance = segMean;
-				}
-			}
-		}
+//			if (i == 0) {
+//				minVariance = segVariance;
+//				meanAtMinVariance = segMean;
+//			}
+//			else { // remember segmental mean with minimum segmental variance
+//				if (segVariance < minVariance) {
+//					minVariance = segVariance;
+//					meanAtMinVariance = segMean;
+//				}
+//			}
+//		}
 
-		// set segmental mean of minimum-variance segment to meanLine
-		meanLine[index] = meanAtMinVariance;
-	}
+//		// set segmental mean of minimum-variance segment to meanLine
+//		meanLine[index] = meanAtMinVariance;
+//	}
+//}
+//__global__ void getMinimumVarianceMean(cufftComplex *meanLine, const cufftComplex *in, int width, int height, int segs) {
+//    int index = blockIdx.x * blockDim.x + threadIdx.x;
+//    if (index >= width) return;
+
+//    int segWidth = height / segs;
+//    int stride = width;
+//    float factor = 1.0f / segWidth;
+
+//    float minVariance = FLT_MAX;
+//    cufftComplex meanAtMinVariance = {0.0f, 0.0f};
+
+//    for (int i = 0; i < segs; i++) {
+//        int offset = i * segWidth * stride + index;
+
+//        float sumX = 0.0f, sumY = 0.0f;
+//        float sumXX = 0.0f;
+
+//        // Fused mean and variance calculation
+//        for (int j = 0; j < segWidth; j++) {
+//            cufftComplex val = in[offset + j * stride];
+//            float dx = val.x;
+//            float dy = val.y;
+//            sumX += dx;
+//            sumY += dy;
+//            sumXX += dx * dx + dy * dy;
+//        }
+
+//        float meanX = sumX * factor;
+//        float meanY = sumY * factor;
+//        float variance = (sumXX * factor) - (meanX * meanX + meanY * meanY);
+
+//        if (variance < minVariance) {
+//            minVariance = variance;
+//            meanAtMinVariance.x = meanX;
+//            meanAtMinVariance.y = meanY;
+//        }
+//    }
+
+//    meanLine[index] = meanAtMinVariance;
+//}
+
+__global__ void getMinimumVarianceMean(cufftComplex * __restrict__ meanLine, const cufftComplex * __restrict__ in, int width, int height, int segs) {
+    int index = blockIdx.x * blockDim.x * 2 + threadIdx.x;
+
+    int segWidth = height / segs;
+    int stride = width;
+    float factor = 1.0f / segWidth;
+
+    #pragma unroll
+    for (int col = 0; col < 2; col++) {
+        int curIdx = index + col * blockDim.x;
+        if (curIdx >= width) continue;
+
+        float minVariance = FLT_MAX;
+        cufftComplex meanAtMinVariance = {0.0f, 0.0f};
+
+        #pragma unroll
+        for (int i = 0; i < segs; i++) {
+            int offset = i * segWidth * stride + curIdx;
+
+            float sumX = 0.0f, sumY = 0.0f;
+            float sumXX = 0.0f;
+
+            #pragma unroll 4
+            for (int j = 0; j < segWidth; j++) {
+                cufftComplex val = in[offset + j * stride];
+                float dx = val.x;
+                float dy = val.y;
+                sumX += dx;
+                sumY += dy;
+                sumXX += dx * dx + dy * dy;
+            }
+
+            float meanX = sumX * factor;
+            float meanY = sumY * factor;
+            float variance = (sumXX * factor) - (meanX * meanX + meanY * meanY);
+
+            if (variance < minVariance) {
+                minVariance = variance;
+                meanAtMinVariance.x = meanX;
+                meanAtMinVariance.y = meanY;
+            }
+        }
+
+        meanLine[curIdx] = meanAtMinVariance;
+    }
 }
+
+
 
 __global__ void meanALineSubtraction(cufftComplex *in_out, cufftComplex *meanLine, int width, int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;

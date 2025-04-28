@@ -102,7 +102,7 @@ An online version of the user manual can be found [here](https://spectralcode.gi
 
 Developer Guide
 ----------
-The plugin developer guide can be found [here](https://spectralcode.github.io/OCTproZ/site/developer.html). 
+The plugin developer guide can be found [here](https://spectralcode.github.io/OCTproZ/site/developer/index.html). 
 
 Compiling
 ---------

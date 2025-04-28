@@ -1,4 +1,4 @@
-site_name: OCTproZ User Manual
+site_name: OCTproZ Documentation
 site_description: OCTproZ is an open source software for optical coherence tomography processing and visualization.
 site_author: Miroslav Zabic
 site_url: https://github.com/spectralcode/OCTproZ
@@ -27,12 +27,18 @@ theme:
   features:
 #    - navigation.instant  # with this search index survives navigation
     - header.autohide #  header is automatically hidden when the user scrolls past a certain threshold
+#    - navigation.expand
+    - navigation.tabs
+#    - navigation.sections
+    - navigation.tabs.sticky
+    - navigation.top
 
 extra_css:
     - css/custom.css
 
 extra_javascript:
   - js/mathjax.js
+  - js/custom.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 
@@ -49,24 +55,35 @@ markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
 
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 nav:
-  - Home: index.md
-  - Quick Start Guide: quickstart.md
-  - Processing Pipeline: processing.md
-  - Visualization: visualization.md
-  - Functionality: functionality.md
-  - Plugins: 
-    - Overview: plugins.md
-    - Axial PSF Analyzer: plugin-axialpsfanalyzer.md
-    - Camera: plugin-camera.md
-    - Dispersion Estimator: plugin-dispersionestimator.md
-    - Image Statistics: plugin-imagestatistics.md
-    - Peak Detector: plugin-peakdetector.md
-    - Phase Extraction: plugin-phaseextraction.md
-    - Socket Stream: plugin-socketstream.md
-  - Troubleshooting: troubleshooting.md
-  - FAQ: faq.md
+  - User Guide:
+    - Home: index.md
+    - Quick Start Guide: quickstart.md
+    - Processing Pipeline: processing.md
+    - Visualization: visualization.md
+    - Functionality: functionality.md
+    - Plugins: 
+      - Overview: plugins.md
+      - Axial PSF Analyzer: plugin-axialpsfanalyzer.md
+      - Camera: plugin-camera.md
+      - Dispersion Estimator: plugin-dispersionestimator.md
+      - Image Statistics: plugin-imagestatistics.md
+      - Peak Detector: plugin-peakdetector.md
+      - Phase Extraction: plugin-phaseextraction.md
+      - Socket Stream: plugin-socketstream.md
+    - Troubleshooting: troubleshooting.md
+    - FAQ: faq.md
+  - Developer Guide:
+    - Home: developer/index.md
+    - Build: developer/build.md
 
 
 plugins:

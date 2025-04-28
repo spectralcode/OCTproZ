@@ -1,9 +1,23 @@
 .manual-header h1 {
-	margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .manual-header p {
-	font-size: 0.8em;
-	opacity: 0.5;
-	margin-top: 0.6em;
+    font-size: 0.8em;
+    opacity: 0.5;
+    margin-top: 0.6em;
+}
+
+body.developer-guide .md-header,
+body.developer-guide .md-tabs,
+body.developer-guide [data-md-component="palette"],
+body.developer-guide .md-footer,
+body.developer-guide .md-footer-meta,
+body.developer-guide .md-footer-nav {
+    background-color: #0d3141;
+}
+
+/* Hide navigation tabs */
+.md-tabs {
+    display: none;
 }
