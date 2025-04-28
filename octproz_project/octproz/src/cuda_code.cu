@@ -631,10 +631,9 @@ __global__ void meanALineSubtraction(cufftComplex *in_out, cufftComplex *meanLin
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples) {
 		int meanLineIndex = index % width;
-		int lineIndex = index / width;
-		int volumeArrayIndex = lineIndex * width + index;
-		in_out[volumeArrayIndex].x = in_out[volumeArrayIndex].x - meanLine[meanLineIndex].x;
-		in_out[volumeArrayIndex].y = in_out[volumeArrayIndex].y - meanLine[meanLineIndex].y;
+		cufftComplex meanValue = meanLine[meanLineIndex];
+		in_out[index].x -= meanValue.x;
+		in_out[index].y -= meanValue.y;
 	}
 }
 
