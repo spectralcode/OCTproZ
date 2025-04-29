@@ -631,9 +631,15 @@ __global__ void meanALineSubtraction(cufftComplex *in_out, cufftComplex *meanLin
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples) {
 		int meanLineIndex = index % width;
+		int lineIndex = index / width;
+		int volumeArrayIndex = lineIndex * width + index;
+		//in_out contains data after IFFT with lines that have both positive and negative depths.
+		//the volumeArrayIndex points to the positive-depth (first half) of each line
+		//since width is the number of positive samples in one line and index only spans (total samples in buffer)/2,
+		//this subtracts the mean line only from the positive-depth part of each line in the buffer.
 		cufftComplex meanValue = meanLine[meanLineIndex];
-		in_out[index].x -= meanValue.x;
-		in_out[index].y -= meanValue.y;
+		in_out[volumeArrayIndex].x -= meanValue.x;
+		in_out[volumeArrayIndex].y -= meanValue.y;
 	}
 }
 
