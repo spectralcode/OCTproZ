@@ -21,7 +21,7 @@ exists($$LUTEXPORTDIR){
 		QMAKE_POST_LINK += $$quote(mkdir -p $${LUTEXPORTDIR} $$escape_expand(\\n\\t))
 	}
 	win32{
-		QMAKE_POST_LINK += $$quote(md $${LUTEXPORTDIR} $$escape_expand(\\n\\t))
+		QMAKE_POST_LINK += $$quote(if not exist "$${LUTEXPORTDIR}\\." md "$${LUTEXPORTDIR}" $$escape_expand(\\n\\t))
 	}
 }
 

@@ -21,7 +21,7 @@ exists($$DOCEXPORTDIR){
 		QMAKE_POST_LINK += $$quote(mkdir -p $${DOCEXPORTDIR} $$escape_expand(\\n\\t))
 	}
 	win32{
-		QMAKE_POST_LINK += $$quote(md $${DOCEXPORTDIR} $$escape_expand(\\n\\t))
+		QMAKE_POST_LINK += $$quote(if not exist "$${DOCEXPORTDIR}\\." md "$${DOCEXPORTDIR}" $$escape_expand(\\n\\t))
 	}
 }
 
