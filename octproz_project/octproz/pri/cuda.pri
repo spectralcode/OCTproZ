@@ -6,17 +6,20 @@ CUDA_SOURCES += $$SOURCEDIR/cuda_code.cu \
 
 #cuda architecture flags
 #change these flags according to your GPU
-#see https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/ for more information
-#use this for maximum compatibility with CUDA 9
-#CUDA_ARCH += sm_30 \
-#-gencode=arch=compute_30,code=sm_30 \
-#-gencode=arch=compute_50,code=sm_50 \
+#see: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+
+##use this for maximum compatibility with CUDA 11.0
+#CUDA_ARCH += sm_52 \
 #-gencode=arch=compute_52,code=sm_52 \
 #-gencode=arch=compute_60,code=sm_60 \
 #-gencode=arch=compute_61,code=sm_61 \
-#-gencode=arch=compute_70,code=sm_70
+#-gencode=arch=compute_70,code=sm_70 \
+#-gencode=arch=compute_75,code=sm_75 \
+#-gencode=arch=compute_80,code=sm_80 \
+#-gencode=arch=compute_86,code=sm_86 \
+#-gencode=arch=compute_86,code=compute_86
 
-##use this for maximum compatibility with CUDA 11.0
+##use this for maximum compatibility with CUDA 12.8
 CUDA_ARCH += sm_52 \
 -gencode=arch=compute_52,code=sm_52 \
 -gencode=arch=compute_60,code=sm_60 \
@@ -25,7 +28,12 @@ CUDA_ARCH += sm_52 \
 -gencode=arch=compute_75,code=sm_75 \
 -gencode=arch=compute_80,code=sm_80 \
 -gencode=arch=compute_86,code=sm_86 \
--gencode=arch=compute_86,code=compute_86
+-gencode=arch=compute_87,code=sm_87 \
+-gencode=arch=compute_89,code=sm_89 \
+-gencode=arch=compute_90,code=sm_90 \
+-gencode=arch=compute_100,code=sm_100 \
+-gencode=arch=compute_120,code=sm_120 \
+-gencode=arch=compute_120,code=compute_120
 
 #if the host architecture is aarch64, assume Jetson Nano and override CUDA_ARCH accordingly
 message(host architecture is: $$QMAKE_HOST.arch)
@@ -46,8 +54,7 @@ unix{
 	NVCC_OPTIONS = --use_fast_math -std=c++11 --compiler-options -fPIC
 }
 win32{
-	NVCC_OPTIONS = --use_fast_math -diag-suppress 1723,1394 #diag-suppress is used to ignore Qt-related warnings coming from Qt's header files	
-	#NVCC_OPTIONS = --use_fast_math -std=c++11 --compiler-options -fPIC
+	NVCC_OPTIONS = --use_fast_math -diag-suppress 1723,1394 #diag-suppress is used to ignore Qt-related warnings coming from Qt's header files
 }
 
 #cuda include paths
