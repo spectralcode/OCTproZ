@@ -106,7 +106,12 @@ bool fixedPatternNoiseDetermined = false;
 
 
 
-__global__ void inputToCufftComplex(cufftComplex* output, const void* input, const int width_out, const int width_in, const int inputBitdepth, const int samples) {
+__global__ void inputToCufftComplex(cufftComplex* __restrict__ output,
+                                   const void* __restrict__ input,
+                                   int width_out,
+                                   int width_in,
+                                   int inputBitdepth,
+                                   int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if(inputBitdepth <= 8){
 		unsigned char* in = (unsigned char*)input;
@@ -121,7 +126,12 @@ __global__ void inputToCufftComplex(cufftComplex* output, const void* input, con
 	output[index].y = 0;
 }
 
-__global__ void inputToCufftComplex_and_bitshift(cufftComplex* output, const void* input, const int width_out, const int width_in, const int inputBitdepth, const int samples) {
+__global__ void inputToCufftComplex_and_bitshift(cufftComplex* __restrict__ output,
+                                                const void* __restrict__ input,
+                                                int width_out,
+                                                int width_in,
+                                                int inputBitdepth,
+                                                int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if(inputBitdepth <= 8){
 		unsigned char* in = (unsigned char*)input;
@@ -152,7 +162,14 @@ inline __device__ int16_t endianSwapInt16(int16_t val) {
 	return (val << 8) | ((val >> 8) & 0xFF);
 }
 
-__global__ void rollingAverageBackgroundRemoval(cufftComplex* out, cufftComplex* in, const int rollingAverageWindowSize, const int width, const int height, const int samplesPerFrame, const int samples) { //width: samplesPerAscan; height: ascansPerBscan,samples: total number of samples in buffer
+__global__ void rollingAverageBackgroundRemoval(cufftComplex* __restrict__ out,
+                                              const cufftComplex* __restrict__ in,
+                                              const int rollingAverageWindowSize,
+                                              const int width, //samplesPerAscan
+                                              const int height, //ascansPerBscan
+                                              const int samplesPerFrame,
+                                              const int samples) //total number of samples in buffer
+                                              {
 	extern __shared__ float s_data[];
 
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
@@ -238,7 +255,11 @@ __global__ void klinearizationQuadratic(cufftComplex* __restrict__ out,
 	out[index].y = 0;
 }
 
-inline __device__ float cubicHermiteInterpolation(const float y0, const float y1, const float y2, const float y3, const float positionBetweenY1andY2){
+__forceinline__ __device__ float cubicHermiteInterpolation(const float y0,
+                                                          const float y1,
+                                                          const float y2,
+                                                          const float y3,
+                                                          const float positionBetweenY1andY2) {
 	const float a = -y0 + 3.0f*(y1-y2) + y3;
 	const float b = 2.0f*y0 - 5.0f*y1 + 4.0f*y2 - y3;
 	const float c = -y0 + y2;
@@ -304,7 +325,11 @@ __global__ void klinearizationLanczos(cufftComplex* __restrict__ out,
 	out[index].y = 0;
 }
 
-__global__ void windowing(cufftComplex* output, cufftComplex* input, const float* window, const int lineWidth, const int samples) {
+__global__ void windowing(cufftComplex* output,
+                         const cufftComplex* input,
+                         const float* __restrict__ window,
+                         const int lineWidth,
+                         const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples) {
 		int line_index = index % lineWidth;
@@ -463,7 +488,13 @@ __global__ void klinearizationLanczosAndWindowingAndDispersionCompensation(cufft
 	out[index].y = linearizedAndWindowedInX * phaseComplex[j].y;
 }
 
-__global__ void sinusoidalScanCorrection(float* out, float *in, float* sinusoidalResampleCurve, const int width, const int height, const int depth, const int samples) { //width: samplesPerAscan; height: ascansPerBscan, depth: bscansPerBuffer
+__global__ void sinusoidalScanCorrection(float* __restrict__ out,
+                                        const float* __restrict__ in,
+                                        const float* __restrict__ sinusoidalResampleCurve,
+                                        const int width, //samplesPerAscan
+                                        const int height,  //ascansPerBscan
+                                        const int depth, //bscansPerBuffer
+                                        const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if(index < samples-width){
 		int j = index%(width); //pos within ascan
@@ -489,7 +520,11 @@ __global__ void fillSinusoidalScanCorrectionCurve(float* sinusoidalResampleCurve
 	}
 }
 
-__global__ void getMinimumVarianceMean(cufftComplex *meanLine, const cufftComplex *in, int width, int height, int segs) {
+__global__ void getMinimumVarianceMean(cufftComplex* __restrict__ meanLine,
+                                      const cufftComplex* __restrict__ in,
+                                      const int width,
+                                      const int height,
+                                      const int segs) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	if (index >= width) return;
 
@@ -529,7 +564,10 @@ __global__ void getMinimumVarianceMean(cufftComplex *meanLine, const cufftComple
 	meanLine[index] = meanAtMinVariance;
 }
 
-__global__ void meanALineSubtraction(cufftComplex *in_out, cufftComplex *meanLine, int width, int samples) {
+__global__ void meanALineSubtraction(cufftComplex* __restrict__ in_out,
+                                    const cufftComplex* __restrict__ meanLine,
+                                    const int width,
+                                    const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples) {
 		int meanLineIndex = index % width;
@@ -552,7 +590,11 @@ __device__ cufftComplex cuMultiply(const cufftComplex& a, const cufftComplex& b)
 	return result;
 }
 
-__global__ void dispersionCompensation(cufftComplex* out, cufftComplex* in, const cufftComplex* phaseComplex, const int width, const int samples) {
+__global__ void dispersionCompensation(cufftComplex* out,
+                                      const cufftComplex* in,
+                                      const cufftComplex* __restrict__ phaseComplex,
+                                      const int width,
+                                      const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples) {
 		int phaseIndex = index%width;
@@ -564,7 +606,12 @@ __global__ void dispersionCompensation(cufftComplex* out, cufftComplex* in, cons
 	}
 }
 
-__global__ void dispersionCompensationAndWindowing(cufftComplex* out, cufftComplex* in, const cufftComplex* phaseComplex, const float* window, const int width, const int samples) {
+__global__ void dispersionCompensationAndWindowing(cufftComplex* out,
+                                                  const cufftComplex* in,
+                                                  const cufftComplex* __restrict__ phaseComplex,
+                                                  const float* __restrict__ window,
+                                                  const int width,
+                                                  const int samples) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples) {
 		int lineIndex = index%width;
@@ -574,7 +621,11 @@ __global__ void dispersionCompensationAndWindowing(cufftComplex* out, cufftCompl
 	}
 }
 
-__global__ void fillDispersivePhase(cufftComplex* phaseComplex, const float* phase, const double factor, const int width, const int direction) {
+__global__ void fillDispersivePhase(cufftComplex* __restrict__ phaseComplex,
+                                   const float* __restrict__ phase,
+                                   const double factor,
+                                   const int width,
+                                   const int direction) {
 	int index = blockIdx.x;
 	if (index < width) {
 		phaseComplex[index].x = cosf(factor*phase[index]);
@@ -657,7 +708,15 @@ extern "C" void cuda_unregisterFloatStreamingBuffers() {
 
 
 //Removes half of each processed A-scan (the mirror artefacts), logarithmizes each value of magnitude of remaining A-scan and copies it into an output array. This output array can be used to display the processed OCT data.
-__global__ void postProcessTruncateLog(float *output, const cufftComplex *input, const int outputAscanLength, const int samples, const int bufferNumberInVolume, const float max, const float min, const float addend, const float coeff) {
+__global__ void postProcessTruncateLog(float* __restrict__ output,
+                                       const cufftComplex* __restrict__ input,
+                                       const int outputAscanLength,
+                                       const int samples,
+                                       const int bufferNumberInVolume,
+                                       const float max,
+                                       const float min,
+                                       const float addend,
+                                       const float coeff) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples / 2) {
 		int lineIndex = index / outputAscanLength;
@@ -673,7 +732,14 @@ __global__ void postProcessTruncateLog(float *output, const cufftComplex *input,
 }
 
 //Removes half of each processed A-scan (the mirror artefacts), calculates magnitude of remaining A-scan and copies it into an output array. This output array can be used to display the processed OCT data.
-__global__ void postProcessTruncateLin(float *output, const cufftComplex *input, const int outputAscanLength, const int samples, const float max, const float min, const float addend, const float coeff) {
+__global__ void postProcessTruncateLin(float* __restrict__ output,
+                                      const cufftComplex* __restrict__ input,
+                                      const int outputAscanLength,
+                                      const int samples,
+                                      const float max,
+                                      const float min,
+                                      const float addend,
+                                      const float coeff) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samples / 2) {
 		int lineIndex = index / outputAscanLength;
@@ -686,7 +752,10 @@ __global__ void postProcessTruncateLin(float *output, const cufftComplex *input,
 	}
 }
 
-__global__ void getPostProcessBackground(float* output, float* input, const int samplesPerAscan, const int ascansPerBuffer) {
+__global__ void getPostProcessBackground(float* __restrict__ output,
+                                        const float* __restrict__ input,
+                                        const int samplesPerAscan,
+                                        const int ascansPerBuffer) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samplesPerAscan) {
 		float sum = 0;
@@ -697,7 +766,12 @@ __global__ void getPostProcessBackground(float* output, float* input, const int 
 	}
 }
 
-__global__ void postProcessBackgroundRemoval(float* data, float* background, const float backgroundWeight, const float backgroundOffset, const int samplesPerAscan, const int samplesPerBuffer) {
+__global__ void postProcessBackgroundRemoval(float* data,
+                                           const float* __restrict__ background,
+                                           const float backgroundWeight,
+                                           const float backgroundOffset,
+                                           const int samplesPerAscan,
+                                           const int samplesPerBuffer) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samplesPerBuffer) {
 		data[index] = __saturatef(data[index] - (backgroundWeight * background[index%samplesPerAscan] + backgroundOffset));
@@ -722,7 +796,12 @@ __global__ void cuda_bscanFlip_slow(float *output, float *input, int samplesPerA
 }
 
 //todo: optimize! cuda_bscanFlip should be possible with just index < samplesPerBuffer/4
-__global__ void cuda_bscanFlip(float *output, float *input, const int samplesPerAscan, const int ascansPerBscan, const int samplesPerBscan, const int halfSamplesInVolume) {
+__global__ void cuda_bscanFlip(float* output,
+                             float* input,
+                             const int samplesPerAscan,
+                             const int ascansPerBscan,
+                             const int samplesPerBscan,
+                             const int halfSamplesInVolume) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < halfSamplesInVolume) {
 		int bscanIndex = (index / samplesPerBscan)*2; //multiplication by 2 gets us just even bscanIndex-values (0, 2, 4, 6, ...) This is necessary because we just want to flip every second Bscan.
@@ -740,7 +819,13 @@ __global__ void cuda_bscanFlip(float *output, float *input, const int samplesPer
 }
 
 //todo: avoid duplicate code: updateDisplayedBscanFrame and updateDisplayedEnFaceViewFrame only differ in the way how (or in what order) processedVolume[], displayBuffer[] is accessed and what the maximum number of available frames is ("bscansPerVolume" for updateDisplayedBscanFrame and "frameWidth" for updateDisplayedEnFaceViewFrame), the rest of the code is identical --> there should be a way to avoid duplicate code
-__global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* processedVolume, const unsigned int bscansPerVolume, const unsigned int samplesInSingleFrame, const unsigned int frameNr, const unsigned int displayFunctionFrames, const int displayFunction) {
+__global__ void updateDisplayedBscanFrame(float* __restrict__ displayBuffer,
+                                        const float* __restrict__ processedVolume,
+                                        const unsigned int bscansPerVolume,
+                                        const unsigned int samplesInSingleFrame,
+                                        const unsigned int frameNr,
+                                        const unsigned int displayFunctionFrames,
+                                        const int displayFunction) {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if (i < samplesInSingleFrame) {
 		//todo: optimize averaging and MIP for very large number of displayFunctionFrames! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
@@ -786,7 +871,13 @@ __global__ void updateDisplayedBscanFrame(float *displayBuffer, const float* pro
 	}
 }
 
-__global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float* processedVolume, const unsigned int frameWidth, const unsigned int samplesInSingleFrame, const unsigned int frameNr, const unsigned int displayFunctionFrames, const int displayFunction) {
+__global__ void updateDisplayedEnFaceViewFrame(float* __restrict__ displayBuffer,
+                                             const float* __restrict__ processedVolume,
+                                             const unsigned int frameWidth,
+                                             const unsigned int samplesInSingleFrame,
+                                             const unsigned int frameNr,
+                                             const unsigned int displayFunctionFrames,
+                                             const int displayFunction) {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if (i < samplesInSingleFrame) {
 		//todo: optimize averaging and MIP for very large number of displayFunctionFrames! Maybe Parallel Reduction could improve performance of averaging operation (Also maybe use enum instead of int for displayFunction to improve readability of the code)
@@ -833,9 +924,18 @@ __global__ void updateDisplayedEnFaceViewFrame(float *displayBuffer, const float
 }
 
 #if __CUDACC_VER_MAJOR__ >=12
-__global__ void updateDisplayedVolume(cudaSurfaceObject_t surfaceWrite, const float* processedBuffer, const unsigned int samplesInBuffer, const unsigned int currBufferNr, const unsigned int bscansPerBuffer, dim3 textureDim) {
+__global__ void updateDisplayedVolume(cudaSurfaceObject_t surfaceWrite,
+                                     const float* __restrict__ processedBuffer,
+                                     const unsigned int samplesInBuffer,
+                                     const unsigned int currBufferNr,
+                                     const unsigned int bscansPerBuffer,
+                                     dim3 textureDim) {
 #else
-__global__ void updateDisplayedVolume(const float* processedBuffer, const unsigned int samplesInBuffer, const unsigned int currBufferNr, const unsigned int bscansPerBuffer, dim3 textureDim) {
+__global__ void updateDisplayedVolume(const float* __restrict__ processedBuffer,
+                                     const unsigned int samplesInBuffer,
+                                     const unsigned int currBufferNr,
+                                     const unsigned int bscansPerBuffer,
+                                     dim3 textureDim) {
 #endif
 	for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < samplesInBuffer; i += blockDim.x * gridDim.x){
 		int width = textureDim.x; //Ascans per Bscan
@@ -852,7 +952,10 @@ __global__ void updateDisplayedVolume(const float* processedBuffer, const unsign
 	}
 }
 
-__global__ void floatToOutput(void *output, const float *input, const int outputBitdepth, const int samplesInProcessedVolume) {
+__global__ void floatToOutput(void* __restrict__ output,
+                            const float* __restrict__ input,
+                            const int outputBitdepth,
+                            const int samplesInProcessedVolume) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if(outputBitdepth <= 8){
 		unsigned char* out = (unsigned char*)output;
