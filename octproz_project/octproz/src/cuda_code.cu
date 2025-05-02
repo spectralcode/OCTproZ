@@ -645,26 +645,14 @@ extern "C" void cuda_updateWindowCurve(float* h_windowCurve, int size, cudaStrea
 
 extern "C" void cuda_updatePostProcessBackground(float* h_postProcessBackground, int size, cudaStream_t stream) {
 	if (d_postProcBackgroundLine != NULL && h_postProcessBackground != NULL){
-#ifdef __aarch64__
-		checkCudaErrors(cudaMemcpy(d_postProcBackgroundLine, h_postProcessBackground, size * sizeof(float), cudaMemcpyHostToDevice));
-		cudaStreamSynchronize(stream);
-#else
 		checkCudaErrors(cudaMemcpyAsync(d_postProcBackgroundLine, h_postProcessBackground, size * sizeof(float), cudaMemcpyHostToDevice, stream));
-#endif
-
 	}
 }
 
 extern "C" void cuda_copyPostProcessBackgroundToHost(float* h_postProcessBackground, int size, cudaStream_t stream) {
 	if (d_postProcBackgroundLine != NULL && h_postProcessBackground != NULL) {
-#ifdef __aarch64__
-		checkCudaErrors(cudaMemcpy(h_postProcessBackground, d_postProcBackgroundLine, size * sizeof(float), cudaMemcpyDeviceToHost));
-		cudaStreamSynchronize(stream);
-		Gpu2HostNotifier::backgroundSignalCallback(h_postProcessBackground);
-#else
 		checkCudaErrors(cudaMemcpyAsync(h_postProcessBackground, d_postProcBackgroundLine, size * sizeof(float), cudaMemcpyDeviceToHost, stream));
 		checkCudaErrors(cudaLaunchHostFunc(stream, Gpu2HostNotifier::backgroundSignalCallback, h_postProcessBackground));
-#endif
 	}
 }
 
