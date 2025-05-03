@@ -1,12 +1,6 @@
+# === Qt/C++ build files ===
 *.pro.user
 *.pro.user.*
-/octproz_extensions
-/octproz/misc
-/octproz_share_dev
-/build
-/octproz_project/octproz_extensions
-/octproz_project/octproz/misc
-/octproz_project/octproz_share_dev
 *.o
 *.obj
 *.pdb
@@ -17,3 +11,15 @@ moc_*
 ui_*
 build-*
 Makefile
+
+# === Project related directories ===
+/build
+/octproz_extensions
+/octproz/misc
+/octproz_share_dev
+/octproz_project/octproz_extensions
+/octproz_project/octproz/misc
+/octproz_project/octproz_share_dev
+
+# === Python related directories ===
+**/.venv/
