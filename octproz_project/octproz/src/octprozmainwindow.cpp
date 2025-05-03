@@ -99,6 +99,12 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 	connect(this->recordingSchedulerWidget->getScheduler(), &RecordingScheduler::recordingTriggered, this->app, &OCTproZApp::slot_record);
 	connect(this->app, &OCTproZApp::recordingFinished, this->recordingSchedulerWidget->getScheduler(), &RecordingScheduler::recordingFinished);
 
+	//GPU info widget
+	this->gpuInfoWidget = new GpuInfoWidget(this);
+	connect(this->gpuInfoWidget, &GpuInfoWidget::info, this->console, &MessageConsole::displayInfo);
+	connect(this->gpuInfoWidget, &GpuInfoWidget::error, this->console, &MessageConsole::displayError);
+	this->gpuInfoWidget->checkCudaAvailability();
+
 	// Connect sidebar to paramsManager
 	connect(this->sidebar, &Sidebar::savePostProcessBackgroundRequested,
 			this->app->getParamsManager(), &OctAlgorithmParametersManager::savePostProcessBackgroundToFile);
@@ -643,6 +649,10 @@ void OCTproZMainWindow::initMenu() {
 	manualAct->setStatusTip(tr("OCTproZ user manual"));
 	manualAct->setIcon(QIcon(":/icons/octproz_manual_icon.png"));
 	manualAct->setShortcut(QKeySequence::HelpContents);
+	// GPU Info action
+	QAction* gpuInfoAct = helpMenu->addAction(tr("GPU &Info"), this, &OCTproZMainWindow::openGpuInfoWindow);
+	gpuInfoAct->setStatusTip(tr("Show GPU information and capabilities"));
+	gpuInfoAct->setIcon(QIcon(":/icons/octproz_gpu_icon.png"));
 	// About dialog
 	QAction *aboutAct = helpMenu->addAction(tr("&About"), this, [this]() {
 		this->aboutWindow->show();
@@ -911,6 +921,13 @@ void OCTproZMainWindow::openRecordingScheduler() {
 	this->recordingSchedulerWidget->raise();
 	this->recordingSchedulerWidget->activateWindow();
 }
+
+void OCTproZMainWindow::openGpuInfoWindow() {
+	this->gpuInfoWidget->show();
+	this->gpuInfoWidget->raise();
+	this->gpuInfoWidget->activateWindow();
+}
+
 
 void OCTproZMainWindow::loadGuiSettingsFromFile(const QString &settingsFilePath) {
 	if (settingsFilePath.isEmpty()) {

@@ -33,6 +33,7 @@
 #include "extensionuimanager.h"
 #include "settingsconstants.h"
 #include "recordingschedulerwidget.h"
+#include "gpuinfowidget.h"
 
 
 class OCTproZMainWindow : public QMainWindow
@@ -88,7 +89,7 @@ private slots:
 	void openSelectSystemDialog();
 	void openUserManualDialog();
 	void openRecordingScheduler();
-
+	void openGpuInfoWindow();
 
 signals:
 	void error(QString);
@@ -116,6 +117,7 @@ private:
 	GLWindow3D* volumeWindow;
 	SystemChooser* systemChooser;
 	RecordingSchedulerWidget* recordingSchedulerWidget;
+	GpuInfoWidget* gpuInfoWidget;
 
 	// UI helper classes
 	ExtensionUIManager* extensionUIManager;

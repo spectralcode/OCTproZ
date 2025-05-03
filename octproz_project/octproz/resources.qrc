@@ -42,5 +42,6 @@
         <file>icons/octproz_save_icon.png</file>
         <file>icons/octproz_load_icon.png</file>
         <file>icons/octproz_time_icon.png</file>
+        <file>icons/octproz_gpu_icon.png</file>
     </qresource>
 </RCC>

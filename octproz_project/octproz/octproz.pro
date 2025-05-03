@@ -48,7 +48,9 @@ SOURCES += \
 	$$SOURCEDIR/octalgorithmparametersmanager.cpp \
 	$$SOURCEDIR/pluginmessagebus.cpp \
 	$$SOURCEDIR/recordingscheduler.cpp \
-	$$SOURCEDIR/recordingschedulerwidget.cpp
+	$$SOURCEDIR/recordingschedulerwidget.cpp \
+	$$SOURCEDIR/gpuinfo.cpp \
+	$$SOURCEDIR/gpuinfowidget.cpp
 
 	unix{
 		SOURCES += $$SOURCEDIR/cuda_code.cu
@@ -93,7 +95,9 @@ HEADERS += \
 	$$SOURCEDIR/pluginmessagebus.h \
 	$$SOURCEDIR/settingsconstants.h \
 	$$SOURCEDIR/recordingscheduler.h \
-	$$SOURCEDIR/recordingschedulerwidget.h
+	$$SOURCEDIR/recordingschedulerwidget.h \
+	$$SOURCEDIR/gpuinfo.h \
+	$$SOURCEDIR/gpuinfowidget.h
 
 FORMS += \
 	$$SOURCEDIR/sidebar.ui
