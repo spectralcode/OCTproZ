@@ -56,7 +56,7 @@ How to Determine Performance
 --------
  OCTproZ provides live performance information within the sidebar in the "Processing"-tab. Live performance estimation is performed and updated every 5 seconds:
 <p align="center">
-  <img src="20250504_performance_v180_gtx1080\20250504_octproz_v180_info_screenshot.png" >
+  <img src="20250504_performance_v180_gtx1080/20250504_octproz_v180_info_screenshot.png" >
 </p>
 
 For more in-depth profiling, you can use [NVIDIA Nsight Compute](https://developer.nvidia.com/nsight-compute). 
@@ -66,7 +66,7 @@ However, Nsight Compute does **not** support older GPUs, such as the GeForce GTX
 The following screenshot from the NVIDIA Visual Profiler shows the profiler of OCTproZ v1.8.0 output using the old gaming computer setup:
 
  <p align="center">
-  <img src="20250504_performance_v180_gtx1080\20250504_octproz_v180_old_gaming_pc_screenshot.png" >
+  <img src="20250504_performance_v180_gtx1080/20250504_octproz_v180_old_gaming_pc_screenshot.png" >
 </p>
 
-The corresponding .nvvp file can be found [here](20250504_performance_v180_gtx1080\20250504_octproz_v180_old_gaming_pc.nvvp)
+The corresponding .nvvp file can be found [here](20250504_performance_v180_gtx1080/20250504_octproz_v180_old_gaming_pc.nvvp)
