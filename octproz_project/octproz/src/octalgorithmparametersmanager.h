@@ -21,8 +21,8 @@ private:
 	
 
 public slots:
-	void loadPostProcessBackgroundFromFile(QString fileName);
-	void loadCustomResamplingCurveFromFile(QString fileName);
+	void loadPostProcessBackgroundFromFile(QString fileName, bool suppressErrors = false);
+	void loadCustomResamplingCurveFromFile(QString fileName, bool suppressErrors = false);
 	void savePostProcessBackgroundToFile(QString fileName);
 	void saveCustomResamplingCurveToFile(QString fileName);
 

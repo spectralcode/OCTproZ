@@ -45,7 +45,7 @@ bool OctAlgorithmParametersManager::saveCurveToFile(QString fileName, int nSampl
 }
 
 
-void OctAlgorithmParametersManager::loadPostProcessBackgroundFromFile(QString fileName) {
+void OctAlgorithmParametersManager::loadPostProcessBackgroundFromFile(QString fileName, bool suppressErrors) {
 	QVector<float> curve = this->loadCurveFromFile(fileName);
 	if(curve.size() > 0){
 		this->octParams->loadPostProcessingBackground(curve.data(), curve.size());
@@ -53,11 +53,13 @@ void OctAlgorithmParametersManager::loadPostProcessBackgroundFromFile(QString fi
 		emit backgroundDataUpdated();
 		emit info(tr("Background data for post processing loaded. File used: ") + fileName);
 	}else{
-		emit error(tr("Background data has a size of 0. Check if the .csv file with background data is not empty and has the right format."));
+		if(!suppressErrors){
+			emit error(tr("Background data has a size of 0. Check if the .csv file with background data is not empty and has the right format."));
+		}
 	}
 }
 
-void OctAlgorithmParametersManager::loadCustomResamplingCurveFromFile(QString fileName) {
+void OctAlgorithmParametersManager::loadCustomResamplingCurveFromFile(QString fileName, bool suppressErrors) {
 	QVector<float> curve = this->loadCurveFromFile(fileName);
 	if(curve.size() > 0){
 		this->octParams->loadCustomResampleCurve(curve.data(), curve.size());
@@ -65,7 +67,9 @@ void OctAlgorithmParametersManager::loadCustomResamplingCurveFromFile(QString fi
 		emit resamplingCurveUpdated();
 		emit info(tr("Resampling  curve loaded. File used: ") + fileName);
 	}else{
-		emit error(tr("Resampling  curve has a size of 0. Check if the .csv file with resampling curve data is not empty and has the right format."));
+		if(!suppressErrors){
+			emit error(tr("Resampling  curve has a size of 0. Check if the .csv file with resampling curve data is not empty and has the right format."));
+		}
 	}
 }
 

@@ -179,9 +179,9 @@ signals:
 	void klinCoeffs(double k0, double k1, double k2, double k3);
 	void dispCompCoeffs(double d0, double d1, double d2, double d3);
 	void savePostProcessBackgroundRequested(QString fileName);
-	void loadPostProcessBackgroundRequested(QString fileName);
+	void loadPostProcessBackgroundRequested(QString fileName, bool suppressErrors);
 	void saveResamplingCurveRequested(QString fileName);
-	void loadResamplingCurveRequested(QString fileName);
+	void loadResamplingCurveRequested(QString fileName, bool suppressErrors);
 	void error(QString);
 	void info(QString);
 };

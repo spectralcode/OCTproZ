@@ -202,9 +202,9 @@ void Sidebar::loadSettings() {
 	OctAlgorithmParameters::getInstance()->useCustomResampleCurve = this->processingSettings.value(PROC_CUSTOM_RESAMPLING).toBool(); //todo: move all actions for klin from octproz to sidebar
 	QString customResamplingFilePath = this->processingSettings.value(PROC_CUSTOM_RESAMPLING_FILEPATH).toString();
 	if (customResamplingFilePath.isEmpty() || !QFile::exists(customResamplingFilePath)) {
-		emit loadResamplingCurveRequested(SETTINGS_PATH_RESAMPLING_FILE);
+		emit loadResamplingCurveRequested(SETTINGS_PATH_RESAMPLING_FILE, true);
 	} else {
-		emit loadResamplingCurveRequested(customResamplingFilePath);
+		emit loadResamplingCurveRequested(customResamplingFilePath, true);
 	}
 	this->ui.groupBox_dispersionCompensation->setChecked(this->processingSettings.value(PROC_DISPERSION_COMPENSATION).toBool());
 	this->ui.doubleSpinBox_d0->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D0).toDouble());
@@ -222,7 +222,7 @@ void Sidebar::loadSettings() {
 	this->ui.groupBox_postProcessBackgroundRemoval->setChecked(this->processingSettings.value(PROC_POST_BACKGROUND_REMOVAL).toBool());
 	this->ui.doubleSpinBox_postProcessBackgroundWeight->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_WEIGHT).toDouble());
 	this->ui.doubleSpinBox_postProcessBackgroundOffset->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_OFFSET).toDouble());
-	emit loadPostProcessBackgroundRequested(SETTINGS_PATH_BACKGROUND_FILE);
+	emit loadPostProcessBackgroundRequested(SETTINGS_PATH_BACKGROUND_FILE, true);
 
 	//GPU to RAM Streaming
 	this->ui.groupBox_streaming->setChecked(this->streamingSettings.value(STREAM_STREAMING).toBool());
@@ -498,7 +498,7 @@ void Sidebar::slot_loadPostProcessingBackground() {
 	QString savedPath = this->recordSettings.value(REC_PATH).toString();
 	QString standardLocation = savedPath.size() == 0 ? QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) : savedPath;
 	fileName = QFileDialog::getOpenFileName(this, tr("Load background data"), QDir::currentPath(), filters, &defaultFilter);
-	emit loadPostProcessBackgroundRequested(fileName);
+	emit loadPostProcessBackgroundRequested(fileName, false);
 	emit dialogClosed();
 }
 
