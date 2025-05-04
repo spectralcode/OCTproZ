@@ -1,0 +1,11 @@
+Core developers:
+----------------
+Miroslav Zabic (spectralcode) - Creator and main developer
+
+
+Contributors:
+-------------
+yankun2024 - Added CUDA 12 compatibility for filling volume buffer for 3D visualization
+
+
+Last updated: 2025-05-04
