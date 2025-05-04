@@ -29,6 +29,19 @@
 #define ABOUTDIALOG_H
 
 #include <QDialog>
+#include <QMap>
+
+class QTabWidget;
+class QVBoxLayout;
+class QHBoxLayout;
+class QListWidget;
+class QTextBrowser;
+
+struct ComponentInfo {
+	QString name;
+	QString url;
+	QString licensePath;
+};
 
 class AboutDialog : public QDialog
 {
@@ -36,6 +49,22 @@ class AboutDialog : public QDialog
 public:
 	explicit AboutDialog(QWidget *parent = nullptr);
 	~AboutDialog();
+
+private:
+	void setupWindowProperties();
+	QVBoxLayout* createLogoLayout();
+	void setupTabs(QTabWidget *tabWidget);
+	void addAboutTab(QTabWidget *tabWidget);
+	void addLicenseTab(QTabWidget *tabWidget);
+	void addCreditsTab(QTabWidget *tabWidget);
+	void addThirdPartyTab(QTabWidget *tabWidget);
+	QHBoxLayout* createButtonLayout();
+	void setupConnections(QTabWidget *tabWidget);
+
+	// New methods for third-party components tab
+	QList<ComponentInfo> getThirdPartyComponents();
+	QString loadLicenseText(const QString& path);
+	void updateComponentDetails(QTextBrowser* browser, const ComponentInfo& component);
 
 signals:
 	void easterEgg();

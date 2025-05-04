@@ -12,10 +12,9 @@
         <file>shaders/mida.vert</file>
         <file>shaders/xray.frag</file>
         <file>shaders/xray.vert</file>
-        <file>aboutdata/credits.txt</file>
-        <file>aboutdata/LICENSE</file>
-        <file>aboutdata/octproz_logo.png</file>
-        <file>aboutdata/thirdparty.txt</file>
+        <file>shaders/compute_sample_depths.glsl</file>
+        <file>shaders/oct_depth.frag</file>
+        <file>shaders/oct_depth.vert</file>
         <file>icons/octproz_bscan_icon.png</file>
         <file>icons/octproz_bscanmarker_icon.png</file>
         <file>icons/octproz_close_icon.png</file>
@@ -36,12 +35,19 @@
         <file>icons/octproz_manual_icon.png</file>
         <file>default/settings.ini</file>
         <file>luts/hotter_lut.png</file>
-        <file>shaders/compute_sample_depths.glsl</file>
-        <file>shaders/oct_depth.frag</file>
-        <file>shaders/oct_depth.vert</file>
         <file>icons/octproz_save_icon.png</file>
         <file>icons/octproz_load_icon.png</file>
         <file>icons/octproz_time_icon.png</file>
         <file>icons/octproz_gpu_icon.png</file>
+        <file>aboutdata/octproz_logo.png</file>
+        <file>aboutdata/thirdparty_licenses/cuda_license.txt</file>
+        <file>aboutdata/thirdparty_licenses/eigen_license.txt</file>
+        <file>aboutdata/thirdparty_licenses/fftw_license.txt</file>
+        <file>aboutdata/thirdparty_licenses/qcustomplot_license.txt</file>
+        <file>aboutdata/thirdparty_licenses/qt_license.txt</file>
+        <file>aboutdata/thirdparty_licenses/raycaster_license.txt</file>
+        <file>aboutdata/about.txt</file>
+        <file>../../contributors.txt</file>
+        <file>LICENSE</file>
     </qresource>
 </RCC>
