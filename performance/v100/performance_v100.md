@@ -1,5 +1,9 @@
  # <img style="vertical-align:middle" img src="images/octproz_icon.png" width="64"> OCTproZ - Performance Information
 
+> ⚠ **Note:** This performance information is **outdated** and provided **for reference only**.  
+> Results were obtained on older versions of OCTproZ (v1.0.0 and v1.2.0) and do not reflect current performance.
+
+
 Processing rate highly depends on the size of the raw data, the used computer hardware and resource usage by background or system processes. With modern computer hardware and typical data dimensions for OCT, OCTproZ achieves A-scan rates in the MHz range.
 
 A test data set with 12 bit per sample, 1024 samples per raw A-scan, 512 A-scans per B-scan and 256 B-scans per volume was used to measure the performance on different systems:

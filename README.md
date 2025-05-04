@@ -47,12 +47,12 @@ Performance
 ----------
 Performance highly depends on the used computer hardware and the size of the of the OCT data. A test data set with 12 bit per sample, 1024 samples per raw A-scan, 512 A-scans per B-scan and 256 B-scans per volume was used to measure the performance on different systems:
 
-GPU           | A-scan rate without live 3D view | A-scan rate with live 3D view
-------------- | ------------- | -------------
-NVIDIA Quadro K620  | ~ 300 kHz ( ~2.2 volumes/s) | ~ 250 kHz ( ~1.9 volumes/s)
-NVIDIA GeForce GTX 1080 Ti  | ~ 4.8 MHz (~ 36 volumes/s) | ~ 4.0 MHz (~ 30 volumes/s)
+|GPU|A-scan rate without live 3D view|A-scan rate with live 3D view|
+|---|---|---|
+|Jetson Nano|~181 kHz (~1.4 volumes/s)|~94 kHz (~0.7 volumes/s)|
+|GeForce GTX 1080|~3.40 MHz (~26 volumes/s)|~2.93 MHz (~22 volumes/s)|
 
-You can find more information [here](performance.md).
+You can find more information [here](performance/v180/performance_v180.md).
 
 Download and Installation
 ----------
