@@ -47,6 +47,19 @@ The processing tab in the sidebar allows you to control all signal processing se
 | Weight                             | Scaling factor for background subtraction. |
 
 
+
+### Sidebar plots
+
+In the *k*-linearization, dispersion compensation, and windowing sections of the sidebar, each plot shows two curves: the active curve and a white reference curve. The white reference curves represent the baseline that causes no change when applied:
+
+- A straight identity resampling curve leaves spectral sampling unchanged
+- A flat dispersion phase function has no effect on axial resolution
+- A rectangular window spanning the full spectral range preserves all data points
+
+These reference curves serve as visual anchors, allowing to assess how much the current active curve diverges from the no-modification baseline.
+
+
+
 ### Loading custom resampling curves
 
 There are two ways to load a custom resampling curve for *k*-linearization:
