@@ -27,8 +27,8 @@
 #include "octproz_devkit.h"
 #include "settingsconstants.h"
 
-#define APP_VERSION "1.7.0"
-#define APP_VERSION_DATE "2 December 2023"
+#define APP_VERSION "1.8.0"
+#define APP_VERSION_DATE "5 May 2025"
 #define APP_NAME "OCTproZ"
 
 
