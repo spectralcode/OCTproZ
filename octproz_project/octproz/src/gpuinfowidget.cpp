@@ -1,4 +1,5 @@
 #include "gpuinfowidget.h"
+#include <QScrollBar>
 
 GpuInfoWidget::GpuInfoWidget(QWidget* parent)
 	: QWidget(parent),
@@ -80,4 +81,5 @@ void GpuInfoWidget::refreshGpuInfo() {
 		this->gpuInfoText->append(tr("  Async Engine Count: %1").arg(device.asyncEngineCount));
 		this->gpuInfoText->append("");
 	}
+	this->gpuInfoText->verticalScrollBar()->setValue(this->gpuInfoText->verticalScrollBar()->minimum());
 }
