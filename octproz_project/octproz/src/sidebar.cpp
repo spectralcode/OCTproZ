@@ -171,33 +171,33 @@ void Sidebar::loadSettings() {
 
 	//Recording
 	this->ui.lineEdit_saveFolder->setText(this->recordSettings.value(REC_PATH).toString());
-	this->ui.checkBox_recordScreenshots->setChecked(this->recordSettings.value(REC_SCREENSHOTS).toBool());
-	this->ui.checkBox_recordRawBuffers->setChecked(this->recordSettings.value(REC_RAW).toBool());
-	this->ui.checkBox_recordProcessedBuffers->setChecked(this->recordSettings.value(REC_PROCESSED).toBool());
-	this->ui.checkBox_startWithFirstBuffer->setChecked(this->recordSettings.value(REC_START_WITH_FIRST_BUFFER).toBool());
-	this->ui.checkBox_stopAfterRec->setChecked(this->recordSettings.value(REC_STOP).toBool());
-	this->ui.checkBox_meta->setChecked(this->recordSettings.value(REC_META).toBool());
-	this->ui.checkBox_32bitfloat->setChecked(this->recordSettings.value(REC_32BIT_FLOAT).toBool());
+	this->ui.checkBox_recordScreenshots->setChecked(this->recordSettings.value(REC_SCREENSHOTS, true).toBool());
+	this->ui.checkBox_recordRawBuffers->setChecked(this->recordSettings.value(REC_RAW, false).toBool());
+	this->ui.checkBox_recordProcessedBuffers->setChecked(this->recordSettings.value(REC_PROCESSED, true).toBool());
+	this->ui.checkBox_startWithFirstBuffer->setChecked(this->recordSettings.value(REC_START_WITH_FIRST_BUFFER, true).toBool());
+	this->ui.checkBox_stopAfterRec->setChecked(this->recordSettings.value(REC_STOP, false).toBool());
+	this->ui.checkBox_meta->setChecked(this->recordSettings.value(REC_META, true).toBool());
+	this->ui.checkBox_32bitfloat->setChecked(this->recordSettings.value(REC_32BIT_FLOAT, false).toBool());
 	this->ui.spinBox_volumes->setValue(this->recordSettings.value(REC_VOLUMES).toUInt());
 	this->ui.lineEdit_recName->setText(this->recordSettings.value(REC_NAME).toString());
 	this->ui.plainTextEdit_description->setPlainText(this->recordSettings.value(REC_DESCRIPTION).toString());
 
 	//Processing
-	this->ui.checkBox_bitshift->setChecked(this->processingSettings.value(PROC_BITSHIFT).toBool());
-	this->ui.checkBox_bscanFlip->setChecked(this->processingSettings.value(PROC_FLIP_BSCANS).toBool());
-	this->ui.groupBox_backgroundremoval->setChecked(this->processingSettings.value(PROC_REMOVEBACKGROUND).toBool());
-	this->ui.spinBox_rollingAverageWindowSize->setValue(this->processingSettings.value(PROC_REMOVEBACKGROUND_WINDOW_SIZE).toUInt());
-	this->ui.checkBox_logScaling->setChecked(this->processingSettings.value(PROC_LOG).toBool());
-	this->ui.doubleSpinBox_signalMax->setValue(this->processingSettings.value(PROC_MAX).toDouble());
-	this->ui.doubleSpinBox_signalMin->setValue(this->processingSettings.value(PROC_MIN).toDouble());
-	this->ui.doubleSpinBox_signalMultiplicator->setValue(this->processingSettings.value(PROC_COEFF).toDouble());
-	this->ui.doubleSpinBox_signalAddend->setValue(this->processingSettings.value(PROC_ADDEND).toDouble());
-	this->ui.groupBox_resampling->setChecked(this->processingSettings.value(PROC_RESAMPLING).toBool());
-	this->ui.comboBox_interpolation->setCurrentIndex(this->processingSettings.value(PROC_RESAMPLING_INTERPOLATION).toUInt());
-	this->ui.doubleSpinBox_c0->setValue(this->processingSettings.value(PROC_RESAMPLING_C0).toDouble());
-	this->ui.doubleSpinBox_c1->setValue(this->processingSettings.value(PROC_RESAMPLING_C1).toDouble());
-	this->ui.doubleSpinBox_c2->setValue(this->processingSettings.value(PROC_RESAMPLING_C2).toDouble());
-	this->ui.doubleSpinBox_c3->setValue(this->processingSettings.value(PROC_RESAMPLING_C3).toDouble());
+	this->ui.checkBox_bitshift->setChecked(this->processingSettings.value(PROC_BITSHIFT, false).toBool());
+	this->ui.checkBox_bscanFlip->setChecked(this->processingSettings.value(PROC_FLIP_BSCANS, false).toBool());
+	this->ui.groupBox_backgroundremoval->setChecked(this->processingSettings.value(PROC_REMOVEBACKGROUND, false).toBool());
+	this->ui.spinBox_rollingAverageWindowSize->setValue(this->processingSettings.value(PROC_REMOVEBACKGROUND_WINDOW_SIZE, 64).toUInt());
+	this->ui.checkBox_logScaling->setChecked(this->processingSettings.value(PROC_LOG, true).toBool());
+	this->ui.doubleSpinBox_signalMax->setValue(this->processingSettings.value(PROC_MAX, 100.0).toDouble());
+	this->ui.doubleSpinBox_signalMin->setValue(this->processingSettings.value(PROC_MIN, -30.0).toDouble());
+	this->ui.doubleSpinBox_signalMultiplicator->setValue(this->processingSettings.value(PROC_COEFF, 1.0).toDouble());
+	this->ui.doubleSpinBox_signalAddend->setValue(this->processingSettings.value(PROC_ADDEND, 0.0).toDouble());
+	this->ui.groupBox_resampling->setChecked(this->processingSettings.value(PROC_RESAMPLING, false).toBool());
+	this->ui.comboBox_interpolation->setCurrentIndex(this->processingSettings.value(PROC_RESAMPLING_INTERPOLATION, 0).toUInt());
+	this->ui.doubleSpinBox_c0->setValue(this->processingSettings.value(PROC_RESAMPLING_C0, 0.0).toDouble());
+	this->ui.doubleSpinBox_c1->setValue(this->processingSettings.value(PROC_RESAMPLING_C1, 1024.0).toDouble());
+	this->ui.doubleSpinBox_c2->setValue(this->processingSettings.value(PROC_RESAMPLING_C2, 0.0).toDouble());
+	this->ui.doubleSpinBox_c3->setValue(this->processingSettings.value(PROC_RESAMPLING_C3, 0.0).toDouble());
 	//this->actionUseCustomKLinCurve->setChecked(this->processingSettings.value(PROC_CUSTOM_RESAMPLING).toBool());
 	OctAlgorithmParameters::getInstance()->useCustomResampleCurve = this->processingSettings.value(PROC_CUSTOM_RESAMPLING).toBool(); //todo: move all actions for klin from octproz to sidebar
 	QString customResamplingFilePath = this->processingSettings.value(PROC_CUSTOM_RESAMPLING_FILEPATH).toString();
@@ -206,27 +206,27 @@ void Sidebar::loadSettings() {
 	} else {
 		emit loadResamplingCurveRequested(customResamplingFilePath, true);
 	}
-	this->ui.groupBox_dispersionCompensation->setChecked(this->processingSettings.value(PROC_DISPERSION_COMPENSATION).toBool());
-	this->ui.doubleSpinBox_d0->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D0).toDouble());
-	this->ui.doubleSpinBox_d1->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D1).toDouble());
-	this->ui.doubleSpinBox_d2->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D2).toDouble());
-	this->ui.doubleSpinBox_d3->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D3).toDouble());
-	this->ui.groupBox_windowing->setChecked(this->processingSettings.value(PROC_WINDOWING).toBool());
-	this->ui.comboBox_windowType->setCurrentIndex(this->processingSettings.value(PROC_WINDOWING_TYPE).toUInt());
-	this->ui.doubleSpinBox_windowFillFactor->setValue(this->processingSettings.value(PROC_WINDOWING_FILL_FACTOR).toDouble());
-	this->ui.doubleSpinBox_windowCenterPosition->setValue(this->processingSettings.value(PROC_WINDOWING_CENTER_POSITION).toDouble());
-	this->ui.groupBox_fixedPatternNoiseRemoval->setChecked(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL).toBool());
-	this->ui.radioButton_continuously->setChecked(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY).toBool());
-	this->ui.spinBox_bscansFixedNoise->setValue(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_BSCANS).toUInt());
-	this->ui.checkBox_sinusoidalScanCorrection->setChecked(this->processingSettings.value(PROC_SINUSOIDAL_SCAN_CORRECTION).toBool());
-	this->ui.groupBox_postProcessBackgroundRemoval->setChecked(this->processingSettings.value(PROC_POST_BACKGROUND_REMOVAL).toBool());
-	this->ui.doubleSpinBox_postProcessBackgroundWeight->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_WEIGHT).toDouble());
-	this->ui.doubleSpinBox_postProcessBackgroundOffset->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_OFFSET).toDouble());
+	this->ui.groupBox_dispersionCompensation->setChecked(this->processingSettings.value(PROC_DISPERSION_COMPENSATION, false).toBool());
+	this->ui.doubleSpinBox_d0->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D0, 0.0).toDouble());
+	this->ui.doubleSpinBox_d1->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D1, 0.0).toDouble());
+	this->ui.doubleSpinBox_d2->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D2, 0.0).toDouble());
+	this->ui.doubleSpinBox_d3->setValue(this->processingSettings.value(PROC_DISPERSION_COMPENSATION_D3, 0.0).toDouble());
+	this->ui.groupBox_windowing->setChecked(this->processingSettings.value(PROC_WINDOWING, true).toBool());
+	this->ui.comboBox_windowType->setCurrentIndex(this->processingSettings.value(PROC_WINDOWING_TYPE, 0).toUInt());
+	this->ui.doubleSpinBox_windowFillFactor->setValue(this->processingSettings.value(PROC_WINDOWING_FILL_FACTOR, 0.95).toDouble());
+	this->ui.doubleSpinBox_windowCenterPosition->setValue(this->processingSettings.value(PROC_WINDOWING_CENTER_POSITION, 0.5).toDouble());
+	this->ui.groupBox_fixedPatternNoiseRemoval->setChecked(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL, false).toBool());
+	this->ui.radioButton_continuously->setChecked(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_CONTINUOUSLY, false).toBool());
+	this->ui.spinBox_bscansFixedNoise->setValue(this->processingSettings.value(PROC_FIXED_PATTERN_REMOVAL_BSCANS, 1).toUInt());
+	this->ui.checkBox_sinusoidalScanCorrection->setChecked(this->processingSettings.value(PROC_SINUSOIDAL_SCAN_CORRECTION, false).toBool());
+	this->ui.groupBox_postProcessBackgroundRemoval->setChecked(this->processingSettings.value(PROC_POST_BACKGROUND_REMOVAL, false).toBool());
+	this->ui.doubleSpinBox_postProcessBackgroundWeight->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_WEIGHT, 1.0).toDouble());
+	this->ui.doubleSpinBox_postProcessBackgroundOffset->setValue(this->processingSettings.value(PROC_POST_BACKGROUND_OFFSET, 0.0).toDouble());
 	emit loadPostProcessBackgroundRequested(SETTINGS_PATH_BACKGROUND_FILE, true);
 
 	//GPU to RAM Streaming
-	this->ui.groupBox_streaming->setChecked(this->streamingSettings.value(STREAM_STREAMING).toBool());
-	this->ui.spinBox_streamingBuffersToSkip->setValue(this->streamingSettings.value(STREAM_STREAMING_SKIP).toUInt());
+	this->ui.groupBox_streaming->setChecked(this->streamingSettings.value(STREAM_STREAMING, true).toBool());
+	this->ui.spinBox_streamingBuffersToSkip->setValue(this->streamingSettings.value(STREAM_STREAMING_SKIP, 0).toUInt());
 
 	this->connectGuiElementsToAutosave();
 }
