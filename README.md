@@ -115,17 +115,21 @@ BibTeX:
 ```
 
 
-Other projects
+Other open source OCT signal processing projects
 ----------
-OCTproZ is not the only processing software for OCT raw data. Here is a list of other projects you should check out:
+Here is a list of other projects you should check out:
 
-|Name | Info |
-|-----|-----|
-|[ABC-OCT](https://github.com/hn-88/FDOCT) | C++ |
-|[myOCT](https://github.com/MyYo/myOCT) | Matlab |
-|[OCTSharp](https://github.com/OCTSharpImaging/OCTSharp) | Cuda, C# |
-|[vortex](https://www.vortex-oct.dev/) | Cuda, C++ with Python bindings |
-|[OCTview](https://github.com/sstucker/OCTview) | C++, Python, low latency cpu processing |
+| Name | Info |
+|------|------|
+| [ABC-OCT](https://github.com/hn-88/FDOCT) | C++ |
+| [fdoct-gpu-code](https://code.google.com/archive/p/fdoct-gpu-code/) | Cuda |
+| [myOCT](https://github.com/MyYo/myOCT) | Matlab |
+| [OCTSharp](https://github.com/OCTSharpImaging/OCTSharp) | Cuda, C# |
+| [OCTview](https://github.com/sstucker/OCTview) | C++, Python |
+| [oct-cbort](https://github.com/CBORT-NCBIB/oct-cbort) | Python |
+| [octlab](https://github.com/rosmir/octlab) | C/C++, LabView |
+| [PyOCT](https://github.com/yuechuanlin-cw/PyOCT) | Python |
+| [vortex](https://www.vortex-oct.dev/) | Cuda, C++, with Python bindings |
 
 
 License
