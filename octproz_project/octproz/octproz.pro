@@ -128,7 +128,7 @@ CONFIG(release, debug|release) {
 
 #OpenGL libs
 unix{
-	LIBS += -lGL -lGLU -lX11 -lglut
+	LIBS += -lGL -lGLU -lX11
 }
 win32{
 	LIBS += -lopengl32 -lglu32
