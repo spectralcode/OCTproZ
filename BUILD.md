@@ -209,13 +209,17 @@ In this step you configure Qt for _OpenGL desktop_ (this is necessary!) and remo
 > **Note for Qt 5.15 and later:**  
 [The `-qt-xcb` option was removed.](https://doc.qt.io/archives/qt-5.15/linux-requirements.html) Omit it from the configure command.
 
-After the configuration was done a _Configure summary_ will be displayed. Please verify that there is a _yes_ in the line with _Desktop OpenGL_. Now you can start the build process:
+After the configuration is complete a _Configure summary_ will be displayed. Please verify that there is a _yes_ in the line with _Desktop OpenGL_. Now you can start the build process:
 
 ```
 make
+```
+Be aware that `make` will take about 5 hours on the Jetson Nano. 
+Once `make` has finished, you can install Qt with:
+
+```
 sudo make install
 ```
-Be aware  that _make_ will take about 5 hours on the Jetson Nano. 
 
 When everything has been successfully completed you can start Qt Creator and build OCTproZ!
 
