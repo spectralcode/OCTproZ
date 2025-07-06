@@ -116,7 +116,7 @@ sudo apt-get install qtcreator
 sudo apt-get install qt5-default
 ```
 
-Qt documentation and examples which are not not required, but recommended can be installed with these commands:
+Qt documentation and examples which are not required, but recommended can be installed with these commands:
 ```
 sudo apt-get install qt5-doc
 sudo apt-get install qt5-doc-html qtbase5-doc-html
@@ -220,8 +220,26 @@ Once `make` has finished, you can install Qt with:
 ```
 sudo make install
 ```
+Qt is now installed and ready to use. However, to successfully compile the Phase Extraction Extension, one additional packages is required:
 
-When everything has been successfully completed you can start Qt Creator and build OCTproZ!
+```
+sudo apt-get install libfftw3-dev 
+```
+
+Now you can start Qt Creator and check if your Qt installation was autodetected.  
+If not, you can add it manually via:
+
+```
+Tools → Options… → Kits → Qt Versions → Add…
+```
+
+The path to `qmake` depends on your Qt version, but it should be something like:
+
+```
+/usr/local/Qt-5.15.17/bin/qmake
+```
+Now you can open `octproz_project.pro` with Qt Creator and you are ready to build OCTproZ!
+
 
 References:
 - [wiki.qt.io Building Qt 5 from Git](https://wiki.qt.io/Building_Qt_5_from_Git)
@@ -238,7 +256,7 @@ After installing Qt 5.12.11 with the offline installer, you may get the error me
 NMAKE : fatal error U1077: "C:\Program": Rückgabe-Code "0x1""
 ```
 
-One way to solve this issue is to close Qt Creator and (re-)install __Qt Creator 4.14.2__ with the offline installer form here:
+One way to solve this issue is to close Qt Creator and (re-)install __Qt Creator 4.14.2__ with the offline installer from here:
 https://download.qt.io/official_releases/qtcreator/4.14/4.14.2/
 
 Then delete the file _toolchains.xml_. You can find the file here:
