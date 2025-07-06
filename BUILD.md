@@ -175,6 +175,14 @@ Enable the "Source code" option in Software and Updates > Ubuntu Software under 
 sudo apt-get build-dep qt5-default
 ```
 
+> **Note:** In newer JetPack versions (JetPack 6 and newer, based on Ubuntu 22.04), the `qt5-default` package is no longer available in the repositories. 
+> In this case, use `qtbase5-dev` instead:
+
+```
+sudo apt-get build-dep qtbase5-dev
+```
+
+
 ### 3. Get the Qt source
 ```
 git clone https://code.qt.io/qt/qt5.git
@@ -199,7 +207,7 @@ In this step you configure Qt for _OpenGL desktop_ (this is necessary!) and remo
 ../qt5/configure -qt-xcb -opengl desktop -nomake examples -nomake tests -skip qtwebengine -skip qtandroidextras -skip qtcanvas3d -skip qtcharts -skip qtconnectivity -skip qtdatavis3d -skip qtdeclarative -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtwinextras
 ```
 > **Note for Qt 5.15 and later:**  
-The `-qt-xcb` option was removed. Use `-bundled-xcb-xinput` instead.
+[The `-qt-xcb` option was removed.](https://doc.qt.io/archives/qt-5.15/linux-requirements.html) Omit it from the configure command.
 
 After the configuration was done a _Configure summary_ will be displayed. Please verify that there is a _yes_ in the line with _Desktop OpenGL_. Now you can start the build process:
 
