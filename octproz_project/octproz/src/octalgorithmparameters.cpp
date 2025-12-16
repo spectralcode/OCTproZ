@@ -169,7 +169,21 @@ void OctAlgorithmParameters::updateResampleCurve() {
 			this->resampleCurve = this->customResampleCurve;
 			this->resampleCurveLength = this->customResampleCurveLength;
 		}
-		Polynomial::clamp(this->resampleCurve, this->samplesPerLine, 0, this->samplesPerLine-3); //resampling curve values shall remain between 0 and number of samples per line - 3 (a line is a raw A-scan). If a value is outside these boundaries the resampling (k-linearization) during processing will fail with a memory access violation //todo: rethink this approach, maybe there is a better way to avoid memeory access violation during interpolation in klinerization kernels
+		// Clamp resample curve values based on interpolation method to avoid memory access violations
+		// Each interpolation method accesses different sample ranges around the index:
+		// - Linear: accesses n and n+1, needs [0, samplesPerLine-2]
+		// - Cubic: accesses n-1 to n+2, needs [1, samplesPerLine-3]
+		// - Lanczos: accesses n-7 to n+8 (16-tap filter), needs [7, samplesPerLine-9]
+		int clampMin = 0;
+		int clampMax = static_cast<int>(this->samplesPerLine) - 2;
+		if (this->resamplingInterpolation == INTERPOLATION::CUBIC) {
+			clampMin = 1;
+			clampMax = static_cast<int>(this->samplesPerLine) - 3;
+		} else if (this->resamplingInterpolation == INTERPOLATION::LANCZOS) {
+			clampMin = 7;
+			clampMax = static_cast<int>(this->samplesPerLine) - 9;
+		}
+		Polynomial::clamp(this->resampleCurve, this->samplesPerLine, clampMin, clampMax);
 		this->resamplingUpdated = true;
 
 		//update resample reference curve for plot in sidebar
@@ -178,7 +192,7 @@ void OctAlgorithmParameters::updateResampleCurve() {
 			this->resamplingReferenceCurveCalculator->setCoeff(0, 0);
 			this->resamplingReferenceCurveCalculator->setCoeff(1, 1);
 			this->resampleReferenceCurve = this->resamplingReferenceCurveCalculator->getData();
-			Polynomial::clamp(this->resampleReferenceCurve, this->samplesPerLine, 0, this->samplesPerLine-3);
+			Polynomial::clamp(this->resampleReferenceCurve, this->samplesPerLine, 0, static_cast<int>(this->samplesPerLine) - 2);
 		}
 	}
 }

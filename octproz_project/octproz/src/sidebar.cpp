@@ -374,13 +374,16 @@ void Sidebar::updateResamplingParams() {
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
 	int interpolation = this->ui.comboBox_interpolation->currentIndex();
 	OctAlgorithmParameters::INTERPOLATION interpolationOption = (OctAlgorithmParameters::INTERPOLATION) interpolation;
+	OctAlgorithmParameters::INTERPOLATION previousInterpolation = params->resamplingInterpolation;
 	params->resamplingInterpolation = interpolationOption;
 	double c0 = this->ui.doubleSpinBox_c0->value();
 	double c1 = this->ui.doubleSpinBox_c1->value();
 	double c2 = this->ui.doubleSpinBox_c2->value();
 	double c3 = this->ui.doubleSpinBox_c3->value();
 	bool resampling = this->ui.groupBox_resampling->isChecked();
-	if (c0 != params->c0 || c1 != params->c1 || c2 != params->c2 || c3 != params->c3 || params->acquisitionParamsChanged) {
+	// Also update curve when interpolation method changes (different methods need different clamp values)
+	bool interpolationChanged = (interpolationOption != previousInterpolation);
+	if (c0 != params->c0 || c1 != params->c1 || c2 != params->c2 || c3 != params->c3 || params->acquisitionParamsChanged || interpolationChanged) {
 		params->c0 = c0;
 		params->c1 = c1;
 		params->c2 = c2;
