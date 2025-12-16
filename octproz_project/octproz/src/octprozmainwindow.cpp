@@ -105,6 +105,9 @@ OCTproZMainWindow::OCTproZMainWindow(OCTproZApp* app, QWidget* parent) :
 	connect(this->gpuInfoWidget, &GpuInfoWidget::error, this->console, &MessageConsole::displayError);
 	this->gpuInfoWidget->checkCudaAvailability();
 
+	// Advanced settings dialog
+	this->advancedSettingsDialog = new AdvancedSettingsDialog(this);
+
 	// Connect sidebar to paramsManager
 	connect(this->sidebar, &Sidebar::savePostProcessBackgroundRequested,
 			this->app->getParamsManager(), &OctAlgorithmParametersManager::savePostProcessBackgroundToFile);
@@ -617,6 +620,13 @@ void OCTproZMainWindow::initMenu() {
 	connect(scheduledRecordingAction, &QAction::triggered, this, &OCTproZMainWindow::openRecordingScheduler);
 	this->extrasMenu->addAction(scheduledRecordingAction);
 
+	QAction* advancedSettingsAction = new QAction(tr("&Advanced Settings..."), this);
+	advancedSettingsAction->setIcon(QIcon(":/icons/octproz_settings_icon.png"));
+	advancedSettingsAction->setStatusTip(tr("Advanced settings for line-field OCT and full-range imaging"));
+	advancedSettingsAction->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_A));
+	connect(advancedSettingsAction, &QAction::triggered, this, &OCTproZMainWindow::openAdvancedSettingsDialog);
+	this->extrasMenu->addAction(advancedSettingsAction);
+
 	QMenu* klinMenu = this->extrasMenu->addMenu(tr("&Resampling curve for k-linearization"));
 	klinMenu->setToolTipsVisible(true);
 	klinMenu->setStatusTip(tr("Settings for k-linearization resampling curve"));
@@ -798,7 +808,8 @@ void OCTproZMainWindow::onProcessingStarted() {
 		// Update OpenGL texture size
 		// todo: remove this, it is only needed when test volume is used
 		//.figure out how to best inform opengl windows about texture size if test volume from slot_easterEgg is used
-		emit this->glBufferTextureSizeBscan(this->app->getOctParams()->samplesPerLine/2,
+		int truncDiv = this->app->getOctParams()->getOutputTruncationDivisor();
+		emit this->glBufferTextureSizeBscan(this->app->getOctParams()->samplesPerLine/truncDiv,
 										   this->app->getOctParams()->ascansPerBscan,
 										   this->app->getOctParams()->bscansPerBuffer *
 										   this->app->getOctParams()->buffersPerVolume);
@@ -926,6 +937,12 @@ void OCTproZMainWindow::openGpuInfoWindow() {
 	this->gpuInfoWidget->show();
 	this->gpuInfoWidget->raise();
 	this->gpuInfoWidget->activateWindow();
+}
+
+void OCTproZMainWindow::openAdvancedSettingsDialog() {
+	this->advancedSettingsDialog->show();
+	this->advancedSettingsDialog->raise();
+	this->advancedSettingsDialog->activateWindow();
 }
 
 

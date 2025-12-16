@@ -17,6 +17,7 @@ INCLUDEPATH +=  \
 
 SOURCES += \
 	$$SOURCEDIR/aboutdialog.cpp \
+	$$SOURCEDIR/advancedsettingsdialog.cpp \
 	$$SOURCEDIR/glwindow3d.cpp \
 	$$SOURCEDIR/main.cpp \
 	$$SOURCEDIR/mesh.cpp \
@@ -59,6 +60,7 @@ SOURCES += \
 
 HEADERS += \
 	$$SOURCEDIR/aboutdialog.h \
+	$$SOURCEDIR/advancedsettingsdialog.h \
 	$$SOURCEDIR/glwindow3d.h \
 	$$SOURCEDIR/mesh.h \
 	$$SOURCEDIR/minicurveplot.h \
@@ -100,6 +102,7 @@ HEADERS += \
 	$$SOURCEDIR/gpuinfowidget.h
 
 FORMS += \
+	$$SOURCEDIR/advancedsettingsdialog.ui \
 	$$SOURCEDIR/sidebar.ui
 
 RESOURCES += \

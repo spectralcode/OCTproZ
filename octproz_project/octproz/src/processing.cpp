@@ -241,11 +241,12 @@ void Processing::slot_enableRecording(OctAlgorithmParameters::RecordingParams re
 			emit error(tr("Recording of processed data is already running."));
 		}else{
 			OctAlgorithmParameters::RecordingParams recProcessedParams = recParams;
+			int truncDiv = this->octParams->getOutputTruncationDivisor();
 			if(recParams.saveAs32bitFloat){
-				recProcessedParams.bufferSizeInBytes = (this->octParams->samplesPerLine / 2) * this->octParams->ascansPerBscan * this->octParams->bscansPerBuffer * sizeof (float);
+				recProcessedParams.bufferSizeInBytes = (this->octParams->samplesPerLine / truncDiv) * this->octParams->ascansPerBscan * this->octParams->bscansPerBuffer * sizeof (float);
 				//this->enableFloatGpu2HostStreaming(true);
 			} else {
-				recProcessedParams.bufferSizeInBytes = recProcessedParams.bufferSizeInBytes/2; //todo: add option to change bitdepth of processed recording
+				recProcessedParams.bufferSizeInBytes = recProcessedParams.bufferSizeInBytes/truncDiv; //todo: add option to change bitdepth of processed recording
 			}
 			
 			// Disconnect previous signals
@@ -319,7 +320,8 @@ void Processing::enableGpu2HostStreaming(bool enableStreaming) {
 		unsigned int height = this->octParams->ascansPerBscan;
 		unsigned int depth = this->octParams->bscansPerBuffer;
 		unsigned int bytesPerSample = ceil((double)(this->octParams->bitDepth) / 8.0); //todo: avoid this calculation here. put bytesPerSample in octsalgorithmparameters.
-		size_t bufferSizeInBytes = width * height*depth*bytesPerSample;
+		int truncDiv = this->octParams->getOutputTruncationDivisor();
+		size_t bufferSizeInBytes = (width / truncDiv) * height * depth * bytesPerSample;
 		this->streamingBuffer->releaseMemory();
 		this->streamingBuffer->allocateMemory(2, bufferSizeInBytes);
 		this->registerStreamingHostBuffers(streamingBuffer->bufferArray.at(0), streamingBuffer->bufferArray.at(1), bufferSizeInBytes);
@@ -343,7 +345,8 @@ void Processing::enableFloatGpu2HostStreaming(bool enableStreaming) {
 		unsigned int width = this->octParams->samplesPerLine;
 		unsigned int height = this->octParams->ascansPerBscan;
 		unsigned int depth = this->octParams->bscansPerBuffer;
-		size_t bufferSizeInBytes = (width / 2) * height * depth * sizeof(float);
+		int truncDiv = this->octParams->getOutputTruncationDivisor();
+		size_t bufferSizeInBytes = (width / truncDiv) * height * depth * sizeof(float);
 
 		// Release any previously allocated memory
 		this->floatStreamingBuffer->releaseMemory();

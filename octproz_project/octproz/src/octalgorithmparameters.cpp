@@ -89,6 +89,11 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	postProcessBackground(nullptr),
 	postProcessBackgroundLength(0),
 	postProcessBackgroundUpdated(false),
+	fullRangeMode(false),
+	fullRangeModeChanged(false),
+	ccArtifactRemoval(false),
+	ccFilterCutoff(0.5f),
+	ccFilterShift(0.5f),
 	frameNr(0),
 	frameNrEnFaceView(0),
 	functionFramesEnFaceView(0),
@@ -250,7 +255,7 @@ void OctAlgorithmParameters::updateWindowCurve(){
 
 void OctAlgorithmParameters::updatePostProcessingBackgroundCurve() {
 	if (this->postProcessBackgroundRemoval || this->acquisitionParamsChanged) {
-		int newSize = this->samplesPerLine/2;
+		int newSize = this->samplesPerLine / this->getOutputTruncationDivisor();
 		if (newSize <= 0) { return; }
 
 		if(this->postProcessBackgroundLength != newSize) {

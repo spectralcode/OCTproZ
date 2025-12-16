@@ -34,6 +34,7 @@
 #include "settingsconstants.h"
 #include "recordingschedulerwidget.h"
 #include "gpuinfowidget.h"
+#include "advancedsettingsdialog.h"
 
 
 class OCTproZMainWindow : public QMainWindow
@@ -90,6 +91,7 @@ private slots:
 	void openUserManualDialog();
 	void openRecordingScheduler();
 	void openGpuInfoWindow();
+	void openAdvancedSettingsDialog();
 
 signals:
 	void error(QString);
@@ -118,6 +120,7 @@ private:
 	SystemChooser* systemChooser;
 	RecordingSchedulerWidget* recordingSchedulerWidget;
 	GpuInfoWidget* gpuInfoWidget;
+	AdvancedSettingsDialog* advancedSettingsDialog;
 
 	// UI helper classes
 	ExtensionUIManager* extensionUIManager;

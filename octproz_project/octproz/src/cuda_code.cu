@@ -55,7 +55,7 @@ cudaGraphicsResource* cuBufHandleBscan = NULL;
 cudaGraphicsResource* cuBufHandleEnFaceView = NULL;
 cudaGraphicsResource* cuBufHandleVolumeView = NULL;
 
-const int nBuffers = 1;
+const int nBuffers = 8;
 int currBuffer = 0;
 void* d_inputBuffer[nBuffers];
 void* d_outputBuffer = NULL;
@@ -94,6 +94,8 @@ int samplesPerBuffer = 0;
 int samplesPerVolume = 0;
 int buffersPerVolume = 0;
 int bytesPerSample = 0;
+int outputTruncationDivisor = 2;  // 2 = half (default), 1 = full range mode
+__device__ int d_outputTruncationDivisor = 2;  // Device copy for kernel access
 
 float* d_processedBuffer = NULL;
 float* d_sinusoidalScanTmpBuffer = NULL;
@@ -696,6 +698,7 @@ extern "C" void cuda_unregisterFloatStreamingBuffers() {
 
 
 //Removes half of each processed A-scan (the mirror artefacts), logarithmizes each value of magnitude of remaining A-scan and copies it into an output array. This output array can be used to display the processed OCT data.
+//For full range mode (outputAscanLength == inputAscanLength), all samples are kept and fftshift is applied to center zero delay.
 __global__ void postProcessTruncateLog(float* __restrict__ output,
                                        const cufftComplex* __restrict__ input,
                                        const int outputAscanLength,
@@ -706,20 +709,32 @@ __global__ void postProcessTruncateLog(float* __restrict__ output,
                                        const float addend,
                                        const float coeff) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	if (index < samples / 2) {
-		int lineIndex = index / outputAscanLength;
-		int inputArrayIndex = lineIndex *outputAscanLength + index;
+	int lineIndex = index / outputAscanLength;
+	int posInLine = index % outputAscanLength;
 
-		//Note log scaling: log(sqrt(x*x+y*y)) == 0.5*log(x*x+y*y) --> the calculation in the code below is 20*log(magnitude) and not 10*log...
-		//Note fft normalization://(1/(2*outputAscanLength)) is the FFT normalization factor. In addition a multiplication by 2 is performed since the acquired OCT raw signal is a real valued signal, so (1/(2*outputAscanLength)) becomes 1/outputAscanLength. (Why multiply by 2: FFT of a real-valued signal is a complex-valued signal with a symmetric spectrum, where the positive and negative frequency components are identical in magnitude. And since the signal is truncated (negative or positive frequency components are removed), doubling of the remaining components is performed here)
-		//amplitude:
-		float realComponent = input[inputArrayIndex].x;
-		float imaginaryComponent = input[inputArrayIndex].y;
-		output[index] = coeff*((((10.0f*log10f(((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength))) - min) / (max - min)) + addend);
+	// For full range mode (div=1), apply fftshift to center zero delay
+	// This swaps the two halves of each A-scan so DC is in the middle
+	int inputPosInLine = posInLine;
+	if (d_outputTruncationDivisor == 1) {
+		inputPosInLine = (posInLine + outputAscanLength / 2) % outputAscanLength;
 	}
+
+	// Use device variable for truncation divisor
+	// For full range (div=1): inputStride = outputAscanLength
+	// For half range (div=2): inputStride = 2 * outputAscanLength
+	int inputStride = d_outputTruncationDivisor * outputAscanLength;
+	int inputArrayIndex = lineIndex * inputStride + inputPosInLine;
+
+	//Note log scaling: log(sqrt(x*x+y*y)) == 0.5*log(x*x+y*y) --> the calculation in the code below is 20*log(magnitude) and not 10*log...
+	//Note fft normalization://(1/(2*outputAscanLength)) is the FFT normalization factor. In addition a multiplication by 2 is performed since the acquired OCT raw signal is a real valued signal, so (1/(2*outputAscanLength)) becomes 1/outputAscanLength. (Why multiply by 2: FFT of a real-valued signal is a complex-valued signal with a symmetric spectrum, where the positive and negative frequency components are identical in magnitude. And since the signal is truncated (negative or positive frequency components are removed), doubling of the remaining components is performed here)
+	//amplitude:
+	float realComponent = input[inputArrayIndex].x;
+	float imaginaryComponent = input[inputArrayIndex].y;
+	output[index] = coeff*((((10.0f*log10f(((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength))) - min) / (max - min)) + addend);
 }
 
 //Removes half of each processed A-scan (the mirror artefacts), calculates magnitude of remaining A-scan and copies it into an output array. This output array can be used to display the processed OCT data.
+//For full range mode (outputAscanLength == inputAscanLength), all samples are kept.
 __global__ void postProcessTruncateLin(float* __restrict__ output,
                                       const cufftComplex* __restrict__ input,
                                       const int outputAscanLength,
@@ -729,15 +744,21 @@ __global__ void postProcessTruncateLin(float* __restrict__ output,
                                       const float addend,
                                       const float coeff) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	if (index < samples / 2) {
-		int lineIndex = index / outputAscanLength;
-		int inputArrayIndex = lineIndex * outputAscanLength + index;
+	int lineIndex = index / outputAscanLength;
+	int posInLine = index % outputAscanLength;
 
-		//amplitude:
-		float realComponent = input[inputArrayIndex].x;
-		float imaginaryComponent = input[inputArrayIndex].y;
-		output[index] = coeff * ((((sqrt((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength)) - min) / (max - min)) + addend);
+	// fftshift: swap first and second half to center zero delay line in full range mode
+	int inputPosInLine = posInLine;
+	if (d_outputTruncationDivisor == 1) {
+		inputPosInLine = (posInLine + outputAscanLength / 2) % outputAscanLength;
 	}
+	int inputStride = d_outputTruncationDivisor * outputAscanLength;
+	int inputArrayIndex = lineIndex * inputStride + inputPosInLine;
+
+	//amplitude:
+	float realComponent = input[inputArrayIndex].x;
+	float imaginaryComponent = input[inputArrayIndex].y;
+	output[index] = coeff * ((((sqrt((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength)) - min) / (max - min)) + addend);
 }
 
 __global__ void getPostProcessBackground(float* __restrict__ output,
@@ -1076,6 +1097,11 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	params = parameters;
 	bytesPerSample = ceil((double)(parameters->bitDepth) / 8.0);
 
+	// Set truncation divisor based on full range mode
+	outputTruncationDivisor = parameters->fullRangeMode ? 1 : 2;
+	// Copy to device constant for kernel access
+	cudaMemcpyToSymbol(d_outputTruncationDivisor, &outputTruncationDivisor, sizeof(int));
+
 	createStreamsAndEvents();
 
 	bool success =
@@ -1102,7 +1128,7 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	}
 
 	if (success) {
-		success = allocateAndInitializeBuffer((void**)&d_outputBuffer, bytesPerSample * samplesPerBuffer / 2);
+		success = allocateAndInitializeBuffer((void**)&d_outputBuffer, bytesPerSample * samplesPerBuffer / outputTruncationDivisor);
 	}
 
 	if(!success){
@@ -1115,11 +1141,11 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	if (success) {
 		success = allocateAndInitializeBuffer((void**)&d_inputLinearized, sizeof(cufftComplex) * samplesPerBuffer)
 		&& allocateAndInitializeBuffer((void**)&d_phaseCartesian, sizeof(cufftComplex) * signalLength)
-		&& allocateAndInitializeBuffer((void**)&d_processedBuffer, sizeof(float) * samplesPerVolume / 2)
-		&& allocateAndInitializeBuffer((void**)&d_sinusoidalScanTmpBuffer, sizeof(float) * samplesPerBuffer / 2)
+		&& allocateAndInitializeBuffer((void**)&d_processedBuffer, sizeof(float) * samplesPerVolume / outputTruncationDivisor)
+		&& allocateAndInitializeBuffer((void**)&d_sinusoidalScanTmpBuffer, sizeof(float) * samplesPerBuffer / outputTruncationDivisor)
 		&& allocateAndInitializeBuffer((void**)&d_fftBuffer, sizeof(cufftComplex) * samplesPerBuffer)
 		&& allocateAndInitializeBuffer((void**)&d_meanALine, sizeof(cufftComplex) * signalLength)
-		&& allocateAndInitializeBuffer((void**)&d_postProcBackgroundLine, sizeof(float) * signalLength / 2);;
+		&& allocateAndInitializeBuffer((void**)&d_postProcBackgroundLine, sizeof(float) * signalLength / outputTruncationDivisor);;
 	}
 
 	if(!success){
@@ -1232,7 +1258,7 @@ extern "C" void changeDisplayedBscanFrame(unsigned int frameNr, unsigned int dis
 	int samplesPerFrame = width * height;
 	if (d_bscanDisplayBuffer != NULL) {
 		frameNr = frameNr < depth ? frameNr : 0;
-		updateDisplayedBscanFrame<<<gridSize/2, blockSize, 0, userRequestStream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / 2, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedBscanFrame<<<gridSize/outputTruncationDivisor, blockSize, 0, userRequestStream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / outputTruncationDivisor, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleBscan != NULL) {
 		cuda_unmap(cuBufHandleBscan, userRequestStream);
@@ -1256,8 +1282,8 @@ extern "C" void changeDisplayedEnFaceFrame(unsigned int frameNr, unsigned int di
 		gridSizeDisplay = (samplesPerFrame + blockSizeDisplay - 1)/blockSizeDisplay;
 	}
 	if (d_enFaceViewDisplayBuffer != NULL) {
-		frameNr = frameNr < static_cast<unsigned int>(signalLength/2) ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<gridSizeDisplay, blockSizeDisplay, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		frameNr = frameNr < static_cast<unsigned int>(signalLength/outputTruncationDivisor) ? frameNr : 0;
+		updateDisplayedEnFaceViewFrame<<<gridSizeDisplay, blockSizeDisplay, 0, userRequestStream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/outputTruncationDivisor, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
 		cuda_unmap(cuBufHandleEnFaceView, userRequestStream);
@@ -1276,7 +1302,7 @@ extern "C" inline void updateBscanDisplayBuffer(unsigned int frameNr, unsigned i
 	int samplesPerFrame = width * height;
 	if (d_bscanDisplayBuffer != NULL) {
 		frameNr = frameNr < depth ? frameNr : 0;
-		updateDisplayedBscanFrame<<<gridSize/2, blockSize, 0, stream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / 2, frameNr, displayFunctionFrames, displayFunction);
+		updateDisplayedBscanFrame<<<gridSize/outputTruncationDivisor, blockSize, 0, stream>>>((float*)d_bscanDisplayBuffer, d_processedBuffer, depth, samplesPerFrame / outputTruncationDivisor, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleBscan != NULL) {
 		cuda_unmap(cuBufHandleBscan, stream);
@@ -1299,8 +1325,8 @@ extern "C" inline void updateEnFaceDisplayBuffer(unsigned int frameNr, unsigned 
 		gridSizeDisplay = (samplesPerFrame + blockSizeDisplay - 1)/blockSizeDisplay;
 	}
 	if (d_enFaceViewDisplayBuffer != NULL) {
-		frameNr = frameNr < static_cast<unsigned int>(signalLength/2) ? frameNr : 0;
-		updateDisplayedEnFaceViewFrame<<<gridSizeDisplay, blockSizeDisplay, 0, stream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/2, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
+		frameNr = frameNr < static_cast<unsigned int>(signalLength/outputTruncationDivisor) ? frameNr : 0;
+		updateDisplayedEnFaceViewFrame<<<gridSizeDisplay, blockSizeDisplay, 0, stream>>>((float*)d_enFaceViewDisplayBuffer, d_processedBuffer, signalLength/outputTruncationDivisor, samplesPerFrame, frameNr, displayFunctionFrames, displayFunction);
 	}
 	if (cuBufHandleEnFaceView != NULL) {
 		cuda_unmap(cuBufHandleEnFaceView, stream);
@@ -1316,7 +1342,7 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 	//calculate dimensions of processed volume
 	unsigned int width = bscansPerBuffer * buffersPerVolume;
 	unsigned int height = ascansPerBscan;
-	unsigned int depth = signalLength/2;
+	unsigned int depth = signalLength/outputTruncationDivisor;
 	if (d_volumeViewDisplayBuffer != NULL) {
 #if __CUDACC_VER_MAJOR__ >=12
 	        cudaResourceDesc surfRes;
@@ -1332,7 +1358,7 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 	        }
 
 	        dim3 texture_dim(height, width, depth); //todo: use consistent naming of width, height, depth, x, y, z, ...
-	        updateDisplayedVolume<< <gridSize/2, blockSize, 0, stream>>>(surfaceWrite, d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
+	        updateDisplayedVolume<<<gridSize/outputTruncationDivisor, blockSize, 0, stream>>>(surfaceWrite, d_currBuffer, samplesPerBuffer/outputTruncationDivisor, currentBufferNr, bscansPerBuffer, texture_dim);
 	        cudaDestroySurfaceObject(surfaceWrite);
 #else
 		//bind voxel array to a writable cuda surface
@@ -1344,7 +1370,7 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 
 		//write to cuda surface
 		dim3 texture_dim(height, width, depth); //todo: use consistent naming of width, height, depth, x, y, z, ...
-		updateDisplayedVolume<< <gridSize/2, blockSize, 0, stream>>>(d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
+		updateDisplayedVolume<<<gridSize/outputTruncationDivisor, blockSize, 0, stream>>>(d_currBuffer, samplesPerBuffer/outputTruncationDivisor, currentBufferNr, bscansPerBuffer, texture_dim);
 #endif
     }
 
@@ -1362,9 +1388,9 @@ inline void streamProcessedData(float* d_currProcessedBuffer, cudaStream_t strea
 #if defined(__aarch64__) && defined(ENABLE_CUDA_ZERO_COPY)
 		checkCudaErrors(cudaHostGetDevicePointer((void**)&d_outputBuffer, (void*)hostDestBuffer, 0));
 #endif
-		floatToOutput<<<gridSize / 2, blockSize, 0, stream>>> (d_outputBuffer, d_currProcessedBuffer, params->bitDepth, samplesPerBuffer / 2);
+		floatToOutput<<<gridSize / outputTruncationDivisor, blockSize, 0, stream>>> (d_outputBuffer, d_currProcessedBuffer, params->bitDepth, samplesPerBuffer / outputTruncationDivisor);
 #if !defined(__aarch64__) || !defined(ENABLE_CUDA_ZERO_COPY)
-		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, (void*)d_outputBuffer, (samplesPerBuffer / 2) * bytesPerSample, cudaMemcpyDeviceToHost, stream));
+		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, (void*)d_outputBuffer, (samplesPerBuffer / outputTruncationDivisor) * bytesPerSample, cudaMemcpyDeviceToHost, stream));
 #endif
 		checkCudaErrors(cudaLaunchHostFunc(stream, Gpu2HostNotifier::dh2StreamingCallback, hostDestBuffer));
 	}
@@ -1378,7 +1404,7 @@ inline void streamProcessedFloatData(float* d_currProcessedBuffer, cudaStream_t 
 	void* hostDestBuffer = floatStreamingBufferNumber == 0 ? host_floatStreamingBuffer1 : host_floatStreamingBuffer2;
 
 	#if !defined(__aarch64__) || !defined(ENABLE_CUDA_ZERO_COPY)
-		size_t bufferSizeInBytes = (samplesPerBuffer / 2) * sizeof(float);
+		size_t bufferSizeInBytes = (samplesPerBuffer / outputTruncationDivisor) * sizeof(float);
 		checkCudaErrors(cudaMemcpyAsync(hostDestBuffer, d_currProcessedBuffer, bufferSizeInBytes, cudaMemcpyDeviceToHost, stream));
 	#endif
 
@@ -1532,39 +1558,39 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	}
 
 	//get current position in processed volume buffer
-	float* d_currBuffer = &d_processedBuffer[(samplesPerBuffer/2)*bufferNumberInVolume];
+	float* d_currBuffer = &d_processedBuffer[(samplesPerBuffer/outputTruncationDivisor)*bufferNumberInVolume];
 
 	//postProcessTruncate contains: Mirror artefact removal, Log, Magnitude, Copy to output buffer.
 	if (params->signalLogScaling) {
-		postProcessTruncateLog<<<gridSize/2, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_fftBuffer2, signalLength / 2, samplesPerBuffer, bufferNumberInVolume, params->signalGrayscaleMax, params->signalGrayscaleMin, params->signalAddend, params->signalMultiplicator);
+		postProcessTruncateLog<<<gridSize/outputTruncationDivisor, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_fftBuffer2, signalLength / outputTruncationDivisor, samplesPerBuffer, bufferNumberInVolume, params->signalGrayscaleMax, params->signalGrayscaleMin, params->signalAddend, params->signalMultiplicator);
 	}
 	else {
-		postProcessTruncateLin<<<gridSize/2, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_fftBuffer2, signalLength / 2, samplesPerBuffer, params->signalGrayscaleMax, params->signalGrayscaleMin, params->signalAddend, params->signalMultiplicator);
+		postProcessTruncateLin<<<gridSize/outputTruncationDivisor, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_fftBuffer2, signalLength / outputTruncationDivisor, samplesPerBuffer, params->signalGrayscaleMax, params->signalGrayscaleMin, params->signalAddend, params->signalMultiplicator);
 	}
 
 	//flip every second bscan
 	if (params->bscanFlip) {
-		cuda_bscanFlip<<<gridSize/2, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_currBuffer, signalLength / 2, ascansPerBscan, (signalLength*ascansPerBscan)/2, samplesPerBuffer/4);
+		cuda_bscanFlip<<<gridSize/outputTruncationDivisor, blockSize, 0, stream[currStream]>>> (d_currBuffer, d_currBuffer, signalLength / outputTruncationDivisor, ascansPerBscan, (signalLength*ascansPerBscan)/outputTruncationDivisor, samplesPerBuffer/(outputTruncationDivisor*2));
 	}
 
 	//sinusoidal scan correction
 	if(params->sinusoidalScanCorrection && d_sinusoidalScanTmpBuffer != NULL){
-		checkCudaErrors(cudaMemcpyAsync(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/2, cudaMemcpyDeviceToDevice,stream[currStream]));
-		sinusoidalScanCorrection<<<gridSize/2, blockSize, 0, stream[currStream]>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/2, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/2);
+		checkCudaErrors(cudaMemcpyAsync(d_sinusoidalScanTmpBuffer, d_currBuffer, sizeof(float)*samplesPerBuffer/outputTruncationDivisor, cudaMemcpyDeviceToDevice,stream[currStream]));
+		sinusoidalScanCorrection<<<gridSize/outputTruncationDivisor, blockSize, 0, stream[currStream]>>>(d_currBuffer, d_sinusoidalScanTmpBuffer, d_sinusoidalResampleCurve, signalLength/outputTruncationDivisor, ascansPerBscan, bscansPerBuffer, samplesPerBuffer/outputTruncationDivisor);
 	}
 
 	//post process background removal
 	if(params->postProcessBackgroundRemoval){
 		if(params->postProcessBackgroundRecordingRequested){
-			getPostProcessBackground<<<gridSize/2, blockSize, 0, stream[currStream]>>>(d_postProcBackgroundLine, d_currBuffer, signalLength/2, ascansPerBscan );
-			cuda_copyPostProcessBackgroundToHost(params->postProcessBackground, signalLength/2, stream[currStream]);
+			getPostProcessBackground<<<gridSize/outputTruncationDivisor, blockSize, 0, stream[currStream]>>>(d_postProcBackgroundLine, d_currBuffer, signalLength/outputTruncationDivisor, ascansPerBscan );
+			cuda_copyPostProcessBackgroundToHost(params->postProcessBackground, signalLength/outputTruncationDivisor, stream[currStream]);
 			params->postProcessBackgroundRecordingRequested = false;
 		}
 		if(params->postProcessBackgroundUpdated){
-			cuda_updatePostProcessBackground(params->postProcessBackground, signalLength/2, stream[currStream]);
+			cuda_updatePostProcessBackground(params->postProcessBackground, signalLength/outputTruncationDivisor, stream[currStream]);
 			params->postProcessBackgroundUpdated = false;
 		}
-		postProcessBackgroundRemoval<<<gridSize/2, blockSize, 0, stream[currStream]>>>(d_currBuffer, d_postProcBackgroundLine, params->postProcessBackgroundWeight, params->postProcessBackgroundOffset, signalLength/2, samplesPerBuffer/2);
+		postProcessBackgroundRemoval<<<gridSize/outputTruncationDivisor, blockSize, 0, stream[currStream]>>>(d_currBuffer, d_postProcBackgroundLine, params->postProcessBackgroundWeight, params->postProcessBackgroundOffset, signalLength/outputTruncationDivisor, samplesPerBuffer/outputTruncationDivisor);
 	}
 
 	//update display buffers

@@ -385,8 +385,9 @@ void OCTproZApp::slot_updateAcquistionParameter(AcquisitionParams newParams) {
 	   oldAscansPerBscan != newParams.ascansPerBscan ||
 	   oldBscansPerBuffer != newParams.bscansPerBuffer ||
 	   oldBuffersPerVolume != newParams.buffersPerVolume) {
-		emit bScanDimensionsChanged(newParams.samplesPerLine/2, newParams.ascansPerBscan, newParams.bscansPerBuffer*newParams.buffersPerVolume);
-		emit enFaceViewDimensionsChanged(newParams.ascansPerBscan, newParams.bscansPerBuffer*newParams.buffersPerVolume, newParams.samplesPerLine/2);
+		int truncDiv = this->octParams->getOutputTruncationDivisor();
+		emit bScanDimensionsChanged(newParams.samplesPerLine/truncDiv, newParams.ascansPerBscan, newParams.bscansPerBuffer*newParams.buffersPerVolume);
+		emit enFaceViewDimensionsChanged(newParams.ascansPerBscan, newParams.bscansPerBuffer*newParams.buffersPerVolume, newParams.samplesPerLine/truncDiv);
 	}
 	if(oldAscansPerBscan != newParams.ascansPerBscan || oldBscansPerBuffer != newParams.bscansPerBuffer){
 		emit linesPerBufferChanged(newParams.ascansPerBscan * newParams.bscansPerBuffer);

@@ -165,6 +165,16 @@ public:
 	int postProcessBackgroundLength;
 	bool postProcessBackgroundUpdated;
 
+	// Full Range Mode
+	bool fullRangeMode;              // When true, don't truncate FFT output
+	bool fullRangeModeChanged;       // Flag to trigger buffer reallocation
+	int getOutputTruncationDivisor() const { return fullRangeMode ? 1 : 2; }
+
+	// CC Artifact Removal parameters
+	bool ccArtifactRemoval;
+	float ccFilterCutoff;
+	float ccFilterShift;
+
 	//visualization
 	//todo: put all visualization params in a single struct and use an enum for displayfunction
 	unsigned int frameNr; /// Current number of the displayed frame.
