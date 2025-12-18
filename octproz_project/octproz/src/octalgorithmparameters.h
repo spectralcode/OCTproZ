@@ -176,6 +176,24 @@ public:
 	float ccRectWidth;                // Width of rect passband (0-1, typically 0.5)
 	bool ccKeepPositiveSideband;      // true = keep positive freq, false = keep negative
 
+	// Background Frame Subtraction (Line-field OCT)
+	bool backgroundFrameSubtraction;
+	bool backgroundFrameRecordingRequested;
+	bool backgroundFrameRecordingInProgress;
+	unsigned int backgroundFrameBscansToAverage;
+	unsigned int backgroundFrameBscansRecorded;
+	float* backgroundFrame;
+	unsigned int backgroundFrameSamplesPerLine;
+	unsigned int backgroundFrameAscansPerBscan;
+	bool backgroundFrameValid;
+	bool backgroundFrameUpdated;
+	QString backgroundFrameFilePath;
+
+	bool saveBackgroundFrameToFile(const QString& filePath);
+	bool loadBackgroundFrameFromFile(const QString& filePath);
+	void updateBackgroundFrameValidity();
+	void clearBackgroundFrame();
+
 	//visualization
 	//todo: put all visualization params in a single struct and use an enum for displayfunction
 	unsigned int frameNr; /// Current number of the displayed frame.

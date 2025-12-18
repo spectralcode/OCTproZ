@@ -70,6 +70,9 @@ extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_
 extern "C" void cuda_unregisterStreamingBuffers();
 extern "C" void cuda_registerFloatStreamingBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
 extern "C" void cuda_unregisterFloatStreamingBuffers();
+extern "C" void cuda_updateBackgroundFrame(float* h_backgroundFrame, int samplesPerBscan, cudaStream_t stream);
+extern "C" void cuda_copyBackgroundFrameToHost(float* h_backgroundFrame, int samplesPerBscan, cudaStream_t stream);
+extern "C" void cuda_initBackgroundFrameRecording(int samplesPerBscan);
 extern "C" bool cuda_registerGlBufferBscan(GLuint buf);
 extern "C" bool cuda_registerGlBufferEnFaceView(GLuint buf);
 extern "C" bool cuda_registerGlBufferVolumeView(GLuint buf);

@@ -27,6 +27,7 @@
 
 #include "octalgorithmparameters.h"
 #include <stdio.h>
+#include <QFile>
 
 //////////////////////////////////////////////////////////////////////////
 //			constructor (singleton pattern!), destructor				//
@@ -95,6 +96,17 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	ccRectCenterFreq(0.25f),
 	ccRectWidth(0.5f),
 	ccKeepPositiveSideband(true),
+	backgroundFrameSubtraction(false),
+	backgroundFrameRecordingRequested(false),
+	backgroundFrameRecordingInProgress(false),
+	backgroundFrameBscansToAverage(10),
+	backgroundFrameBscansRecorded(0),
+	backgroundFrame(nullptr),
+	backgroundFrameSamplesPerLine(0),
+	backgroundFrameAscansPerBscan(0),
+	backgroundFrameValid(false),
+	backgroundFrameUpdated(false),
+	backgroundFrameFilePath(QString()),
 	frameNr(0),
 	frameNrEnFaceView(0),
 	functionFramesEnFaceView(0),
@@ -136,6 +148,9 @@ OctAlgorithmParameters::~OctAlgorithmParameters()
 
 	if(this->customResampleCurve != nullptr){
 		free(this->customResampleCurve);
+	}
+	if(this->backgroundFrame != nullptr){
+		free(this->backgroundFrame);
 	}
 }
 
@@ -288,4 +303,107 @@ float* OctAlgorithmParameters::resizeCurve(float* curve, int currentSize, int ne
 		}
 	}
 	return newCurve;
+}
+
+bool OctAlgorithmParameters::saveBackgroundFrameToFile(const QString& filePath) {
+	if (this->backgroundFrame == nullptr) {
+		return false;
+	}
+
+	QFile file(filePath);
+	if (!file.open(QIODevice::WriteOnly)) {
+		return false;
+	}
+
+	// Write header (32 bytes)
+	char magic[4] = {'B', 'G', 'F', 'R'};
+	file.write(magic, 4);
+	uint32_t version = 1;
+	file.write(reinterpret_cast<char*>(&version), 4);
+	file.write(reinterpret_cast<char*>(&this->backgroundFrameSamplesPerLine), 4);
+	file.write(reinterpret_cast<char*>(&this->backgroundFrameAscansPerBscan), 4);
+	uint32_t reserved = 0;
+	file.write(reinterpret_cast<char*>(&reserved), 4);
+	char reservedBytes[12] = {0};
+	file.write(reservedBytes, 12);
+
+	// Write data
+	int dataSize = this->backgroundFrameSamplesPerLine * this->backgroundFrameAscansPerBscan * sizeof(float);
+	file.write(reinterpret_cast<char*>(this->backgroundFrame), dataSize);
+	file.close();
+
+	this->backgroundFrameFilePath = filePath;
+	return true;
+}
+
+bool OctAlgorithmParameters::loadBackgroundFrameFromFile(const QString& filePath) {
+	QFile file(filePath);
+	if (!file.open(QIODevice::ReadOnly)) {
+		return false;
+	}
+
+	// Read and validate header
+	char magic[4];
+	file.read(magic, 4);
+	if (magic[0] != 'B' || magic[1] != 'G' || magic[2] != 'F' || magic[3] != 'R') {
+		file.close();
+		return false;
+	}
+
+	uint32_t version;
+	file.read(reinterpret_cast<char*>(&version), 4);
+	if (version != 1) {
+		file.close();
+		return false;
+	}
+
+	uint32_t fileSamplesPerLine, fileAscansPerBscan;
+	file.read(reinterpret_cast<char*>(&fileSamplesPerLine), 4);
+	file.read(reinterpret_cast<char*>(&fileAscansPerBscan), 4);
+	file.skip(16); // skip reserved bytes
+
+	// Allocate and read data
+	int frameSize = fileSamplesPerLine * fileAscansPerBscan;
+	if (this->backgroundFrame != nullptr) {
+		free(this->backgroundFrame);
+	}
+	this->backgroundFrame = (float*)malloc(frameSize * sizeof(float));
+	if (this->backgroundFrame == nullptr) {
+		file.close();
+		return false;
+	}
+	file.read(reinterpret_cast<char*>(this->backgroundFrame), frameSize * sizeof(float));
+	file.close();
+
+	// Store dimensions
+	this->backgroundFrameSamplesPerLine = fileSamplesPerLine;
+	this->backgroundFrameAscansPerBscan = fileAscansPerBscan;
+	this->backgroundFrameFilePath = filePath;
+	
+	this->backgroundFrameUpdated = true;
+
+	return true;
+}
+
+void OctAlgorithmParameters::updateBackgroundFrameValidity() {
+	if (this->backgroundFrame == nullptr) {
+		this->backgroundFrameValid = false;
+		return;
+	}
+
+	// Check if stored dimensions match current acquisition dimensions
+	this->backgroundFrameValid = (this->backgroundFrameSamplesPerLine == this->samplesPerLine &&
+	                              this->backgroundFrameAscansPerBscan == this->ascansPerBscan);
+}
+
+void OctAlgorithmParameters::clearBackgroundFrame() {
+	if (this->backgroundFrame != nullptr) {
+		free(this->backgroundFrame);
+		this->backgroundFrame = nullptr;
+	}
+	this->backgroundFrameSamplesPerLine = 0;
+	this->backgroundFrameAscansPerBscan = 0;
+	this->backgroundFrameValid = false;
+	this->backgroundFrameUpdated = false;
+	this->backgroundFrameFilePath = QString();
 }

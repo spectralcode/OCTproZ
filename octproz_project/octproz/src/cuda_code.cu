@@ -86,6 +86,10 @@ cufftComplex* d_fftBufferTemp = NULL;  // Temporary buffer for CC artifact remov
 cufftComplex* d_meanALine = NULL;
 float* d_postProcBackgroundLine = NULL;
 
+// Background Frame Subtraction (Line-field OCT)
+float* d_backgroundFrame = NULL;
+float* d_backgroundFrameAccumulator = NULL;
+
 bool cudaInitialized = false;
 bool saveToDisk = false;
 
@@ -211,6 +215,50 @@ __global__ void rollingAverageBackgroundRemoval(cufftComplex* __restrict__ out,
 		float rollingAverage = rollingSum / windowSize;
 		out[index].x = in[index].x - rollingAverage;
 		out[index].y = 0;
+	}
+}
+
+// Background Frame Subtraction kernel for line-field OCT
+__global__ void backgroundFrameSubtraction(cufftComplex* __restrict__ output,
+                                           const cufftComplex* __restrict__ input,
+                                           const float* __restrict__ backgroundFrame,
+                                           const int samplesPerBscan,
+                                           const int samplesPerBuffer) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBuffer) {
+		// Get position within B-scan (for background frame indexing)
+		int posInBscan = index % samplesPerBscan;
+		// Subtract background (background is same for all B-scans in buffer)
+		output[index].x = input[index].x - backgroundFrame[posInBscan];
+		output[index].y = 0;
+	}
+}
+
+// Kernel to accumulate B-scans into the background frame accumulator
+__global__ void accumulateBackgroundFrame(float* __restrict__ accumulator,
+                                          const cufftComplex* __restrict__ input,
+                                          const int samplesPerBscan,
+                                          const int bscansInBuffer) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBscan) {
+		float sum = 0.0f;
+		// Sum across all B-scans in this buffer
+		for (int b = 0; b < bscansInBuffer; b++) {
+			sum += input[index + b * samplesPerBscan].x;
+		}
+		// Add to accumulator (atomic for thread safety across multiple calls)
+		atomicAdd(&accumulator[index], sum);
+	}
+}
+
+// Kernel to finalize the background frame by normalizing the accumulated values
+__global__ void finalizeBackgroundFrame(float* __restrict__ backgroundFrame,
+                                        const float* __restrict__ accumulator,
+                                        const float normalizationFactor,
+                                        const int samplesPerBscan) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBscan) {
+		backgroundFrame[index] = accumulator[index] * normalizationFactor;
 	}
 }
 
@@ -657,6 +705,24 @@ extern "C" void cuda_copyPostProcessBackgroundToHost(float* h_postProcessBackgro
 	if (d_postProcBackgroundLine != NULL && h_postProcessBackground != NULL) {
 		checkCudaErrors(cudaMemcpyAsync(h_postProcessBackground, d_postProcBackgroundLine, size * sizeof(float), cudaMemcpyDeviceToHost, stream));
 		checkCudaErrors(cudaLaunchHostFunc(stream, Gpu2HostNotifier::backgroundSignalCallback, h_postProcessBackground));
+	}
+}
+
+extern "C" void cuda_updateBackgroundFrame(float* h_backgroundFrame, int samplesPerBscan, cudaStream_t stream) {
+	if (d_backgroundFrame != NULL && h_backgroundFrame != NULL) {
+		checkCudaErrors(cudaMemcpyAsync(d_backgroundFrame, h_backgroundFrame, samplesPerBscan * sizeof(float), cudaMemcpyHostToDevice, stream));
+	}
+}
+
+extern "C" void cuda_copyBackgroundFrameToHost(float* h_backgroundFrame, int samplesPerBscan, cudaStream_t stream) {
+	if (d_backgroundFrame != NULL && h_backgroundFrame != NULL) {
+		checkCudaErrors(cudaMemcpyAsync(h_backgroundFrame, d_backgroundFrame, samplesPerBscan * sizeof(float), cudaMemcpyDeviceToHost, stream));
+	}
+}
+
+extern "C" void cuda_initBackgroundFrameRecording(int samplesPerBscan) {
+	if (d_backgroundFrameAccumulator != NULL) {
+		checkCudaErrors(cudaMemset(d_backgroundFrameAccumulator, 0, samplesPerBscan * sizeof(float)));
 	}
 }
 
@@ -1156,6 +1222,11 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	params = parameters;
 	bytesPerSample = ceil((double)(parameters->bitDepth) / 8.0);
 
+	// Validate background frame against actual acquisition parameters
+	if (params->backgroundFrame != nullptr) {
+		params->updateBackgroundFrameValidity();
+	}
+
 	// Set truncation divisor based on full range mode
 	outputTruncationDivisor = parameters->fullRangeMode ? 1 : 2;
 	// Copy to device constant for kernel access
@@ -1198,13 +1269,16 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 #endif
 
 	if (success) {
+		int samplesPerBscan = signalLength * ascansPerBscan;
 		success = allocateAndInitializeBuffer((void**)&d_inputLinearized, sizeof(cufftComplex) * samplesPerBuffer)
 		&& allocateAndInitializeBuffer((void**)&d_phaseCartesian, sizeof(cufftComplex) * signalLength)
 		&& allocateAndInitializeBuffer((void**)&d_processedBuffer, sizeof(float) * samplesPerVolume / outputTruncationDivisor)
 		&& allocateAndInitializeBuffer((void**)&d_sinusoidalScanTmpBuffer, sizeof(float) * samplesPerBuffer / outputTruncationDivisor)
 		&& allocateAndInitializeBuffer((void**)&d_fftBuffer, sizeof(cufftComplex) * samplesPerBuffer)
 		&& allocateAndInitializeBuffer((void**)&d_meanALine, sizeof(cufftComplex) * signalLength)
-		&& allocateAndInitializeBuffer((void**)&d_postProcBackgroundLine, sizeof(float) * signalLength / outputTruncationDivisor);;
+		&& allocateAndInitializeBuffer((void**)&d_postProcBackgroundLine, sizeof(float) * signalLength / outputTruncationDivisor)
+		&& allocateAndInitializeBuffer((void**)&d_backgroundFrame, sizeof(float) * samplesPerBscan)
+		&& allocateAndInitializeBuffer((void**)&d_backgroundFrameAccumulator, sizeof(float) * samplesPerBscan);
 	}
 
 	if(!success){
@@ -1292,6 +1366,8 @@ extern "C" void releaseBuffers() {
 		freeCudaMem((void**)&d_fftBuffer);
 		freeCudaMem((void**)&d_meanALine);
 		freeCudaMem((void**)&d_postProcBackgroundLine);
+		freeCudaMem((void**)&d_backgroundFrame);
+		freeCudaMem((void**)&d_backgroundFrameAccumulator);
 		freeCudaMem((void**)&d_processedBuffer);
 		freeCudaMem((void**)&d_sinusoidalScanTmpBuffer);
 		freeCudaMem((void**)&d_inputLinearized);
@@ -1546,6 +1622,57 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	cudaEventRecord(syncEvent, stream[currStream]);
 	cudaEventSynchronize(syncEvent);
 #endif
+
+	//background frame subtraction (line-field OCT)
+	int samplesPerBscan = signalLength * ascansPerBscan;
+	if (params->backgroundFrameRecordingRequested && !params->backgroundFrameRecordingInProgress) {
+		// Initialize recording
+		cuda_initBackgroundFrameRecording(samplesPerBscan);
+		params->backgroundFrameBscansRecorded = 0;
+		params->backgroundFrameRecordingInProgress = true;
+		params->backgroundFrameRecordingRequested = false;
+		// Allocate host buffer if needed
+		if (params->backgroundFrame == nullptr) {
+			params->backgroundFrame = (float*)malloc(samplesPerBscan * sizeof(float));
+		}
+	}
+
+	if (params->backgroundFrameRecordingInProgress) {
+		// Calculate how many B-scans to process
+		int bscansRemaining = params->backgroundFrameBscansToAverage - params->backgroundFrameBscansRecorded;
+		int bscansToProcess = min(bscansPerBuffer, bscansRemaining);
+
+		// Accumulate B-scans for averaging
+		int accBlockSize = 256;
+		int accGridSize = (samplesPerBscan + accBlockSize - 1) / accBlockSize;
+		accumulateBackgroundFrame<<<accGridSize, accBlockSize, 0, stream[currStream]>>>(
+			d_backgroundFrameAccumulator, d_fftBuffer, samplesPerBscan, bscansToProcess);
+		params->backgroundFrameBscansRecorded += bscansToProcess;
+
+		// Check if we have enough B-scans
+		if (params->backgroundFrameBscansRecorded >= params->backgroundFrameBscansToAverage) {
+			float normFactor = 1.0f / (float)params->backgroundFrameBscansRecorded;
+			finalizeBackgroundFrame<<<accGridSize, accBlockSize, 0, stream[currStream]>>>(
+				d_backgroundFrame, d_backgroundFrameAccumulator, normFactor, samplesPerBscan);
+			cuda_copyBackgroundFrameToHost(params->backgroundFrame, samplesPerBscan, stream[currStream]);
+			params->backgroundFrameRecordingInProgress = false;
+			params->backgroundFrameSamplesPerLine = signalLength;
+			params->backgroundFrameAscansPerBscan = ascansPerBscan;
+			params->backgroundFrameValid = true;
+			params->backgroundFrameUpdated = false; // Already on GPU
+		}
+	}
+
+	if (params->backgroundFrameSubtraction && params->backgroundFrameValid) {
+		// Upload background frame to GPU if updated from file load
+		if (params->backgroundFrameUpdated) {
+			cuda_updateBackgroundFrame(params->backgroundFrame, samplesPerBscan, stream[currStream]);
+			params->backgroundFrameUpdated = false;
+		}
+		// Subtract background frame
+		backgroundFrameSubtraction<<<gridSize, blockSize, 0, stream[currStream]>>>(
+			d_fftBuffer, d_fftBuffer, d_backgroundFrame, samplesPerBscan, samplesPerBuffer);
+	}
 
 	//rolling average background subtraction
 	if (params->backgroundRemoval){
