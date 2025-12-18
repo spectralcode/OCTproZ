@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>400</height>
+    <width>386</width>
+    <height>271</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,23 +20,28 @@
       <string>Line-field OCT / Full-Range Imaging</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>3</number>
+      </property>
+      <property name="leftMargin">
+       <number>3</number>
+      </property>
+      <property name="topMargin">
+       <number>3</number>
+      </property>
+      <property name="rightMargin">
+       <number>3</number>
+      </property>
+      <property name="bottomMargin">
+       <number>3</number>
+      </property>
       <item>
        <widget class="QCheckBox" name="checkBox_fullRangeMode">
         <property name="toolTip">
          <string>Disables mirror artifact truncation. Use for full-range imaging with CC removal.</string>
         </property>
         <property name="text">
-         <string>Full Range Mode (show full FFT output)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_fullRangeWarning">
-        <property name="styleSheet">
-         <string notr="true">color: #b58900;</string>
-        </property>
-        <property name="text">
-         <string>Requires processing restart. Doubles memory usage.</string>
+         <string>Full Range Mode (show full FFT output) (Requires processing restart)</string>
         </property>
        </widget>
       </item>
@@ -53,7 +58,7 @@
          <bool>false</bool>
         </property>
         <property name="title">
-         <string>CC Artifact Removal (Off-axis Holography)</string>
+         <string>CC Artifact Removal (Requires processing restart)</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -62,27 +67,38 @@
          <bool>false</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QLabel" name="label_comingSoon">
-           <property name="styleSheet">
-            <string notr="true">color: gray; font-style: italic;</string>
-           </property>
-           <property name="text">
-            <string>Coming soon - requires Full Range Mode enabled</string>
-           </property>
-          </widget>
-         </item>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>3</number>
+         </property>
+         <property name="topMargin">
+          <number>3</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>3</number>
+         </property>
          <item>
           <layout class="QFormLayout" name="formLayout">
            <item row="0" column="0">
-            <widget class="QLabel" name="label_filterCutoff">
+            <widget class="QLabel" name="label_rectCenter">
+             <property name="toolTip">
+              <string>Normalized center of passband (0-1). Values &gt;0.5 wrap to negative frequencies. Match to off-axis carrier.</string>
+             </property>
              <property name="text">
-              <string>Filter Cutoff:</string>
+              <string>Center Frequency:</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_ccFilterCutoff">
+            <widget class="QDoubleSpinBox" name="doubleSpinBox_ccRectCenter">
+             <property name="decimals">
+              <number>3</number>
+             </property>
              <property name="minimum">
               <double>0.000000000000000</double>
              </property>
@@ -90,33 +106,59 @@
               <double>1.000000000000000</double>
              </property>
              <property name="singleStep">
-              <double>0.050000000000000</double>
+              <double>0.010000000000000</double>
              </property>
              <property name="value">
-              <double>0.500000000000000</double>
+              <double>0.250000000000000</double>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="label_frequencyShift">
+            <widget class="QLabel" name="label_rectWidth">
+             <property name="toolTip">
+              <string>Width of rectangular passband (0-1). Typically 0.5 for half-space.</string>
+             </property>
              <property name="text">
-              <string>Frequency Shift:</string>
+              <string>Passband Width:</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_ccFilterShift">
+            <widget class="QDoubleSpinBox" name="doubleSpinBox_ccRectWidth">
+             <property name="decimals">
+              <number>3</number>
+             </property>
              <property name="minimum">
-              <double>0.000000000000000</double>
+              <double>0.001000000000000</double>
              </property>
              <property name="maximum">
               <double>1.000000000000000</double>
              </property>
              <property name="singleStep">
-              <double>0.050000000000000</double>
+              <double>0.010000000000000</double>
              </property>
              <property name="value">
               <double>0.500000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_sideband">
+             <property name="toolTip">
+              <string>Select which sideband to keep (flip if artifact appears on wrong side)</string>
+             </property>
+             <property name="text">
+              <string>Sideband:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QCheckBox" name="checkBox_ccKeepPositive">
+             <property name="text">
+              <string>Keep Positive Frequencies</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>

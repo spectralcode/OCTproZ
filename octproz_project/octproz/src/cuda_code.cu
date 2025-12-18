@@ -81,6 +81,8 @@ static int floatStreamingBufferNumber = 0;
 
 cufftComplex* d_fftBuffer = NULL;
 cufftHandle d_plan = 0;
+cufftHandle d_lateralPlan = 0;  // FFT plan for lateral direction (CC artifact removal)
+cufftComplex* d_fftBufferTemp = NULL;  // Temporary buffer for CC artifact removal bin shift
 cufftComplex* d_meanALine = NULL;
 float* d_postProcBackgroundLine = NULL;
 
@@ -697,6 +699,63 @@ extern "C" void cuda_unregisterFloatStreamingBuffers() {
 }
 
 
+// Complex Conjugate Artifact Removal Kernel for Line-field OCT
+// see Fechtig et al. 2015 "Line-field parallel swept source MHz OCT for structural and functional retinal imaging.)
+// Fused CC removal step in lateral frequency domain:
+// - Rectangular sideband filter
+// - bin shift to move sideband centerBin to DC
+// - pre-normalization for correct sample values after cuFFT inverse
+__global__ void ccFilterShiftPreNorm(const cufftComplex* __restrict__ in,
+		cufftComplex* __restrict__ out,
+		const float rectCenterFreq,
+		const float rectWidth,
+		const bool keepPositiveSideband,
+		const int centerBin,
+		const float normFactor,
+		const int ascansPerBscan,
+		const int signalLength,
+		const int samplesPerBuffer)
+{
+	int idx = threadIdx.x + blockIdx.x * blockDim.x;
+	if (idx >= samplesPerBuffer) return;
+
+	int depth = idx % signalLength;
+	int line = idx / signalLength;
+
+	int fx = line % ascansPerBscan; //fx: lateral frequency bin (same as ascan index within B-scan)
+	int bscanIndex = line / ascansPerBscan;
+
+	// Circular shift: out[fx] = in[(fx + centerBin) % N]
+	int srcFx = fx + centerBin;
+	if (srcFx >= ascansPerBscan) srcFx -= ascansPerBscan;
+
+	int srcLine = bscanIndex * ascansPerBscan + srcFx;
+	int srcIdx = srcLine * signalLength + depth;
+
+	// Compute normalized frequency for srcFx in [-0.5, 0.5)
+	float nf = (float)srcFx / (float)ascansPerBscan;
+	if (nf > 0.5f) nf -= 1.0f;
+
+	// Sideband center (mirror for negative selection)
+	float cf = keepPositiveSideband ? rectCenterFreq : -rectCenterFreq;
+
+	// Passband test (if sample is within rectangular window inPassband == true)
+	float dist = fabsf(nf - cf);
+	bool inPassband = dist <= (rectWidth * 0.5f);
+
+	// Enforce sideband sign
+	bool correctSideband = keepPositiveSideband ? (nf >= 0.0f) : (nf < 0.0f);
+
+	if (inPassband && correctSideband) {
+		out[idx].x = in[srcIdx].x * normFactor;
+		out[idx].y = in[srcIdx].y * normFactor;
+	} else {
+		out[idx].x = 0.0f;
+		out[idx].y = 0.0f;
+	}
+}
+
+
 //Removes half of each processed A-scan (the mirror artefacts), logarithmizes each value of magnitude of remaining A-scan and copies it into an output array. This output array can be used to display the processed OCT data.
 //For full range mode (outputAscanLength == inputAscanLength), all samples are kept and fftshift is applied to center zero delay.
 __global__ void postProcessTruncateLog(float* __restrict__ output,
@@ -1167,6 +1226,41 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
+	//create lateral fft plan for CC artifact removal (if enabled)
+	if (params->fullRangeMode && params->ccArtifactRemoval) {
+		// Lateral FFT configuration for non-contiguous data (strided access)
+		// NOTE: Process one B-scan at a time due to memory layout constraints
+		int n[] = {ascansPerBscan};  // FFT size = number of A-scans per B-scan
+		int inembed[] = {ascansPerBscan};
+		int onembed[] = {ascansPerBscan};
+		int istride = signalLength;  // Stride to skip to next A-scan at same depth
+		int ostride = signalLength;
+		int idist = 1;  // Distance between consecutive depth positions within one B-scan
+		int odist = 1;
+		int batch = signalLength;  // Process all depth slices for ONE B-scan
+
+		cufftResult lateralResult = cufftPlanMany(&d_lateralPlan, 1, n,
+			inembed, istride, idist,
+			onembed, ostride, odist,
+			CUFFT_C2C, batch);
+
+		if (lateralResult != CUFFT_SUCCESS) {
+			printf("Error creating lateral FFT plan for CC removal: %d\n", lateralResult);
+			success = false;
+		}
+		checkCudaErrors(cudaPeekAtLastError());
+		checkCudaErrors(cudaDeviceSynchronize());
+
+		// Allocate temporary buffer for bin shift operation
+		success = allocateAndInitializeBuffer((void**)&d_fftBufferTemp, sizeof(cufftComplex) * samplesPerBuffer);
+		if (!success) {
+			printf("Error allocating temporary buffer for CC artifact removal\n");
+			releaseBuffers();
+			destroyStreamsAndEvents();
+			return false;
+		}
+	}
+
 	cudaInitialized = true;
 	bufferNumber = 0;
 	bufferNumberInVolume = params->buffersPerVolume-1;
@@ -1221,6 +1315,14 @@ extern "C" void cleanupCuda() {
 	if (cudaInitialized) {
 		releaseBuffers();
 		cufftDestroy(d_plan);
+		if (d_lateralPlan) {
+			cufftDestroy(d_lateralPlan);
+			d_lateralPlan = 0;
+		}
+		if (d_fftBufferTemp) {
+			cudaFree(d_fftBufferTemp);
+			d_fftBufferTemp = NULL;
+		}
 		destroyStreamsAndEvents();
 
 #ifndef __aarch64__
@@ -1534,6 +1636,49 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		}
 		d_fftBuffer2 = d_inputLinearized;
 		dispersionCompensation<<<gridSize, blockSize, 0, stream[currStream]>>> (d_fftBuffer2, d_fftBuffer2, d_phaseCartesian, signalLength, samplesPerBuffer);
+	}
+
+	// CC Artifact Removal
+	if (params->fullRangeMode && params->ccArtifactRemoval && d_lateralPlan) {
+
+		// Calculate centerBin from ccRectCenterFreq (use same value as rect filter)
+		int N = ascansPerBscan;
+		int bin = (int)lrintf(params->ccRectCenterFreq * (float)N);
+		int centerBin = params->ccKeepPositiveSideband ? bin : (N - bin);
+		centerBin %= N;  // Safety: ensure within valid range
+
+		cufftSetStream(d_lateralPlan, stream[currStream]);
+
+		// Process each B-scan separately (FFT plan configured for one B-scan at a time)
+		int samplesPerBscan = ascansPerBscan * signalLength;
+		for (int b = 0; b < bscansPerBuffer; b++) {
+			// Calculate offset for this B-scan
+			cufftComplex* bscanData = d_fftBuffer2 + b * samplesPerBscan;
+			cufftComplex* bscanDataTemp = d_fftBufferTemp + b * samplesPerBscan;
+
+			// Forward FFT in spatial (lateral) dimension
+			checkCudaErrors(cufftExecC2C(d_lateralPlan, bscanData, bscanData, CUFFT_FORWARD));
+
+			int bscanBlockSize = blockSize;
+			int bscanGridSize = samplesPerBscan / bscanBlockSize;
+			float normFactor = 1.0f / (float)ascansPerBscan;
+
+			// apply rectangular window filter, shift sideband to DC, and pre-normalize for correct values after IFFT
+			ccFilterShiftPreNorm<<<bscanGridSize, bscanBlockSize, 0, stream[currStream]>>>(
+				bscanData,
+				bscanDataTemp,
+				params->ccRectCenterFreq,
+				params->ccRectWidth,
+				params->ccKeepPositiveSideband,
+				centerBin,
+				normFactor,
+				ascansPerBscan,
+				signalLength,
+				samplesPerBuffer);
+
+			// Inverse lateral FFT (back to spatial domain)
+			checkCudaErrors(cufftExecC2C(d_lateralPlan, bscanDataTemp, bscanData, CUFFT_INVERSE));
+		}
 	}
 
 	//IFFT

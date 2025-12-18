@@ -170,10 +170,11 @@ public:
 	bool fullRangeModeChanged;       // Flag to trigger buffer reallocation
 	int getOutputTruncationDivisor() const { return fullRangeMode ? 1 : 2; }
 
-	// CC Artifact Removal parameters
-	bool ccArtifactRemoval;
-	float ccFilterCutoff;
-	float ccFilterShift;
+	// CC Artifact Removal parameters 
+	bool ccArtifactRemoval;           // Enable CC removal
+	float ccRectCenterFreq;           // Center frequency of rect passband (0-1, typically 0.25)
+	float ccRectWidth;                // Width of rect passband (0-1, typically 0.5)
+	bool ccKeepPositiveSideband;      // true = keep positive freq, false = keep negative
 
 	//visualization
 	//todo: put all visualization params in a single struct and use an enum for displayfunction

@@ -412,6 +412,7 @@ void OCTproZMainWindow::saveWindowStates() {
 	this->bscanWindow->saveSettings();
 	this->enFaceViewWindow->saveSettings();
 	this->volumeWindow->saveSettings();
+	this->advancedSettingsDialog->saveSettings();
 	//todo: implement saveSettings method for console
 	//todo: maybe remove settingsfilemanager from sidebar, bscanWindow,enFaceViewWindow and volumeWindow. instead use "getSettings" and "getName" to store settings. just like for plot1D below
 
@@ -780,6 +781,9 @@ void OCTproZMainWindow::slot_takeScreenshots(const QString& savePath, const QStr
 void OCTproZMainWindow::slot_onAppSettingsLoaded() {
 	// Load sidebar settings
 	this->sidebar->loadSettings();
+
+	// Load advanced settings
+	this->advancedSettingsDialog->loadSettings();
 
 	// Update resampling curve UI based on app's octParams
 	if(this->app->getOctParams()->customResampleCurve != nullptr) {
