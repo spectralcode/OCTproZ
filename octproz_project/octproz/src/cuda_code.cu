@@ -1631,13 +1631,17 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		params->backgroundFrameBscansRecorded = 0;
 		params->backgroundFrameRecordingInProgress = true;
 		params->backgroundFrameRecordingRequested = false;
-		// Allocate host buffer if needed
-		if (params->backgroundFrame == nullptr) {
+		// Allocate or reallocate host buffer if size changed
+		int existingSize = params->backgroundFrameSamplesPerLine * params->backgroundFrameAscansPerBscan;
+		if (params->backgroundFrame == nullptr || existingSize != samplesPerBscan) {
+			if (params->backgroundFrame != nullptr) {
+				free(params->backgroundFrame);
+			}
 			params->backgroundFrame = (float*)malloc(samplesPerBscan * sizeof(float));
 		}
 	}
 
-	if (params->backgroundFrameRecordingInProgress) {
+	if (params->backgroundFrameRecordingInProgress && d_backgroundFrameAccumulator != NULL) {
 		// Calculate how many B-scans to process
 		int bscansRemaining = params->backgroundFrameBscansToAverage - params->backgroundFrameBscansRecorded;
 		int bscansToProcess = min(bscansPerBuffer, bscansRemaining);
