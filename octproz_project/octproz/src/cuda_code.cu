@@ -855,7 +855,8 @@ __global__ void postProcessTruncateLog(float* __restrict__ output,
 	//amplitude:
 	float realComponent = input[inputArrayIndex].x;
 	float imaginaryComponent = input[inputArrayIndex].y;
-	output[index] = coeff*((((10.0f*log10f(((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent))/(outputAscanLength))) - min) / (max - min)) + addend);
+	float magnitudeSquared = fmaxf((realComponent*realComponent) + (imaginaryComponent*imaginaryComponent), 1e-20f); //avoid log(0)
+	output[index] = coeff*((((10.0f*log10f(magnitudeSquared/(outputAscanLength))) - min) / (max - min)) + addend);
 }
 
 //Removes half of each processed A-scan (the mirror artefacts), calculates magnitude of remaining A-scan and copies it into an output array. This output array can be used to display the processed OCT data.
