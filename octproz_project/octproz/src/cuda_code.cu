@@ -90,6 +90,14 @@ float* d_postProcBackgroundLine = NULL;
 float* d_backgroundFrame = NULL;
 float* d_backgroundFrameAccumulator = NULL;
 
+// Continuous background - circular buffer mode
+static float* d_backgroundRingBuffer = nullptr;
+static float* d_backgroundSum = nullptr;
+static int backgroundRingBufferSize = 0;
+static int backgroundRingIndex = 0;
+static int backgroundRingCount = 0;
+static int backgroundRingSamplesPerBscan = 0;
+
 bool cudaInitialized = false;
 bool saveToDisk = false;
 
@@ -260,6 +268,69 @@ __global__ void finalizeBackgroundFrame(float* __restrict__ backgroundFrame,
 	if (index < samplesPerBscan) {
 		backgroundFrame[index] = accumulator[index] * normalizationFactor;
 	}
+}
+
+// EMA (Exponential Moving Average) continuous background update
+// Updates background using: bg = alpha*new + (1-alpha)*bg  //newer B-scans weighted higher, older ones decay but never vanish
+__global__ void updateBackgroundFrameEMA(
+    float* __restrict__ background,
+    const cufftComplex* __restrict__ input,
+    const float alpha,
+    const int samplesPerBscan,
+    const int bscansInBuffer)
+{
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx >= samplesPerBscan) return;
+
+	float bg = background[idx];
+	for (int b = 0; b < bscansInBuffer; b++) {
+		float newValue = input[b * samplesPerBscan + idx].x;
+		bg = alpha * newValue + (1.0f - alpha) * bg;
+	}
+	background[idx] = bg;
+}
+
+// Circular buffer continuous background update
+// Updates ring buffer and running sum for exact rolling average
+__global__ void updateBackgroundFrameCircular(
+    float* __restrict__ ringBuffer,
+    float* __restrict__ runningSum,
+    float* __restrict__ background,
+    const cufftComplex* __restrict__ input,
+    const int ringIndex,
+    const int ringCount,
+    const int ringSize,
+    const int samplesPerBscan,
+    const int bscansInBuffer)
+{
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx >= samplesPerBscan) return;
+
+	float sum = runningSum[idx];
+	int currentIndex = ringIndex;
+	int currentCount = ringCount;
+
+	for (int b = 0; b < bscansInBuffer; b++) {
+		float newValue = input[b * samplesPerBscan + idx].x;
+
+		// Subtract oldest value from running sum (if buffer is full)
+		if (currentCount >= ringSize) {
+			sum -= ringBuffer[currentIndex * samplesPerBscan + idx];
+		}
+
+		// Store new value and add to sum
+		ringBuffer[currentIndex * samplesPerBscan + idx] = newValue;
+		sum += newValue;
+
+		// Advance to next slot
+		currentIndex = (currentIndex + 1) % ringSize;
+		if (currentCount < ringSize) currentCount++;
+	}
+
+	runningSum[idx] = sum;
+
+	// Compute average
+	background[idx] = sum / (float)currentCount;
 }
 
 __global__ void klinearization(cufftComplex* __restrict__ out,
@@ -1356,6 +1427,58 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 	return success;
 }
 
+void allocateBackgroundRingBuffer(int N, int samplesPerBscan, cudaStream_t stream) {
+	// Free existing if size changed
+	if (d_backgroundRingBuffer && (backgroundRingBufferSize != N || backgroundRingSamplesPerBscan != samplesPerBscan)) {
+		cudaFree(d_backgroundRingBuffer);
+		cudaFree(d_backgroundSum);
+		d_backgroundRingBuffer = nullptr;
+		d_backgroundSum = nullptr;
+		backgroundRingBufferSize = 0;
+		backgroundRingSamplesPerBscan = 0;
+	}
+
+	// Allocate if needed
+	if (!d_backgroundRingBuffer && N > 0) {
+		size_t ringSize = sizeof(float) * N * samplesPerBscan;
+		size_t sumSize = sizeof(float) * samplesPerBscan;
+		cudaMalloc(&d_backgroundRingBuffer, ringSize);
+		cudaMalloc(&d_backgroundSum, sumSize);
+		cudaMemsetAsync(d_backgroundRingBuffer, 0, ringSize, stream);
+		cudaMemsetAsync(d_backgroundSum, 0, sumSize, stream);
+		backgroundRingBufferSize = N;
+		backgroundRingSamplesPerBscan = samplesPerBscan;
+		backgroundRingIndex = 0;
+		backgroundRingCount = 0;
+	}
+}
+
+void freeBackgroundRingBuffer() {
+	if (d_backgroundRingBuffer) {
+		cudaFree(d_backgroundRingBuffer);
+		d_backgroundRingBuffer = nullptr;
+	}
+	if (d_backgroundSum) {
+		cudaFree(d_backgroundSum);
+		d_backgroundSum = nullptr;
+	}
+	backgroundRingBufferSize = 0;
+	backgroundRingSamplesPerBscan = 0;
+	backgroundRingIndex = 0;
+	backgroundRingCount = 0;
+}
+
+void resetBackgroundRingBuffer(cudaStream_t stream) {
+	if (d_backgroundRingBuffer && backgroundRingBufferSize > 0 && backgroundRingSamplesPerBscan > 0) {
+		size_t ringSize = sizeof(float) * backgroundRingBufferSize * backgroundRingSamplesPerBscan;
+		size_t sumSize = sizeof(float) * backgroundRingSamplesPerBscan;
+		cudaMemsetAsync(d_backgroundRingBuffer, 0, ringSize, stream);
+		cudaMemsetAsync(d_backgroundSum, 0, sumSize, stream);
+	}
+	backgroundRingIndex = 0;
+	backgroundRingCount = 0;
+}
+
 extern "C" void releaseBuffers() {
 #if !defined(__aarch64__) || !defined(ENABLE_CUDA_ZERO_COPY)
 		for (int i = 0; i < nBuffers; i++){
@@ -1369,6 +1492,7 @@ extern "C" void releaseBuffers() {
 		freeCudaMem((void**)&d_postProcBackgroundLine);
 		freeCudaMem((void**)&d_backgroundFrame);
 		freeCudaMem((void**)&d_backgroundFrameAccumulator);
+		freeBackgroundRingBuffer();
 		freeCudaMem((void**)&d_processedBuffer);
 		freeCudaMem((void**)&d_sinusoidalScanTmpBuffer);
 		freeCudaMem((void**)&d_inputLinearized);
@@ -1668,13 +1792,41 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 		}
 	}
 
-	if (params->backgroundFrameSubtraction && params->backgroundFrameValid) {
-		// Upload background frame to GPU if updated from file load
+	//continuous background frame (B-scan) subtraction (line-field OCT)
+	if (params->continuousBackgroundUpdate && params->backgroundFrameSubtraction) {
+		int bgBlockSize = 256;
+		int bgGridSize = (samplesPerBscan + bgBlockSize - 1) / bgBlockSize;
+
+		if (params->continuousBackgroundUseEMA) {
+			// exponential moving average (ema) mode
+			float alpha = 1.0f / (float)params->backgroundFrameBscansToAverage;
+			updateBackgroundFrameEMA<<<bgGridSize, bgBlockSize, 0, stream[currStream]>>>(
+				d_backgroundFrame, d_fftBuffer, alpha, samplesPerBscan, bscansPerBuffer);
+		} else {
+			// circular buffer mode
+			int N = params->backgroundFrameBscansToAverage;
+			allocateBackgroundRingBuffer(N, samplesPerBscan, stream[currStream]);
+
+			updateBackgroundFrameCircular<<<bgGridSize, bgBlockSize, 0, stream[currStream]>>>(
+				d_backgroundRingBuffer, d_backgroundSum, d_backgroundFrame, d_fftBuffer,
+				backgroundRingIndex, backgroundRingCount, N,
+				samplesPerBscan, bscansPerBuffer);
+
+			backgroundRingIndex = (backgroundRingIndex + bscansPerBuffer) % N;
+			if (backgroundRingCount < N) {
+				backgroundRingCount = (backgroundRingCount + bscansPerBuffer > N) ? N : backgroundRingCount + bscansPerBuffer;
+			}
+		}
+
+		backgroundFrameSubtraction<<<gridSize, blockSize, 0, stream[currStream]>>>(
+			d_fftBuffer, d_fftBuffer, d_backgroundFrame, samplesPerBscan, samplesPerBuffer);
+	}
+	//static background frame (B-scan) subtraction
+	else if (params->backgroundFrameSubtraction && params->backgroundFrameValid) {
 		if (params->backgroundFrameUpdated) {
 			cuda_updateBackgroundFrame(params->backgroundFrame, samplesPerBscan, stream[currStream]);
 			params->backgroundFrameUpdated = false;
 		}
-		// Subtract background frame
 		backgroundFrameSubtraction<<<gridSize, blockSize, 0, stream[currStream]>>>(
 			d_fftBuffer, d_fftBuffer, d_backgroundFrame, samplesPerBscan, samplesPerBuffer);
 	}

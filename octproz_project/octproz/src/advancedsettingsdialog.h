@@ -19,6 +19,8 @@ class AdvancedSettingsDialog;
 #define ADV_BG_FRAME_ENABLED "advanced_bg_frame_enabled"
 #define ADV_BG_FRAME_BSCANS_TO_AVG "advanced_bg_frame_bscans_to_average"
 #define ADV_BG_FRAME_FILE_PATH "advanced_bg_frame_file_path"
+#define ADV_BG_FRAME_CONTINUOUS "advanced_bg_frame_continuous"
+#define ADV_BG_FRAME_USE_EMA "advanced_bg_frame_use_ema"
 
 class AdvancedSettingsDialog : public QDialog
 {
@@ -42,6 +44,7 @@ private slots:
 	void saveBackgroundFrame();
 	void loadBackgroundFrame();
 	void checkRecordingStatus();
+	void applyContinuousBackgroundSettings();
 
 private:
 	Ui::AdvancedSettingsDialog *ui;

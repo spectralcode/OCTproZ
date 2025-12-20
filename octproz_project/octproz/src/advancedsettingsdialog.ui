@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>408</width>
-    <height>400</height>
+    <height>449</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_backgroundFrameSubtraction">
          <property name="title">
-          <string>Background Frame Subtraction</string>
+          <string>Background B-scan Subtraction</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_bgFrame">
           <property name="spacing">
@@ -48,12 +48,63 @@
           <item>
            <widget class="QCheckBox" name="checkBox_bgFrameEnabled">
             <property name="toolTip">
-             <string>Subtract a recorded B-scan background from raw data. Must be first processing step for line-field OCT.</string>
+             <string>Subtract a recorded B-scan background from raw data.</string>
             </property>
             <property name="text">
-             <string>Enable Raw Background Frame Subtraction</string>
+             <string>Enable Raw Background B-scan  Subtraction</string>
             </property>
            </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBox_continuousBackground">
+            <property name="toolTip">
+             <string>Continuously update background. Subtraction starts immediately.</string>
+            </property>
+            <property name="text">
+             <string>Continuous Background Update</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_avgMethod">
+            <item>
+             <widget class="QLabel" name="label_avgMethod">
+              <property name="text">
+               <string>Averaging Method:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="comboBox_avgMethod">
+              <property name="toolTip">
+               <string>EMA: Weighted average where older B-scans fade exponentially. Memory-efficient (1 frame that is updated continuously). Circular Buffer: Exact average of last N B-scans, uses more memory (Buffer of N frames is updated continuously).</string>
+              </property>
+              <item>
+               <property name="text">
+                <string>Exponential Moving Average</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Circular Buffer</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_avgMethod">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_bgStatus">

@@ -51,6 +51,10 @@ void AdvancedSettingsDialog::connectSignals(){
 			this, &AdvancedSettingsDialog::saveBackgroundFrame);
 	connect(ui->pushButton_loadBackground, &QPushButton::clicked,
 			this, &AdvancedSettingsDialog::loadBackgroundFrame);
+	connect(ui->checkBox_continuousBackground, &QCheckBox::toggled,
+			this, &AdvancedSettingsDialog::applyContinuousBackgroundSettings);
+	connect(ui->comboBox_avgMethod, QOverload<int>::of(&QComboBox::currentIndexChanged),
+			this, &AdvancedSettingsDialog::applyContinuousBackgroundSettings);
 }
 
 void AdvancedSettingsDialog::disconnectSignals(){
@@ -78,6 +82,10 @@ void AdvancedSettingsDialog::disconnectSignals(){
 			   this, &AdvancedSettingsDialog::saveBackgroundFrame);
 	disconnect(ui->pushButton_loadBackground, &QPushButton::clicked,
 			   this, &AdvancedSettingsDialog::loadBackgroundFrame);
+	disconnect(ui->checkBox_continuousBackground, &QCheckBox::toggled,
+			   this, &AdvancedSettingsDialog::applyContinuousBackgroundSettings);
+	disconnect(ui->comboBox_avgMethod, QOverload<int>::of(&QComboBox::currentIndexChanged),
+			   this, &AdvancedSettingsDialog::applyContinuousBackgroundSettings);
 }
 
 void AdvancedSettingsDialog::applyFullRangeModeSettings(bool enable){
@@ -121,6 +129,10 @@ void AdvancedSettingsDialog::loadSettings(){
 		settings.value(ADV_BG_FRAME_ENABLED, false).toBool());
 	ui->spinBox_bscansToAverage->setValue(
 		settings.value(ADV_BG_FRAME_BSCANS_TO_AVG, 10).toInt());
+	ui->checkBox_continuousBackground->setChecked(
+		settings.value(ADV_BG_FRAME_CONTINUOUS, false).toBool());
+	ui->comboBox_avgMethod->setCurrentIndex(
+		settings.value(ADV_BG_FRAME_USE_EMA, true).toBool() ? 0 : 1);
 
 	// Sync with OctAlgorithmParameters on load
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
@@ -134,6 +146,8 @@ void AdvancedSettingsDialog::loadSettings(){
 	params->backgroundFrameSubtraction = ui->checkBox_bgFrameEnabled->isChecked();
 	params->backgroundFrameBscansToAverage = ui->spinBox_bscansToAverage->value();
 	params->backgroundFrameFilePath = settings.value(ADV_BG_FRAME_FILE_PATH, "").toString();
+	params->continuousBackgroundUpdate = ui->checkBox_continuousBackground->isChecked();
+	params->continuousBackgroundUseEMA = (ui->comboBox_avgMethod->currentIndex() == 0);
 
 	// Load background frame from file if path exists
 	if (!params->backgroundFrameFilePath.isEmpty()) {
@@ -145,6 +159,16 @@ void AdvancedSettingsDialog::loadSettings(){
 
 	// Update background frame status indicator
 	updateBackgroundFrameStatus();
+
+	// Update visibility of continuous mode controls
+	bool continuous = params->continuousBackgroundUpdate;
+	ui->comboBox_avgMethod->setVisible(continuous);
+	ui->label_avgMethod->setVisible(continuous);
+	ui->pushButton_recordBackground->setVisible(!continuous);
+	ui->pushButton_saveBackground->setVisible(!continuous);
+	ui->pushButton_loadBackground->setVisible(!continuous);
+	ui->label_bgStatus->setVisible(!continuous);
+	ui->label_bgStatusIndicator->setVisible(!continuous);
 
 	connectSignals();
 }
@@ -160,6 +184,8 @@ void AdvancedSettingsDialog::saveSettings() {
 	// Background Frame Subtraction
 	settings.setValue(ADV_BG_FRAME_ENABLED, ui->checkBox_bgFrameEnabled->isChecked());
 	settings.setValue(ADV_BG_FRAME_BSCANS_TO_AVG, ui->spinBox_bscansToAverage->value());
+	settings.setValue(ADV_BG_FRAME_CONTINUOUS, ui->checkBox_continuousBackground->isChecked());
+	settings.setValue(ADV_BG_FRAME_USE_EMA, ui->comboBox_avgMethod->currentIndex() == 0);
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
 	settings.setValue(ADV_BG_FRAME_FILE_PATH, params->backgroundFrameFilePath);
 }
@@ -280,4 +306,37 @@ void AdvancedSettingsDialog::updateBackgroundFrameStatus(){
 		ui->label_bgStatusIndicator->setStyleSheet("color: gray;");
 		ui->pushButton_saveBackground->setEnabled(false);
 	}
+}
+
+void AdvancedSettingsDialog::applyContinuousBackgroundSettings(){
+	saveSettings();
+
+	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
+	params->continuousBackgroundUpdate = ui->checkBox_continuousBackground->isChecked();
+	params->continuousBackgroundUseEMA = (ui->comboBox_avgMethod->currentIndex() == 0);
+
+	// Show/hide continuous mode controls
+	bool continuous = params->continuousBackgroundUpdate;
+	ui->comboBox_avgMethod->setVisible(continuous);
+	ui->label_avgMethod->setVisible(continuous);
+
+	// When continuous mode enabled, also enable subtraction
+	if (continuous) {
+		ui->checkBox_bgFrameEnabled->setChecked(true);
+		params->backgroundFrameSubtraction = true;
+	} else {
+		// Restore original recorded background when switching back to static mode
+		if (params->backgroundFrameValid) {
+			params->backgroundFrameUpdated = true;
+		}
+	}
+
+	// Hide/show static mode controls based on continuous mode
+	ui->pushButton_recordBackground->setVisible(!continuous);
+	ui->pushButton_saveBackground->setVisible(!continuous);
+	ui->pushButton_loadBackground->setVisible(!continuous);
+	ui->label_bgStatus->setVisible(!continuous);
+	ui->label_bgStatusIndicator->setVisible(!continuous);
+
+	emit settingsChanged();
 }

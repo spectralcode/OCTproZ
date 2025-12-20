@@ -188,6 +188,8 @@ public:
 	bool backgroundFrameValid;
 	bool backgroundFrameUpdated;
 	QString backgroundFrameFilePath;
+	bool continuousBackgroundUpdate;           // Enable continuous background mode
+	bool continuousBackgroundUseEMA;           // true=EMA, false=Circular Buffer
 
 	bool saveBackgroundFrameToFile(const QString& filePath);
 	bool loadBackgroundFrameFromFile(const QString& filePath);

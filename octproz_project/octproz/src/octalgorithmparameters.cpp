@@ -107,6 +107,8 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	backgroundFrameValid(false),
 	backgroundFrameUpdated(false),
 	backgroundFrameFilePath(QString()),
+	continuousBackgroundUpdate(false),
+	continuousBackgroundUseEMA(true),
 	frameNr(0),
 	frameNrEnFaceView(0),
 	functionFramesEnFaceView(0),
