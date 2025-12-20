@@ -169,6 +169,8 @@ void AdvancedSettingsDialog::loadSettings(){
 	ui->pushButton_loadBackground->setVisible(!continuous);
 	ui->label_bgStatus->setVisible(!continuous);
 	ui->label_bgStatusIndicator->setVisible(!continuous);
+	ui->label_bgFileInUse->setVisible(!continuous);
+	ui->lineEdit_bgFilePath->setVisible(!continuous);
 
 	connectSignals();
 }
@@ -219,6 +221,7 @@ void AdvancedSettingsDialog::recordBackgroundFrame(){
 	// Set recording request flag - the CUDA pipeline will handle the actual recording
 	params->backgroundFrameRecordingRequested = true;
 	params->backgroundFrameBscansRecorded = 0;
+	params->backgroundFrameFilePath.clear(); // Clear old path - this is a new recording
 
 	// Disable record button and show recording status
 	ui->pushButton_recordBackground->setEnabled(false);
@@ -239,6 +242,7 @@ void AdvancedSettingsDialog::saveBackgroundFrame(){
 	if (!filePath.isEmpty()) {
 		if (params->saveBackgroundFrameToFile(filePath)) {
 			saveSettings(); // Save the file path
+			updateBackgroundFrameStatus(); // Update lineEdit to show new file path
 			QMessageBox::information(this, tr("Success"), tr("Background frame saved successfully."));
 		} else {
 			QMessageBox::warning(this, tr("Error"), tr("Failed to save background frame."));
@@ -280,8 +284,9 @@ void AdvancedSettingsDialog::checkRecordingStatus(){
 		ui->pushButton_recordBackground->setEnabled(true);
 		ui->pushButton_recordBackground->setText("Record Background");
 
-		// Update status indicator
+		// Update status indicator and save settings (clears old file path from settings)
 		updateBackgroundFrameStatus();
+		saveSettings();
 	}
 }
 
@@ -305,6 +310,17 @@ void AdvancedSettingsDialog::updateBackgroundFrameStatus(){
 		ui->label_bgStatusIndicator->setText("No background loaded");
 		ui->label_bgStatusIndicator->setStyleSheet("color: gray;");
 		ui->pushButton_saveBackground->setEnabled(false);
+	}
+
+	// Update background file path display
+	if (params->backgroundFrame != nullptr) {
+		if (params->backgroundFrameFilePath.isEmpty()) {
+			ui->lineEdit_bgFilePath->setText(tr("Recorded background (not saved to file)"));
+		} else {
+			ui->lineEdit_bgFilePath->setText(params->backgroundFrameFilePath);
+		}
+	} else {
+		ui->lineEdit_bgFilePath->clear();
 	}
 }
 
@@ -337,6 +353,8 @@ void AdvancedSettingsDialog::applyContinuousBackgroundSettings(){
 	ui->pushButton_loadBackground->setVisible(!continuous);
 	ui->label_bgStatus->setVisible(!continuous);
 	ui->label_bgStatusIndicator->setVisible(!continuous);
+	ui->label_bgFileInUse->setVisible(!continuous);
+	ui->lineEdit_bgFilePath->setVisible(!continuous);
 
 	emit settingsChanged();
 }

@@ -165,6 +165,27 @@
            </layout>
           </item>
           <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_bgFile">
+            <item>
+             <widget class="QLabel" name="label_bgFileInUse">
+              <property name="text">
+               <string>Background in use:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_bgFilePath">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>No background loaded</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_bgButtons">
             <item>
              <widget class="QPushButton" name="pushButton_recordBackground">
