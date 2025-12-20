@@ -381,7 +381,8 @@ bool OctAlgorithmParameters::loadBackgroundFrameFromFile(const QString& filePath
 	this->backgroundFrameSamplesPerLine = fileSamplesPerLine;
 	this->backgroundFrameAscansPerBscan = fileAscansPerBscan;
 	this->backgroundFrameFilePath = filePath;
-	
+
+	this->backgroundFrameValid = false; // Must re-validate dimensions before use
 	this->backgroundFrameUpdated = true;
 
 	return true;

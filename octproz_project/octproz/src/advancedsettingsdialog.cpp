@@ -160,17 +160,17 @@ void AdvancedSettingsDialog::loadSettings(){
 	// Update background frame status indicator
 	updateBackgroundFrameStatus();
 
-	// Update visibility of continuous mode controls
+	// Enable/disable controls based on continuous mode
 	bool continuous = params->continuousBackgroundUpdate;
-	ui->comboBox_avgMethod->setVisible(continuous);
-	ui->label_avgMethod->setVisible(continuous);
-	ui->pushButton_recordBackground->setVisible(!continuous);
-	ui->pushButton_saveBackground->setVisible(!continuous);
-	ui->pushButton_loadBackground->setVisible(!continuous);
-	ui->label_bgStatus->setVisible(!continuous);
-	ui->label_bgStatusIndicator->setVisible(!continuous);
-	ui->label_bgFileInUse->setVisible(!continuous);
-	ui->lineEdit_bgFilePath->setVisible(!continuous);
+	ui->comboBox_avgMethod->setEnabled(continuous);
+	ui->label_avgMethod->setEnabled(continuous);
+	ui->pushButton_recordBackground->setEnabled(!continuous);
+	ui->pushButton_saveBackground->setEnabled(!continuous && params->backgroundFrame != nullptr);
+	ui->pushButton_loadBackground->setEnabled(!continuous);
+	ui->label_bgStatus->setEnabled(!continuous);
+	ui->label_bgStatusIndicator->setEnabled(!continuous);
+	ui->label_bgFileInUse->setEnabled(!continuous);
+	ui->lineEdit_bgFilePath->setEnabled(!continuous);
 
 	connectSignals();
 }
@@ -227,7 +227,6 @@ void AdvancedSettingsDialog::recordBackgroundFrame(){
 	ui->pushButton_recordBackground->setEnabled(false);
 	ui->pushButton_recordBackground->setText("Recording...");
 	ui->label_bgStatusIndicator->setText("Recording...");
-	ui->label_bgStatusIndicator->setStyleSheet("color: blue;");
 
 	// Start polling for recording completion
 	recordingStatusTimer->start(100); // Poll every 100ms
@@ -259,8 +258,19 @@ void AdvancedSettingsDialog::loadBackgroundFrame(){
 	if (!filePath.isEmpty()) {
 		if (params->loadBackgroundFrameFromFile(filePath)) {
 			saveSettings(); // Save the file path
+			params->updateBackgroundFrameValidity(); // Check if dimensions match current acquisition
 			updateBackgroundFrameStatus();
-			QMessageBox::information(this, tr("Success"), tr("Background frame loaded successfully."));
+			if (params->backgroundFrameValid) {
+				QMessageBox::information(this, tr("Success"), tr("Background frame loaded successfully."));
+			} else {
+				QMessageBox::warning(this, tr("Dimension Mismatch"),
+					tr("Background frame loaded but dimensions (%1x%2) don't match current acquisition (%3x%4). "
+					   "The background will not be applied until dimensions match.")
+					.arg(params->backgroundFrameSamplesPerLine)
+					.arg(params->backgroundFrameAscansPerBscan)
+					.arg(params->samplesPerLine)
+					.arg(params->ascansPerBscan));
+			}
 		} else {
 			QMessageBox::warning(this, tr("Error"), tr("Failed to load background frame. Invalid file format."));
 		}
@@ -297,30 +307,40 @@ void AdvancedSettingsDialog::updateBackgroundFrameStatus(){
 		ui->label_bgStatusIndicator->setText(QString("Valid (%1x%2)")
 			.arg(params->backgroundFrameSamplesPerLine)
 			.arg(params->backgroundFrameAscansPerBscan));
-		ui->label_bgStatusIndicator->setStyleSheet("color: green; font-weight: bold;");
 		ui->pushButton_saveBackground->setEnabled(true);
 	} else if (params->backgroundFrame != nullptr) {
-		// Frame loaded but not yet validated (will validate when processing starts)
-		ui->label_bgStatusIndicator->setText(QString("Loaded (%1x%2)")
-			.arg(params->backgroundFrameSamplesPerLine)
-			.arg(params->backgroundFrameAscansPerBscan));
-		ui->label_bgStatusIndicator->setStyleSheet("color: blue;");
+		// Check if we have acquisition settings to compare against
+		bool hasAcquisitionSettings = (params->samplesPerLine > 0 && params->ascansPerBscan > 0);
+		bool dimensionsMismatch = hasAcquisitionSettings &&
+			(params->backgroundFrameSamplesPerLine != params->samplesPerLine ||
+			 params->backgroundFrameAscansPerBscan != params->ascansPerBscan);
+
+		if (dimensionsMismatch) {
+			// Dimensions don't match current acquisition
+			ui->label_bgStatusIndicator->setText(QString("Mismatch (%1x%2)")
+				.arg(params->backgroundFrameSamplesPerLine)
+				.arg(params->backgroundFrameAscansPerBscan));
+		} else {
+			// Frame loaded but not yet validated (no acquisition running yet)
+			ui->label_bgStatusIndicator->setText(QString("Loaded (%1x%2)")
+				.arg(params->backgroundFrameSamplesPerLine)
+				.arg(params->backgroundFrameAscansPerBscan));
+		}
 		ui->pushButton_saveBackground->setEnabled(true);
 	} else {
 		ui->label_bgStatusIndicator->setText("No background loaded");
-		ui->label_bgStatusIndicator->setStyleSheet("color: gray;");
 		ui->pushButton_saveBackground->setEnabled(false);
 	}
 
 	// Update background file path display
-	if (params->backgroundFrame != nullptr) {
+	if (params->backgroundFrame != nullptr && params->backgroundFrameValid) {
 		if (params->backgroundFrameFilePath.isEmpty()) {
 			ui->lineEdit_bgFilePath->setText(tr("Recorded background (not saved to file)"));
 		} else {
 			ui->lineEdit_bgFilePath->setText(params->backgroundFrameFilePath);
 		}
 	} else {
-		ui->lineEdit_bgFilePath->clear();
+		ui->lineEdit_bgFilePath->clear(); // Shows placeholder "No background loaded"
 	}
 }
 
@@ -331,10 +351,10 @@ void AdvancedSettingsDialog::applyContinuousBackgroundSettings(){
 	params->continuousBackgroundUpdate = ui->checkBox_continuousBackground->isChecked();
 	params->continuousBackgroundUseEMA = (ui->comboBox_avgMethod->currentIndex() == 0);
 
-	// Show/hide continuous mode controls
+	// Enable/disable continuous mode controls
 	bool continuous = params->continuousBackgroundUpdate;
-	ui->comboBox_avgMethod->setVisible(continuous);
-	ui->label_avgMethod->setVisible(continuous);
+	ui->comboBox_avgMethod->setEnabled(continuous);
+	ui->label_avgMethod->setEnabled(continuous);
 
 	// When continuous mode enabled, also enable subtraction
 	if (continuous) {
@@ -347,14 +367,14 @@ void AdvancedSettingsDialog::applyContinuousBackgroundSettings(){
 		}
 	}
 
-	// Hide/show static mode controls based on continuous mode
-	ui->pushButton_recordBackground->setVisible(!continuous);
-	ui->pushButton_saveBackground->setVisible(!continuous);
-	ui->pushButton_loadBackground->setVisible(!continuous);
-	ui->label_bgStatus->setVisible(!continuous);
-	ui->label_bgStatusIndicator->setVisible(!continuous);
-	ui->label_bgFileInUse->setVisible(!continuous);
-	ui->lineEdit_bgFilePath->setVisible(!continuous);
+	// Enable/disable static mode controls based on continuous mode
+	ui->pushButton_recordBackground->setEnabled(!continuous);
+	ui->pushButton_saveBackground->setEnabled(!continuous && params->backgroundFrame != nullptr);
+	ui->pushButton_loadBackground->setEnabled(!continuous);
+	ui->label_bgStatus->setEnabled(!continuous);
+	ui->label_bgStatusIndicator->setEnabled(!continuous);
+	ui->label_bgFileInUse->setEnabled(!continuous);
+	ui->lineEdit_bgFilePath->setEnabled(!continuous);
 
 	emit settingsChanged();
 }
