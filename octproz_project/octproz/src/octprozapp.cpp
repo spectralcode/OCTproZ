@@ -4,6 +4,9 @@
 #include <QThread>
 #include <QDateTime>
 #include <QTimer>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 
 OCTproZApp::OCTproZApp(QObject* parent) :
 	QObject(parent)
@@ -61,6 +64,7 @@ OCTproZApp::OCTproZApp(QObject* parent) :
 	// Default values to memorize stream2host setings
 	this->streamToHostMemorized = this->octParams->streamToHost;
 	this->streamingBuffersToSkipMemorized = this->octParams->streamingBuffersToSkip;
+	this->glInteropPossible = true;
 }
 
 OCTproZApp::~OCTproZApp() {
@@ -94,6 +98,31 @@ void OCTproZApp::initialize() {
 	this->notifierThread.start();
 	this->extManager->initialize(this, this->signalProcessing, this->processedDataNotifier);
 	this->loadSystemsAndExtensions();
+
+	// Check if OpenGL is using the NVIDIA GPU (required for CUDA-GL interop).
+	// This only needs to run once since the GL vendor can't change while the app is running.
+	{
+		QOffscreenSurface tmpSurface;
+		tmpSurface.create();
+		QOpenGLContext tmpContext;
+		if (tmpContext.create() && tmpContext.makeCurrent(&tmpSurface)) {
+			const char* glVendor = reinterpret_cast<const char*>(
+				tmpContext.functions()->glGetString(GL_VENDOR));
+			tmpContext.doneCurrent();
+			if (glVendor && QString(glVendor).contains("NVIDIA", Qt::CaseInsensitive)) {
+				this->glInteropPossible = true;
+			} else {
+				this->glInteropPossible = false;
+				emit error(tr("OpenGL is using \"%1\" instead of the NVIDIA GPU. "
+					"GPU processed OCT output (B-scan, en face view, volume) will not be displayed. "
+					"If you use a mobile device try to charge the battery otherwise you can try to set OCTproZ to 'High-performance NVIDIA processor' in "
+					"NVIDIA Control Panel > Manage 3D Settings > Program Settings and restart OCTproZ, "
+					"and/or connect your display to the NVIDIA GPU instead of the integrated graphics.")
+					.arg(glVendor ? QString(glVendor) : tr("Unknown")));
+			}
+		}
+	}
+	this->signalProcessing->setGlInteropPossible(this->glInteropPossible);
 }
 
 void OCTproZApp::loadSystemsAndExtensions() {

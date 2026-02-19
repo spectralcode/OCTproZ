@@ -145,6 +145,7 @@ private:
 	QList<QString> activatedSystems;
 	int rerunCounter = 0;
 
+	bool glInteropPossible;
 	bool rawRecordingComplete;
 	bool processedRecordingComplete;
 
