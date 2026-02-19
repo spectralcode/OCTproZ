@@ -56,6 +56,9 @@ public:
 	QOpenGLContext* context;
 	QOffscreenSurface* surface;
 
+	void setGuiWindowId(quintptr id);
+	void setGlInteropPossible(bool possible);
+
 
 private:
 	void initCudaOpenGlInterop();
@@ -64,6 +67,10 @@ private:
 	void blockBuffersForAcquisitionSystem(AcquisitionSystem* system);
 	void unblockBuffersForAcquisitionSystem(AcquisitionSystem* system);
 
+	void wakeGuiThread();
+
+	quintptr guiWinId;
+	bool glInteropPossible;
 	bool bscanGlBufferRegisteredWithCuda;
 	bool enfaceGlBufferRegisteredWithCuda;
 	bool volumeGlBufferRegisteredWithCuda;

@@ -134,7 +134,7 @@ unix{
 	LIBS += -lGL -lGLU -lX11
 }
 win32{
-	LIBS += -lopengl32 -lglu32
+	LIBS += -lopengl32 -lglu32 -luser32
 }
 
 

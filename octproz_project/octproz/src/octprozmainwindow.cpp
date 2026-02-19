@@ -219,6 +219,10 @@ void OCTproZMainWindow::initGui() {
 }
 
 void OCTproZMainWindow::setupConnections() {
+	// Pass the main window's native handle to Processing so it can use
+	// PostMessage to reliably wake the GUI thread during CUDA-GL interop init.
+	this->app->getSignalProcessing()->setGuiWindowId(this->winId());
+
 	// Connect app signals to UI
 	connect(this->app, &OCTproZApp::processingStarted, this, &OCTproZMainWindow::onProcessingStarted);
 	connect(this->app, &OCTproZApp::screenshotsRequested, this, &OCTproZMainWindow::slot_takeScreenshots);

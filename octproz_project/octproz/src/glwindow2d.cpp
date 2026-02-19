@@ -324,6 +324,7 @@ void GLWindow2D::createOpenGLContextForProcessing(QOpenGLContext* processingCont
 		(processingSurface)->setFormat(renderContext->format());
 		(processingSurface)->create(); //Due to the fact that QOffscreenSurface is backed by a QWindow on some platforms, cross-platform applications must ensure that create() is only called on the main (GUI) thread
 		(processingSurface)->moveToThread(processingThread);
+		this->changeTextureSize(this->width, this->height, this->depth); //calling this here fixes a bug that occurs only on a notebook in power saving mode. without changing the opengl texture size here opengl-cuda interop initialization fails
 }
 
 void GLWindow2D::registerOpenGLBufferWithCuda() {

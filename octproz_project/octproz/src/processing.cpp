@@ -26,11 +26,16 @@
 **/
 
 #include "processing.h"
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 Processing::Processing(){
 	///qRegisterMetaType is needed to enabel Qt::QueuedConnection for signal slot communication with "AcquisitionParams"
 	qRegisterMetaType<AcquisitionParams >("AcquisitionParams");
 	qRegisterMetaType<OctAlgorithmParameters::RecordingParams >("OctAlgorithmParameters::RecordingParams");
+	this->guiWinId = 0;
+	this->glInteropPossible = true;
 	this->bscanGlBufferRegisteredWithCuda = false;
 	this->enfaceGlBufferRegisteredWithCuda = false;
 	this->volumeGlBufferRegisteredWithCuda = false;
@@ -97,6 +102,31 @@ void Processing::initCudaOpenGlInterop(){
 	this->waitForCudaOpenGlInteropReady(peekInterval, 4000); //this is necessary because initOpenGL(...) triggers a signal emission in glwindow2d containing the OpenGL buffer. This buffer is subsequently registered with CUDA in a slot within this processing class. Thus, this wait time and processEvents() serve as a workaround to ensure the slot executes - meaning the OpenGL buffer gets registered with CUDA - before continuation. //todo: re-examine how the steps for interoperability are called, this many signal slot connections for this straight forward task are too convoluted, probably there is an easyier way for the sequence: create QOffscreenSurface in GUI thread --> allocate OpenGL buffer --> register with cuda --> map buffer to get cuda pointer --> pass pointer to cuda kernel --> unmap pointer
 }
 
+void Processing::setGuiWindowId(quintptr id){
+	this->guiWinId = id;
+}
+
+void Processing::setGlInteropPossible(bool possible){
+	this->glInteropPossible = possible;
+}
+
+void Processing::wakeGuiThread(){
+	//Post a Win32 message to the GUI thread's message queue to reliably wake it.
+	//Qt's wakeUp() has an atomic guard that can make repeated calls no-ops,
+	//and postEvent() relies on the same mechanism. PostMessage bypasses Qt
+	//entirely and directly wakes MsgWaitForMultipleObjectsEx.
+#ifdef Q_OS_WIN
+	if (this->guiWinId) {
+		PostMessage(reinterpret_cast<HWND>(this->guiWinId), WM_NULL, 0, 0);
+		return;
+	}
+#endif
+	QObject* guiTarget = QCoreApplication::instance();
+	if (guiTarget) {
+		QCoreApplication::postEvent(guiTarget, new QEvent(QEvent::Type(QEvent::User + 1)));
+	}
+}
+
 bool Processing::waitForCudaOpenGlInteropReady(int interval, int timeout){
 	QCoreApplication::processEvents();
 	QElapsedTimer timer;
@@ -104,8 +134,9 @@ bool Processing::waitForCudaOpenGlInteropReady(int interval, int timeout){
 
 	while (!this->isCudaOpenGlInteropReady()) {
 		QCoreApplication::processEvents();
+		this->wakeGuiThread(); //this fixes a bug that only occurs on some machines: when start button is pressed the app seems to freeze right after initialization and only continues when the mouse is moved. this is just a temp workaround until waitForCudaOpenGlInteropReady gets replaced by a better solution
 		if (timer.elapsed() > timeout){
-			emit error(tr("Cuda-OpenGL Interoperability initialization timeout. Please try restarting the processing."));
+			emit error(tr("Cuda-OpenGL Interoperability initialization timeout. If no OCT output is displayed, try restarting the processing."));
 			return false;
 		}
 		QThread::msleep(interval);
@@ -137,7 +168,14 @@ void Processing::slot_start(AcquisitionSystem* system){
 	if (system != nullptr) {
 		this->blockBuffersForAcquisitionSystem(system);
 		emit info(tr("GPU processing initialization..."));
-		this->initCudaOpenGlInterop();
+
+		if (this->glInteropPossible) {
+			this->initCudaOpenGlInterop();
+		} else {
+			this->octParams->bscanViewEnabled = false;
+			this->octParams->enFaceViewEnabled = false;
+			this->octParams->volumeViewEnabled = false;
+		}
 
 		AcquisitionBuffer* buffer = system->buffer;
 		void* h_buffer1 = buffer->bufferArray[0];
