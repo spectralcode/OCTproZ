@@ -1318,7 +1318,7 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 		return false;
 	}
 
-	fillSinusoidalScanCorrectionCurve<<<ascansPerBscan, 1, 0, stream[0]>>> (d_sinusoidalResampleCurve, ascansPerBscan);
+	fillSinusoidalScanCorrectionCurve<<<ascansPerBscan, 1>>> (d_sinusoidalResampleCurve, ascansPerBscan);
 	checkCudaErrors(cudaPeekAtLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
