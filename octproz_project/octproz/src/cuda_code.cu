@@ -1299,12 +1299,25 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 		params->updateBackgroundFrameValidity();
 	}
 
+	//clear any stale CUDA errors from prior operations (e.g. GL interop setup)
+	cudaError_t staleErr = cudaGetLastError();
+	if (staleErr != cudaSuccess) {
+		printf("Cuda: Cleared stale error before initialization: %s\n", cudaGetErrorString(staleErr));
+	}
+
 	// Set truncation divisor based on full range mode
 	outputTruncationDivisor = parameters->fullRangeMode ? 1 : 2;
 	// Copy to device constant for kernel access
-	cudaMemcpyToSymbol(d_outputTruncationDivisor, &outputTruncationDivisor, sizeof(int));
+	cudaError_t symErr = cudaMemcpyToSymbol(d_outputTruncationDivisor, &outputTruncationDivisor, sizeof(int));
+	if (symErr != cudaSuccess) {
+		printf("Cuda: cudaMemcpyToSymbol failed: %s\n", cudaGetErrorString(symErr));
+		return false;
+	}
 
-	createStreamsAndEvents();
+	if(!createStreamsAndEvents()){
+		printf("Cuda: Failed to create streams and events.\n");
+		return false;
+	}
 
 	bool success =
 	allocateAndInitializeBuffer((void**)&d_resampleCurve, sizeof(float)*signalLength)
@@ -1534,6 +1547,20 @@ extern "C" void cleanupCuda() {
 			cudaHostUnregister(host_buffer2);
 		}
 #endif
+
+		//unregister CUDA-GL interop resources
+		if (cuBufHandleBscan != NULL) {
+			cudaGraphicsUnregisterResource(cuBufHandleBscan);
+			cuBufHandleBscan = NULL;
+		}
+		if (cuBufHandleEnFaceView != NULL) {
+			cudaGraphicsUnregisterResource(cuBufHandleEnFaceView);
+			cuBufHandleEnFaceView = NULL;
+		}
+		if (cuBufHandleVolumeView != NULL) {
+			cudaGraphicsUnregisterResource(cuBufHandleVolumeView);
+			cuBufHandleVolumeView = NULL;
+		}
 
 		cudaInitialized = false;
 		fixedPatternNoiseDetermined = false;
@@ -2069,14 +2096,20 @@ extern "C" bool cuda_registerGlBufferBscan(GLuint buf) {
 		cudaError_t unregisterResult = cudaGraphicsUnregisterResource(cuBufHandleBscan);
 		if (unregisterResult != cudaSuccess) {
 			printf("Cuda: Failed to unregister existing resource. Error: %s\n", cudaGetErrorString(unregisterResult));
+			cudaGetLastError(); //clear sticky error to prevent it from propagating to later cudaPeekAtLastError() calls
 		}
 		cuBufHandleBscan = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
 	}
 	//attempt to register the new buffer
 	cudaError_t registerResult = cudaGraphicsGLRegisterBuffer(&cuBufHandleBscan, buf, cudaGraphicsRegisterFlagsWriteDiscard);
 	if (registerResult != cudaSuccess) {
-		printf("Cuda: Failed to register buffer %u. Error: %s\n", buf, cudaGetErrorString(registerResult));
+		printf("Cuda: Failed to register bscan buffer %u. Error: %s\n", buf, cudaGetErrorString(registerResult));
+		cudaGetLastError(); //clear sticky error
 		return false;
+	}
+	cudaError_t pendingErr = cudaGetLastError();
+	if (pendingErr != cudaSuccess) {
+		printf("Cuda: Pending error after bscan GL buffer registration: %s\n", cudaGetErrorString(pendingErr));
 	}
 	return true;
 }
@@ -2088,13 +2121,20 @@ extern "C" bool cuda_registerGlBufferEnFaceView(GLuint buf) {
 		cudaError_t unregisterResult = cudaGraphicsUnregisterResource(cuBufHandleEnFaceView);
 		if (unregisterResult != cudaSuccess) {
 			printf("Cuda: Failed to unregister existing resource. Error: %s\n", cudaGetErrorString(unregisterResult));
+			cudaGetLastError(); //clear sticky error to prevent it from propagating to later cudaPeekAtLastError() calls
 		}
 		cuBufHandleEnFaceView = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
 	}
 	//attempt to register the new buffer
-	if (cudaGraphicsGLRegisterBuffer(&cuBufHandleEnFaceView, buf, cudaGraphicsRegisterFlagsWriteDiscard) != cudaSuccess) {
-		printf("Cuda: Failed to register buffer %u\n", buf);
+	cudaError_t enFaceRegResult = cudaGraphicsGLRegisterBuffer(&cuBufHandleEnFaceView, buf, cudaGraphicsRegisterFlagsWriteDiscard);
+	if (enFaceRegResult != cudaSuccess) {
+		printf("Cuda: Failed to register enface buffer %u. Error: %s\n", buf, cudaGetErrorString(enFaceRegResult));
+		cudaGetLastError(); //clear sticky error
 		return false;
+	}
+	cudaError_t pendingErr = cudaGetLastError();
+	if (pendingErr != cudaSuccess) {
+		printf("Cuda: Pending error after enface GL buffer registration: %s\n", cudaGetErrorString(pendingErr));
 	}
 	return true;
 }
@@ -2104,14 +2144,20 @@ extern "C" bool cuda_registerGlBufferVolumeView(GLuint buf) {
 		cudaError_t unregisterResult = cudaGraphicsUnregisterResource(cuBufHandleVolumeView);
 		if (unregisterResult != cudaSuccess) {
 			printf("Cuda: Failed to unregister existing resource. Error: %s\n", cudaGetErrorString(unregisterResult));
+			cudaGetLastError(); //clear sticky error to prevent it from propagating to later cudaPeekAtLastError() calls
 		}
 		cuBufHandleVolumeView = NULL; //set handle to NULL to ensure it no longer points to a freed resource.
 	}
 	//attempt to register the new buffer
 	cudaError_t err = cudaGraphicsGLRegisterImage(&cuBufHandleVolumeView, buf, GL_TEXTURE_3D, cudaGraphicsRegisterFlagsSurfaceLoadStore);
 	if (err != cudaSuccess) {
-		printf("Cuda: Failed to register buffer %u\n", buf);
+		printf("Cuda: Failed to register volume buffer %u. Error: %s\n", buf, cudaGetErrorString(err));
+		cudaGetLastError(); //clear sticky error
 		return false;
+	}
+	cudaError_t pendingErr = cudaGetLastError();
+	if (pendingErr != cudaSuccess) {
+		printf("Cuda: Pending error after volume GL buffer registration: %s\n", cudaGetErrorString(pendingErr));
 	}
 	return true;
 }
