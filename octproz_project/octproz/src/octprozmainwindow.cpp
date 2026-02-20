@@ -1,4 +1,5 @@
 #include "octprozmainwindow.h"
+#include "octalgorithmparameters.h"
 #include <QGuiApplication>
 #include <QDesktopWidget>
 #include <QStyleFactory>
@@ -299,6 +300,10 @@ void OCTproZMainWindow::setupConnections() {
 			this->app->getSignalProcessing(), &Processing::slot_updateDisplayedBscanFrame);
 	connect(this->bscanWindow, &GLWindow2D::registerBufferCudaGL,
 			this->app->getSignalProcessing(), &Processing::slot_registerBscanOpenGLbufferWithCuda);
+	this->bscanWindow->enableShowMostRecentOption();
+	connect(this->bscanWindow, &GLWindow2D::showMostRecentToggled, [](bool enabled){
+		OctAlgorithmParameters::getInstance()->bscanViewShowMostRecent = enabled;
+	});
 
 	// Connect En face view window connections
 	connect(this->enFaceViewWindow->getControlPanel(), &ControlPanel2D::displayFrameSettingsChanged,

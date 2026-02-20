@@ -116,6 +116,7 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	displayFunctionBscan(0),
 	displayFunctionEnFaceView(0),
 	bscanViewEnabled(true),
+	bscanViewShowMostRecent(false),
 	enFaceViewEnabled(true),
 	volumeViewEnabled(false),
 	recParams{QString(), QString(), QString(), AUTO, 0, 1, false, false, false, false, false, false, false},

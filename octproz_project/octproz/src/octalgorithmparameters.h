@@ -209,6 +209,7 @@ public:
 		MIP
 	};
 	bool bscanViewEnabled;
+	bool bscanViewShowMostRecent;
 	bool enFaceViewEnabled;
 	bool volumeViewEnabled;
 

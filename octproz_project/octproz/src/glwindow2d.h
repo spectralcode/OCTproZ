@@ -42,6 +42,7 @@
 #define HORIZONTAL_SCALE_BAR_LENGTH "horizontal_scale_bar_length"
 #define VERTICAL_SCALE_BAR_LENGTH "vertical_scale_bar_length"
 #define DATA_CURSOR_ENABLED "data_cursor_enabled"
+#define SHOW_MOST_RECENT_BSCAN "show_most_recent_bscan"
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
@@ -134,6 +135,7 @@ public:
 	FRAME_EDGE getMarkerOrigin() const {return this->markerOrigin;}
 	void setMarkerOrigin(FRAME_EDGE origin);
 	QAction* getMarkerAction(){return this->markerAction;}
+	void enableShowMostRecentOption();
 
 	void setSettings(QVariantMap settings) override;
 	QVariantMap getSettings() final override;
@@ -166,6 +168,7 @@ private:
 	QAction* markerAction;
 	QAction* screenshotAction;
 	QAction* dataCursorAction;
+	QAction* showMostRecentAction;
 
 	FRAME_EDGE markerOrigin;
 	LineCoordinates markerCoordinates;
@@ -237,6 +240,7 @@ signals:
 
 	void dialogAboutToOpen();
 	void dialogClosed();
+	void showMostRecentToggled(bool enabled);
 	void error(QString);
 	void info(QString);
 

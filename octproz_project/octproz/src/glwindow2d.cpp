@@ -136,6 +136,10 @@ void GLWindow2D::setSettings(QVariantMap settings) {
 	params.verticalScaleBarLength = settings.value(VERTICAL_SCALE_BAR_LENGTH, 256).toInt();
 
 	this->panel->setParams(params);
+
+	if(this->showMostRecentAction){
+		this->showMostRecentAction->setChecked(settings.value(SHOW_MOST_RECENT_BSCAN, false).toBool());
+	}
 }
 
 QVariantMap GLWindow2D::getSettings() {
@@ -154,6 +158,11 @@ QVariantMap GLWindow2D::getSettings() {
 	settings.insert(VERTICAL_SCALE_BAR_TEXT, params.verticalScaleBarText);
 	settings.insert(HORIZONTAL_SCALE_BAR_LENGTH, params.horizontalScaleBarLength);
 	settings.insert(VERTICAL_SCALE_BAR_LENGTH, params.verticalScaleBarLength);
+
+	if(this->showMostRecentAction){
+		settings.insert(SHOW_MOST_RECENT_BSCAN, this->showMostRecentAction->isChecked());
+	}
+
 	return settings;
 }
 
@@ -188,6 +197,11 @@ void GLWindow2D::initContextMenu() {
 	this->dataCursorAction->setChecked(this->dataCursorEnabled);
 	connect(this->dataCursorAction, &QAction::toggled, this, &GLWindow2D::enableDataCursor);
 	this->contextMenu->addAction(this->dataCursorAction);
+
+	this->showMostRecentAction = new QAction(tr("Display most recent B-scan"), this);
+	this->showMostRecentAction->setCheckable(true);
+	this->showMostRecentAction->setChecked(false);
+	connect(this->showMostRecentAction, &QAction::toggled, this, &GLWindow2D::showMostRecentToggled);
 }
 
 void GLWindow2D::displayScalebars() {
@@ -437,6 +451,14 @@ void GLWindow2D::enableDataCursor(bool enable) {
 		this->unsetCursor();
 		this->coordinateDisplay->setVisible(false);
 	}
+}
+
+void GLWindow2D::enableShowMostRecentOption() {
+	this->contextMenu->addAction(this->showMostRecentAction);
+	connect(this->showMostRecentAction, &QAction::toggled, this, [this](bool checked){
+		this->panel->spinBoxFrame->setEnabled(!checked);
+		this->panel->slider->setEnabled(!checked);
+	});
 }
 
 void GLWindow2D::saveScreenshot(QString savePath, QString fileName) {

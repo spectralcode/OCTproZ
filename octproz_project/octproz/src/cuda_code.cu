@@ -2024,7 +2024,11 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 
 	//update display buffers
 	if(params->bscanViewEnabled){
-		updateBscanDisplayBuffer(params->frameNr, params->functionFramesBscan, params->displayFunctionBscan, stream[currStream]);
+		unsigned int bscanFrameNr = params->frameNr;
+		if(params->bscanViewShowMostRecent){
+			bscanFrameNr = bufferNumberInVolume * bscansPerBuffer + bscansPerBuffer - 1;
+		}
+		updateBscanDisplayBuffer(bscanFrameNr, params->functionFramesBscan, params->displayFunctionBscan, stream[currStream]);
 		//checkCudaErrors(cudaLaunchHostFunc(stream[currStream], Gpu2HostNotifier::bscanDisblayBufferReadySignalCallback, 0));
 	}
 	if(params->enFaceViewEnabled){
