@@ -32,6 +32,13 @@ SystemManager::SystemManager(QObject *parent) : QObject(parent)
 
 }
 
+SystemManager::~SystemManager()
+{
+	qDeleteAll(this->systems);
+	this->systems.clear();
+	this->systemNames.clear();
+}
+
 void SystemManager::addSystem(AcquisitionSystem* system){
 	if(system != nullptr){
 		if(!systems.contains(system)){

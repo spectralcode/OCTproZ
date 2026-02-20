@@ -37,6 +37,7 @@ class SystemManager : public QObject
 	Q_OBJECT
 public:
 	explicit SystemManager(QObject *parent = nullptr);
+	~SystemManager();
 
 	void addSystem(AcquisitionSystem* plugin);
 	AcquisitionSystem* getSystemByName(QString name);

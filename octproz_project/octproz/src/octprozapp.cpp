@@ -100,7 +100,6 @@ void OCTproZApp::initialize() {
 	this->loadSystemsAndExtensions();
 
 	// Check if OpenGL is using the NVIDIA GPU (required for CUDA-GL interop).
-	// This only needs to run once since the GL vendor can't change while the app is running.
 	{
 		QOffscreenSurface tmpSurface;
 		tmpSurface.create();
@@ -371,7 +370,6 @@ void OCTproZApp::activateSystem(AcquisitionSystem* system) {
 			connect(system, &AcquisitionSystem::acquisitionStarted, this->signalProcessing, &Processing::slot_start);
 			connect(system, &AcquisitionSystem::acquisitionStopped, this, &OCTproZApp::slot_stop);
 			connect(system->params, &AcquisitionParameter::updated, this, &OCTproZApp::slot_updateAcquistionParameter);
-			connect(qApp, &QCoreApplication::aboutToQuit, system, &QObject::deleteLater);
 			connect(system->buffer, &AcquisitionBuffer::info, this, &OCTproZApp::info);
 			connect(system->buffer, &AcquisitionBuffer::error, this, &OCTproZApp::error);
 			emit newSystem(system);
