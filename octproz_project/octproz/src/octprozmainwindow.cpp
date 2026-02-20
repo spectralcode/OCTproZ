@@ -925,7 +925,7 @@ void OCTproZMainWindow::openSystemSettingsDialog() {
 }
 
 void OCTproZMainWindow::openSelectSystemDialog() {
-	QString selectedSystem = this->systemChooser->selectSystem(this->app->getSysManager()->getSystemNames());
+	QString selectedSystem = this->systemChooser->selectSystem(this->app->getSysManager()->getSystemNames(), this->app->getCurrentSystemName());
 	if (!selectedSystem.isEmpty()) {
 		this->app->setSystem(selectedSystem);
 	}

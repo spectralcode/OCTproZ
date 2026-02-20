@@ -58,10 +58,13 @@ void SystemChooser::populate(QList<QString> systems) {
 	}
 }
 
-QString SystemChooser::selectSystem(QList<QString> systems) {
+QString SystemChooser::selectSystem(QList<QString> systems, const QString& currentSystemName) {
 	this->populate(systems);
-	if(this->listView->count() > 0){
-		this->listView->setCurrentItem(this->listView->item(0));
+	int index = systems.indexOf(currentSystemName);
+	if(index >= 0){
+		this->listView->setCurrentRow(index);
+	} else if(this->listView->count() > 0){
+		this->listView->setCurrentRow(0);
 	}
 	this->exec();
 	return selectedSystem;

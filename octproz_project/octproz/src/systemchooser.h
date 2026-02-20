@@ -44,7 +44,7 @@ public:
 	SystemChooser();
 	~SystemChooser();
 
-	QString selectSystem(QList<QString> systems);
+	QString selectSystem(QList<QString> systems, const QString& currentSystemName = "");
 
 private:
 	QString selectedSystem;
