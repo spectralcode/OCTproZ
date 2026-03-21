@@ -15,7 +15,7 @@ PLUGIN_DIRS = \
 
 for(plugin, PLUGIN_DIRS) {
 	plugin_path = $$PWD/$$plugin
-	plugin_pro = $$plugin_path/$$plugin.pro
+	plugin_pro = $$plugin_path/$${plugin}.pro
 
 	exists($$plugin_pro) {
 		message(Plugin found: $$plugin)
