@@ -32,6 +32,7 @@
 #include <QButtonGroup>
 #include <QDockWidget>
 #include <QFileDialog>
+#include <QTimer>
 #include "minicurveplot.h"
 #include "settingsfilemanager.h"
 #include "octalgorithmparameters.h"
@@ -55,6 +56,7 @@
 #define REC_NAME "name"
 #define REC_START_WITH_FIRST_BUFFER "start_with_first_buffer"
 #define REC_DESCRIPTION "description"
+#define REC_PREALLOCATE "preallocate_recording_buffer"
 #define PROC_FLIP_BSCANS "flip_bscans"
 #define PROC_BITSHIFT "bitshift"
 #define PROC_REMOVEBACKGROUND "background_removal"
@@ -141,6 +143,7 @@ private:
 	QVariantMap recordSettings;
 	QVariantMap processingSettings;
 	QVariantMap streamingSettings;
+	QTimer preallocationTimer;
 
 	void initGui();
 	void findGuiElements();
@@ -182,6 +185,7 @@ signals:
 	void loadPostProcessBackgroundRequested(QString fileName, bool suppressErrors);
 	void saveResamplingCurveRequested(QString fileName);
 	void loadResamplingCurveRequested(QString fileName, bool suppressErrors);
+	void preallocateRecordingMemory(bool enabled);
 	void error(QString);
 	void info(QString);
 };

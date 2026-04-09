@@ -88,6 +88,7 @@ public slots:
 	void slot_setKLinCoeffs(double* k0, double* k1, double* k2, double* k3);
 	void slot_setDispCompCoeffs(double* d0, double* d1, double* d2, double* d3);
 	void slot_setCustomResamplingCurve(QVector<float> resamplingCurve);
+	void slot_handleAppCommand(const QString &command, const QVariantMap &params);
 
 signals:
 	void start();

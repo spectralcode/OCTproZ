@@ -96,6 +96,7 @@ public slots :
 	void slot_registerVolumeViewOpenGLbufferWithCuda(unsigned int openGLbufferId);
 	void enableGpu2HostStreaming(bool enableStreaming);
 	void enableFloatGpu2HostStreaming(bool enableStreaming);
+	void slot_preallocateRecordingBuffers(bool enabled);
 	void registerStreamingHostBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
 	void unregisterStreamingHostBuffers();
 	void registerFloatStreamingHostBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer);
@@ -111,6 +112,10 @@ signals :
 	void initProcessedRecorder(OctAlgorithmParameters::RecordingParams params);
 	void processingDone();
 	void streamingBufferEnabled(bool enabled);
+	void preallocateRawRecorder(size_t totalBytes);
+	void preallocateProcessedRecorder(size_t totalBytes);
+	void freePreallocatedRawRecorder();
+	void freePreallocatedProcessedRecorder();
 
 	void processedRecordDone();
 	void rawRecordDone();

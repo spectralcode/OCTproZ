@@ -294,6 +294,7 @@ void OCTproZMainWindow::setupConnections() {
 	connect(this->app->getSignalProcessing(), &Processing::streamingBufferEnabled, this->plot1D, &PlotWindow1D::enableProcessedGrabbing);
 	connect(this->app->getSignalProcessing(), &Processing::rawData, this->plot1D, &PlotWindow1D::plotRawData);
 	connect(this->app->getSignalProcessing(), &Processing::updateInfoBox, this->sidebar, &Sidebar::slot_updateInfoBox);
+	connect(this->sidebar, &Sidebar::preallocateRecordingMemory, this->app->getSignalProcessing(), &Processing::slot_preallocateRecordingBuffers);
 
 	// Connect B-scan window connections
 	connect(this->bscanWindow->getControlPanel(), &ControlPanel2D::displayFrameSettingsChanged,

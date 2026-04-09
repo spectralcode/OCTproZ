@@ -103,6 +103,13 @@ void Sidebar::initGui() {
 	connect(this->ui.pushButton_postProcRec, &QPushButton::clicked, this, &Sidebar::slot_recordPostProcessingBackground);
 	connect(this->ui.pushButton_postProcSave, &QPushButton::clicked, this, &Sidebar::slot_savePostProcessingBackground);
 	connect(this->ui.pushButton_postProcLoad, &QPushButton::clicked, this, &Sidebar::slot_loadPostProcessingBackground);
+	connect(this->ui.checkBox_preallocateRecBuffer, &QCheckBox::clicked, this, &Sidebar::preallocateRecordingMemory);
+
+	this->preallocationTimer.setSingleShot(true);
+	this->preallocationTimer.setInterval(200);
+	connect(&this->preallocationTimer, &QTimer::timeout, this, [this]() {
+		emit preallocateRecordingMemory(true);
+	});
 
 	this->copyInfoAction = new QAction(tr("Copy info to clipboard"), this);
 	connect(copyInfoAction, &QAction::triggered, this, &Sidebar::copyInfoToClipboard);
@@ -178,6 +185,7 @@ void Sidebar::loadSettings() {
 	this->ui.checkBox_stopAfterRec->setChecked(this->recordSettings.value(REC_STOP, false).toBool());
 	this->ui.checkBox_meta->setChecked(this->recordSettings.value(REC_META, true).toBool());
 	this->ui.checkBox_32bitfloat->setChecked(this->recordSettings.value(REC_32BIT_FLOAT, false).toBool());
+	this->ui.checkBox_preallocateRecBuffer->setChecked(this->recordSettings.value(REC_PREALLOCATE, false).toBool());
 	this->ui.spinBox_volumes->setValue(this->recordSettings.value(REC_VOLUMES).toUInt());
 	this->ui.lineEdit_recName->setText(this->recordSettings.value(REC_NAME).toString());
 	this->ui.plainTextEdit_description->setPlainText(this->recordSettings.value(REC_DESCRIPTION).toString());
@@ -356,6 +364,10 @@ void Sidebar::updateRecordingParams() {
 	params->recParams.recordScreenshot = this->ui.checkBox_recordScreenshots->isChecked();
 	params->recParams.saveMetaData = this->ui.checkBox_meta->isChecked();
 	params->recParams.saveAs32bitFloat = this->ui.checkBox_32bitfloat->isChecked();
+
+	if (this->ui.checkBox_preallocateRecBuffer->isChecked() && params->recParams.bufferSizeInBytes > 0) {
+		this->preallocationTimer.start();
+	}
 }
 
 void Sidebar::enableRecordTab(bool enable) {
@@ -622,6 +634,7 @@ void Sidebar::updateSettingsMaps() {
 	this->recordSettings.insert(REC_STOP, this->ui.checkBox_stopAfterRec->isChecked());
 	this->recordSettings.insert(REC_META, this->ui.checkBox_meta->isChecked());
 	this->recordSettings.insert(REC_32BIT_FLOAT, this->ui.checkBox_32bitfloat->isChecked());
+	this->recordSettings.insert(REC_PREALLOCATE, this->ui.checkBox_preallocateRecBuffer->isChecked());
 	this->recordSettings.insert(REC_VOLUMES, this->ui.spinBox_volumes->value());
 	this->recordSettings.insert(REC_NAME, this->ui.lineEdit_recName->text());
 	this->recordSettings.insert(REC_DESCRIPTION, this->ui.plainTextEdit_description->toPlainText());

@@ -89,6 +89,7 @@ signals:
 	void loadSettingsFileRequest(QString);
 	void saveSettingsFileRequest(QString);
 	void sendCommand(const QString &sender, const QString &targetPlugin, const QString &command, const QVariantMap &params = QVariantMap());
+	void appCommandRequest(const QString &command, const QVariantMap &params = QVariantMap()); ///< This signal can be used to send commands to OCTproZ. The command string identifies the action, and the params map carries the data.
 };
 
 #define Plugin_iid "octproz.plugin.interface"

@@ -59,6 +59,8 @@ Processing::Processing(){
 	connect(this->rawRecorder, &Recorder::error, this, &Processing::error);
 	connect(this->rawRecorder, &Recorder::info, this, &Processing::info);
 	connect(this->rawRecorder, &Recorder::recordingDone, this, &Processing::rawRecordDone);
+	connect(this, &Processing::preallocateRawRecorder, this->rawRecorder, &Recorder::slot_preallocate);
+	connect(this, &Processing::freePreallocatedRawRecorder, this->rawRecorder, &Recorder::slot_freePreallocated);
 	connect(&recordingRawThread, &QThread::finished, this->rawRecorder, &Recorder::deleteLater);
 	recordingRawThread.start();
 
@@ -71,6 +73,8 @@ Processing::Processing(){
 	connect(this->processedRecorder, &Recorder::error, this, &Processing::error);
 	connect(this->processedRecorder, &Recorder::info, this, &Processing::info);
 	connect(this->processedRecorder, &Recorder::recordingDone, this, &Processing::processedRecordDone);
+	connect(this, &Processing::preallocateProcessedRecorder, this->processedRecorder, &Recorder::slot_preallocate);
+	connect(this, &Processing::freePreallocatedProcessedRecorder, this->processedRecorder, &Recorder::slot_freePreallocated);
 	connect(&recordingProcessedThread, &QThread::finished, this->processedRecorder, &Recorder::deleteLater);
 	recordingProcessedThread.start();
 }
@@ -419,4 +423,27 @@ void Processing::registerFloatStreamingHostBuffers(void* h_streamingBuffer1, voi
 
 void Processing::unregisterFloatStreamingHostBuffers() {
 	cuda_unregisterFloatStreamingBuffers();
+}
+
+void Processing::slot_preallocateRecordingBuffers(bool enabled) {
+	if (enabled) {
+		size_t rawSize = this->octParams->recParams.buffersToRecord * this->octParams->recParams.bufferSizeInBytes;
+		if (rawSize > 0) {
+			emit preallocateRawRecorder(rawSize);
+		}
+		int truncDiv = this->octParams->getOutputTruncationDivisor();
+		size_t processedBufferSize;
+		if (this->octParams->recParams.saveAs32bitFloat) {
+			processedBufferSize = (this->octParams->samplesPerLine / truncDiv) * this->octParams->ascansPerBscan * this->octParams->bscansPerBuffer * sizeof(float);
+		} else {
+			processedBufferSize = this->octParams->recParams.bufferSizeInBytes / truncDiv;
+		}
+		size_t processedSize = processedBufferSize * this->octParams->recParams.buffersToRecord;
+		if (processedSize > 0) {
+			emit preallocateProcessedRecorder(processedSize);
+		}
+	} else {
+		emit freePreallocatedRawRecorder();
+		emit freePreallocatedProcessedRecorder();
+	}
 }

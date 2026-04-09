@@ -180,6 +180,7 @@ void OCTproZApp::loadSystemsAndExtensions() {
 			connect(actualPlugin, &Plugin::setKLinCoeffsRequest, this, &OCTproZApp::slot_setKLinCoeffs); //todo: maybe remove this signal and slot and come up with a more general way to transfer parameter between plugins and app
 			connect(actualPlugin, &Plugin::setDispCompCoeffsRequest, this, &OCTproZApp::slot_setDispCompCoeffs);
 			connect(actualPlugin, &Plugin::setGrayscaleConversionRequest, this, &OCTproZApp::grayscaleConversionRequested);
+			connect(actualPlugin, &Plugin::appCommandRequest, this, &OCTproZApp::slot_handleAppCommand);
 
 			enum PLUGIN_TYPE type = actualPlugin->getType();
 			switch (type) {
@@ -274,7 +275,6 @@ void OCTproZApp::slot_record() {
 	if (recParams.recordProcessed) {
 		this->slot_prepareGpu2HostForProcessedRecording();
 	}
-
 	emit recordingStarted();
 
 	bool rawOrProcessedRecordingEnabled = recParams.recordRaw || recParams.recordProcessed;
@@ -632,5 +632,75 @@ void OCTproZApp::loadResamplingCurveFromFile(QString fileName) {
 		emit info(tr("Custom resampling curve loaded. File used: ") + fileName);
 	} else {
 		emit error(tr("Custom resampling curve has a size of 0. Check if .csv file with resampling curve is not empty has right format."));
+	}
+}
+
+void OCTproZApp::slot_handleAppCommand(const QString &command, const QVariantMap &params) {
+	if (command == "set_rec_path") {
+		QString path = params.value("path").toString();
+		if (!QDir(path).exists()) {
+			emit error(tr("Recording path does not exist: ") + path);
+			return;
+		}
+		this->octParams->recParams.savePath = path;
+		emit info(tr("Recording path set to: ") + path);
+	}
+	else if (command == "set_rec_name") {
+		QString name = params.value("name").toString();
+		this->octParams->recParams.fileName = name;
+		emit info(tr("Recording name set to: ") + name);
+	}
+	else if (command == "set_buffers_to_record") {
+		bool ok;
+		unsigned int count = params.value("count").toUInt(&ok);
+		if (!ok || count == 0) {
+			emit error(tr("Invalid buffer count: ") + params.value("count").toString());
+			return;
+		}
+		this->octParams->recParams.buffersToRecord = count;
+		emit info(tr("Buffers to record set to: ") + QString::number(count));
+	}
+	else if (command == "record") {
+		if (params.contains("path")) {
+			QString path = params.value("path").toString();
+			if (!QDir(path).exists()) {
+				emit error(tr("Recording path does not exist: ") + path);
+				return;
+			}
+			this->octParams->recParams.savePath = path;
+		}
+		if (params.contains("name")) {
+			this->octParams->recParams.fileName = params.value("name").toString();
+		}
+		if (params.contains("buffers")) {
+			bool ok;
+			unsigned int count = params.value("buffers").toUInt(&ok);
+			if (!ok || count == 0) {
+				emit error(tr("Invalid buffer count: ") + params.value("buffers").toString());
+				return;
+			}
+			this->octParams->recParams.buffersToRecord = count;
+		}
+		this->slot_record();
+	}
+	else if (command == "set_rec_options") {
+		auto& rp = this->octParams->recParams;
+		if (params.contains("raw")) rp.recordRaw = params.value("raw").toBool();
+		if (params.contains("processed")) rp.recordProcessed = params.value("processed").toBool();
+		if (params.contains("screenshot")) rp.recordScreenshot = params.value("screenshot").toBool();
+		if (params.contains("meta")) rp.saveMetaData = params.value("meta").toBool();
+		if (params.contains("stop_after")) rp.stopAfterRecord = params.value("stop_after").toBool();
+		if (params.contains("start_first")) rp.startWithFirstBuffer = params.value("start_first").toBool();
+		if (params.contains("float32")) rp.saveAs32bitFloat = params.value("float32").toBool();
+		emit info(tr("Recording options updated"));
+	}
+	else if (command == "set_preallocation") {
+		bool enable = params.value("enable").toBool();
+		QMetaObject::invokeMethod(this->signalProcessing, "slot_preallocateRecordingBuffers",
+			Qt::QueuedConnection, Q_ARG(bool, enable));
+		emit info(QString(tr("Buffer preallocation %1")).arg(enable ? tr("enabled") : tr("disabled")));
+	}
+	else {
+		emit error(tr("Unknown app command: ") + command);
 	}
 }

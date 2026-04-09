@@ -37,6 +37,8 @@ Recorder::Recorder(QString name){
 	this->recordedBuffers = 0;
 	this->recBuffer = nullptr;
 	this->initialized = false;
+	this->preallocatedSize = 0;
+	this->bufferPreallocated = false;
 	this->currRecParams.savePath = "";
 	this->currRecParams.buffersToRecord = 0;
 	this->currRecParams.bufferSizeInBytes = 0;	
@@ -71,7 +73,17 @@ void Recorder::slot_init(OctAlgorithmParameters::RecordingParams recParams){
 		return;
 	}
 
-	this->recBuffer = (char*)malloc(this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes);
+	size_t neededSize = this->currRecParams.buffersToRecord * this->currRecParams.bufferSizeInBytes;
+	if (this->bufferPreallocated && this->preallocatedSize == neededSize && this->recBuffer != nullptr) {
+		// reuse preallocated buffer
+	} else {
+		if (this->recBuffer != nullptr) {
+			free(this->recBuffer);
+		}
+		this->recBuffer = (char*)malloc(neededSize);
+		this->bufferPreallocated = false;
+		this->preallocatedSize = 0;
+	}
 	QString userSetFileName = this->currRecParams.fileName;
 		if (userSetFileName != "") {
 		userSetFileName = "_" + userSetFileName;
@@ -87,8 +99,10 @@ void Recorder::slot_init(OctAlgorithmParameters::RecordingParams recParams){
 }
 
 void Recorder::uninit(){
-	free(this->recBuffer);
-	this->recBuffer = nullptr;
+	if (!this->bufferPreallocated) {
+		free(this->recBuffer);
+		this->recBuffer = nullptr;
+	}
 	this->initialized = false;
 	this->recordingFinished = true;
 	this->recordedBuffers = 0;
@@ -149,4 +163,37 @@ void Recorder::saveToDisk() {
 	outputFile.write(recBuffer, this->recordedBuffers * this->currRecParams.bufferSizeInBytes);
 	outputFile.close();
 	emit info(tr("Data written to disk! ") + fileName);
+}
+
+void Recorder::slot_preallocate(size_t totalBytes) {
+	if (totalBytes == 0) {
+		return;
+	}
+	if (this->recBuffer != nullptr && this->preallocatedSize == totalBytes) {
+		return;
+	}
+	if (this->recBuffer != nullptr) {
+		free(this->recBuffer);
+	}
+	this->recBuffer = (char*)malloc(totalBytes);
+	if (this->recBuffer == nullptr) {
+		this->preallocatedSize = 0;
+		this->bufferPreallocated = false;
+		emit error(tr("Failed to preallocate recording buffer (%1 MB)").arg(totalBytes / 1048576.0, 0, 'f', 1));
+		return;
+	}
+	memset(this->recBuffer, 0, totalBytes); // touch every page to force physical memory allocation
+	this->preallocatedSize = totalBytes;
+	this->bufferPreallocated = true;
+	emit info(tr("Recording buffer preallocated: %1 MB").arg(totalBytes / 1048576.0, 0, 'f', 1));
+}
+
+void Recorder::slot_freePreallocated() {
+	if (this->bufferPreallocated && this->recBuffer != nullptr) {
+		free(this->recBuffer);
+		this->recBuffer = nullptr;
+		emit info(tr("Preallocated recording buffer freed."));
+	}
+	this->preallocatedSize = 0;
+	this->bufferPreallocated = false;
 }
