@@ -437,16 +437,29 @@ void OCTproZApp::slot_prepareGpu2HostForProcessedRecording() {
 	this->streamToHostMemorized = this->octParams->streamToHost;
 	this->streamingBuffersToSkipMemorized = this->octParams->streamingBuffersToSkip;
 
+	bool streamingWasOff = !this->octParams->streamToHost;
+
 	this->octParams->streamingBuffersToSkip = 0;
 	this->octParams->streamToHost = true;
 
 	emit streamToHostSettingsChanged(true, 0);
+
+	if (streamingWasOff) {
+		this->octParams->streamingParamsChanged = true;
+	}
 }
 
 void OCTproZApp::slot_resetGpu2HostSettings() {
+	bool streamingStateChanged = this->octParams->streamToHost != this->streamToHostMemorized;
+
 	this->octParams->streamingBuffersToSkip = this->streamingBuffersToSkipMemorized;
 	this->octParams->streamToHost = this->streamToHostMemorized;
+
 	emit streamToHostSettingsReset();
+
+	if (streamingStateChanged) {
+		this->octParams->streamingParamsChanged = true;
+	}
 }
 
 void OCTproZApp::slot_recordingDone() {

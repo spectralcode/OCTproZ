@@ -50,6 +50,10 @@ Processing::Processing(){
 	this->rawRecorder = nullptr;
 	this->processedRecorder = nullptr;
 	this->currBufferNr = 0;
+	this->gpu2HostStreamingEnabled = false;
+	this->streamingBufferSizeInBytes = 0;
+	this->floatStreamingEnabled = false;
+	this->floatStreamingBufferSizeInBytes = 0;
 
 	this->rawRecorder = new Recorder("raw");
 	this->rawRecorder->moveToThread(&recordingRawThread);
@@ -84,6 +88,11 @@ Processing::~Processing(){
 	recordingProcessedThread.wait();
 	recordingRawThread.quit();
 	recordingRawThread.wait();
+	// unregister and release streaming buffers before cleanup.
+	// AcquisitionBuffer::~AcquisitionBuffer() calls releaseMemory() which frees host memory,
+	// but does not cudaHostUnregister first. 
+	this->releaseGpu2HostStreamingResources();
+	this->releaseFloatGpu2HostStreamingResources();
 	delete this->context;
 	delete this->streamingBuffer;
 	delete this->floatStreamingBuffer;
@@ -224,6 +233,12 @@ void Processing::slot_start(AcquisitionSystem* system){
 					emit rawData(buffer->bufferArray[bufferPos], bitDepth, width, height, depth, buffersPerVolume, this->currBufferNr);
 					QCoreApplication::processEvents();
 
+					//apply stream-to-host changes before the CUDA pipeline can use them
+					if (this->octParams->streamingParamsChanged) {
+						this->enableGpu2HostStreaming(this->octParams->streamToHost);
+						this->octParams->streamingParamsChanged = false;
+					}
+
 					//make OpenGL context current and process raw data on GPU
 					this->context->makeCurrent(this->surface);
 					octCudaPipeline(buffer->bufferArray[bufferPos]); //todo: wrap cuda functions in extra class such that oct processing implementations with other gpu/multi threading frameworks (OpenCL, OpenMP, C++ AMP) can be used interchangeably
@@ -247,12 +262,6 @@ void Processing::slot_start(AcquisitionSystem* system){
 						processedBuffers = 0;
 						timer.restart();
 					}
-
-					//gpu 2 host-ram streaming
-					if (this->octParams->streamingParamsChanged) {
-						this->enableGpu2HostStreaming(this->octParams->streamToHost);
-						this->octParams->streamingParamsChanged = false;
-					}
 				}
 			}
 			QCoreApplication::processEvents();
@@ -263,9 +272,8 @@ void Processing::slot_start(AcquisitionSystem* system){
 		emit processingDone();
 		emit updateInfoBox("0", "0", "0", "0", "0", "0");
 
-		if (this->octParams->streamToHost) {
-			this->enableGpu2HostStreaming(false);
-		}
+		this->releaseGpu2HostStreamingResources();
+		this->releaseFloatGpu2HostStreamingResources();
 		cleanupCuda();
 	}
 }
@@ -364,20 +372,31 @@ void Processing::enableGpu2HostStreaming(bool enableStreaming) {
 		unsigned int bytesPerSample = ceil((double)(this->octParams->bitDepth) / 8.0); //todo: avoid this calculation here. put bytesPerSample in octsalgorithmparameters.
 		int truncDiv = this->octParams->getOutputTruncationDivisor();
 		size_t bufferSizeInBytes = (width / truncDiv) * height * depth * bytesPerSample;
-		this->streamingBuffer->releaseMemory();
+
+		if (this->gpu2HostStreamingEnabled && this->streamingBufferSizeInBytes == bufferSizeInBytes) {
+			emit streamingBufferEnabled(true);
+			return; // already enabled with correct size
+		}
+		if (this->gpu2HostStreamingEnabled && this->streamingBufferSizeInBytes != bufferSizeInBytes && this->isProcessing) {
+			emit error(tr("Changing stream-to-host buffer size during acquisition is not supported. Stop processing first."));
+			return;
+		}
+		if (this->gpu2HostStreamingEnabled) {
+			this->unregisterStreamingHostBuffers();
+			this->streamingBuffer->releaseMemory();
+			this->gpu2HostStreamingEnabled = false;
+			this->streamingBufferSizeInBytes = 0;
+		}
+
 		this->streamingBuffer->allocateMemory(2, bufferSizeInBytes);
 		this->registerStreamingHostBuffers(streamingBuffer->bufferArray.at(0), streamingBuffer->bufferArray.at(1), bufferSizeInBytes);
-		emit streamingBufferEnabled(true); //inform extensions (plug-ins) and PlotWindow1D that streaming of processed data is enabled
+		this->gpu2HostStreamingEnabled = true;
+		this->streamingBufferSizeInBytes = bufferSizeInBytes;
+		emit streamingBufferEnabled(true);
 		emit info(tr("GPU to Host-Ram Streaming enabled."));
-	}
-	else {
-		emit streamingBufferEnabled(false); //inform extensions (plug-ins) and PlotWindow1D that streaming of processed data is disabled
-		//dirty workaround to ensure that all extensions and the 1d plot window are not accessing the streaming buffer anymore after it gets freed. todo: improve thread safety for buffer access, so that this workaround becomes unnecessary
-		QCoreApplication::processEvents();
-		QThread::msleep(500);
-		QCoreApplication::processEvents();
-		this->unregisterStreamingHostBuffers();
-		this->streamingBuffer->releaseMemory();
+	} else {
+		// Runtime disable: stop consumers, but keep buffers alive until acquisition stops.
+		emit streamingBufferEnabled(false);
 		emit info(tr("GPU to Host-Ram Streaming disabled."));
 	}
 }
@@ -388,25 +407,57 @@ void Processing::enableFloatGpu2HostStreaming(bool enableStreaming) {
 		unsigned int height = this->octParams->ascansPerBscan;
 		unsigned int depth = this->octParams->bscansPerBuffer;
 		int truncDiv = this->octParams->getOutputTruncationDivisor();
-		size_t bufferSizeInBytes = (width / truncDiv) * height * depth * sizeof(float);
+		size_t bufferSizeInBytes = static_cast<size_t>(width / truncDiv) * height * depth * sizeof(float);
 
-		// Release any previously allocated memory
-		this->floatStreamingBuffer->releaseMemory();
+		if (this->floatStreamingEnabled && this->floatStreamingBufferSizeInBytes == bufferSizeInBytes) {
+			return; // already enabled with correct size
+		}
+		if (this->floatStreamingEnabled && this->floatStreamingBufferSizeInBytes != bufferSizeInBytes && this->isProcessing) {
+			emit error(tr("Changing float stream-to-host buffer size during acquisition is not supported. Stop processing first."));
+			return;
+		}
+		if (this->floatStreamingEnabled) {
+			this->unregisterFloatStreamingHostBuffers();
+			this->floatStreamingBuffer->releaseMemory();
+			this->floatStreamingEnabled = false;
+			this->floatStreamingBufferSizeInBytes = 0;
+		}
 
-		// Allocate memory for two buffers
 		this->floatStreamingBuffer->allocateMemory(2, bufferSizeInBytes);
-
-		// Register the allocated buffers with CUDA
 		this->registerFloatStreamingHostBuffers(
 			this->floatStreamingBuffer->bufferArray.at(0),
 			this->floatStreamingBuffer->bufferArray.at(1),
 			bufferSizeInBytes
 		);
+		this->floatStreamingEnabled = true;
+		this->floatStreamingBufferSizeInBytes = bufferSizeInBytes;
 	} else {
-		// Unregister and release memory
-		this->unregisterFloatStreamingHostBuffers();
-		this->floatStreamingBuffer->releaseMemory();
+		// Runtime disable: keep buffers alive until acquisition stops.
 	}
+}
+
+void Processing::releaseGpu2HostStreamingResources() {
+	if (!this->gpu2HostStreamingEnabled) {
+		return;
+	}
+	emit streamingBufferEnabled(false);
+	QCoreApplication::processEvents();
+	QThread::msleep(500);
+	QCoreApplication::processEvents();
+	this->unregisterStreamingHostBuffers();
+	this->streamingBuffer->releaseMemory();
+	this->gpu2HostStreamingEnabled = false;
+	this->streamingBufferSizeInBytes = 0;
+}
+
+void Processing::releaseFloatGpu2HostStreamingResources() {
+	if (!this->floatStreamingEnabled) {
+		return;
+	}
+	this->unregisterFloatStreamingHostBuffers();
+	this->floatStreamingBuffer->releaseMemory();
+	this->floatStreamingEnabled = false;
+	this->floatStreamingBufferSizeInBytes = 0;
 }
 
 void Processing::registerStreamingHostBuffers(void* h_streamingBuffer1, void* h_streamingBuffer2, size_t bytesPerBuffer) {

@@ -64,6 +64,7 @@ void* host_buffer1 = NULL;
 void* host_buffer2 = NULL;
 void* host_streamingBuffer1 = NULL;
 void* host_streamingBuffer2 = NULL;
+bool streamingBuffersRegistered = false;
 void* host_floatStreamingBuffer1 = nullptr;
 void* host_floatStreamingBuffer2 = nullptr;
 bool floatStreamingBuffersRegistered = false;
@@ -804,15 +805,18 @@ extern "C" void cuda_registerStreamingBuffers(void* h_streamingBuffer1, void* h_
 #endif
 	host_streamingBuffer1 = h_streamingBuffer1;
 	host_streamingBuffer2 = h_streamingBuffer2;
+	streamingBuffersRegistered = true;
 }
 
 extern "C" void cuda_unregisterStreamingBuffers() {
+	if (!streamingBuffersRegistered) return;
 #ifndef __aarch64__
 	checkCudaErrors(cudaHostUnregister(host_streamingBuffer1));
 	checkCudaErrors(cudaHostUnregister(host_streamingBuffer2));
 #endif
 	host_streamingBuffer1 = NULL;
 	host_streamingBuffer2 = NULL;
+	streamingBuffersRegistered = false;
 }
 
 extern "C" void cuda_registerFloatStreamingBuffers(void* h_floatStreamingBuffer1, void* h_floatStreamingBuffer2, size_t bytesPerBuffer) {
@@ -826,6 +830,7 @@ extern "C" void cuda_registerFloatStreamingBuffers(void* h_floatStreamingBuffer1
 }
 
 extern "C" void cuda_unregisterFloatStreamingBuffers() {
+	if (!floatStreamingBuffersRegistered) return;
 #ifndef __aarch64__
 	checkCudaErrors(cudaHostUnregister(host_floatStreamingBuffer1));
 	checkCudaErrors(cudaHostUnregister(host_floatStreamingBuffer2));
