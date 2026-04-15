@@ -23,6 +23,7 @@ SOURCES += \
 	$$SOURCEDIR/mesh.cpp \
 	$$SOURCEDIR/minicurveplot.cpp \
 	$$SOURCEDIR/octprozapp.cpp \
+	$$SOURCEDIR/octprozapp_remotecommands.cpp \
 	$$SOURCEDIR/octprozmainwindow.cpp \
 	$$SOURCEDIR/raycastvolume.cpp \
 	$$SOURCEDIR/systemmanager.cpp \

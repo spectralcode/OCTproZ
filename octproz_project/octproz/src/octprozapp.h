@@ -127,6 +127,23 @@ signals:
 
 
 private:
+	bool isBackgroundFrameRecordingActive() const;
+	bool isProcessingActive() const;
+	void handleSetRecPathCommand(const QVariantMap &params);
+	void handleSetRecNameCommand(const QVariantMap &params);
+	void handleSetBuffersToRecordCommand(const QVariantMap &params);
+	void handleRecordCommand(const QVariantMap &params);
+	void handleSetRecOptionsCommand(const QVariantMap &params);
+	void handleSetPreallocationCommand(const QVariantMap &params);
+	void handleSetBgFrameCommand(const QVariantMap &params);
+	void handleSetContinuousBgCommand(const QVariantMap &params);
+	void handleRecordBgFrameCommand(const QVariantMap &params);
+	void handleLoadBgFrameCommand(const QVariantMap &params);
+	void handleSaveBgFrameCommand(const QVariantMap &params);
+	void handleClearBgFrameCommand(const QVariantMap &params);
+	void handleSetFullRangeCommand(const QVariantMap &params);
+	void handleSetCcCommand(const QVariantMap &params);
+
 	// Core components
 	SettingsFileManager* appSettings;
 	SystemManager* sysManager;
