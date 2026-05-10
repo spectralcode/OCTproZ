@@ -76,7 +76,13 @@ void ExtensionManager::connectExtensionSignals(Extension* extension) {
 	extension->enableRawDataGrabbing(this->rawGrabbingAllowed); //todo: is initialization of rawGrabbingAllowed really needed here?
 	connect(this, &ExtensionManager::allowRawGrabbing, extension, &Extension::enableRawDataGrabbing);
 	connect(this->signalProcessing, &Processing::streamingBufferEnabled, extension, &Extension::enableProcessedDataGrabbing);
-	connect(this->notifier, &Gpu2HostNotifier::newGpuDataAvailable, extension, &Extension::processedDataReceived);
+
+	Qt::ConnectionType connType = Qt::AutoConnection;
+	if (extension->getName() == "Socket Stream Extension") {
+		connType = Qt::DirectConnection; //avoids queuing on GUI thread where paint events can cause random 10-28ms delivery stalls
+	}
+	connect(this->notifier, &Gpu2HostNotifier::newGpuDataAvailable, extension, &Extension::processedDataReceived, connType);
+
 	connect(this->signalProcessing, &Processing::rawData, extension, &Extension::rawDataReceived);
 }
 
