@@ -132,6 +132,19 @@ void OCTproZApp::handleSetBgFrameCommand(const QVariantMap &params) {
 	if (params.contains("enable")) {
 		this->octParams->backgroundFrameSubtraction = params.value("enable").toBool();
 	}
+	if (params.contains("mode")) {
+		QString mode = params.value("mode").toString().trimmed().toLower();
+		if (mode == "normalize") {
+			this->octParams->backgroundFrameCorrectionMode =
+				OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION;
+		} else if (mode == "subtraction") {
+			this->octParams->backgroundFrameCorrectionMode =
+				OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_ONLY;
+		} else {
+			emit error(tr("Invalid background frame correction mode: ") + mode);
+			return;
+		}
+	}
 
 	emit info(tr("Background frame settings updated"));
 }

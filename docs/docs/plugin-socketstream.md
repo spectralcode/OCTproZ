@@ -67,6 +67,7 @@ The header consists of:
 | `save_settings:<path_to_settings_file>` | Saves current settings to a specified file. Replace `<path_to_settings_file>` with the desired file path. |
 | `set_disp_coeff:<coeff1>:<coeff2>:<coeff3>:<coeff4>` | Sets dispersion coefficients. Each value can be a double or `nullptr` / `null`. |
 | `set_grayscale_conversion:<enable_log_scaling>:<max>:<min>:<multiplicator>:<offset>` | Configures grayscale conversion. Parameters: `enable_log_scaling` (`true`/`1` or `false`/`0`), the rest are double values or `nan` / `null` / `nullptr`. |
+| `set_bg_frame:enable=<0\|1>:bscans=<N>:mode=<subtraction\|normalize>` | Configures line-field raw background B-scan correction. The optional `mode` key selects subtraction only or subtraction with normalization. |
 | `remote_plugin_control,<PluginName>,<Command>` | Sends a command to another OCTproZ plugin. Example: `remote_plugin_control, Dispersion Estimator, startSingleFetch` |
 | `enable_command_only_mode` | Switches client connection to *command-only mode* (no image streaming). |
 | `disable_command_only_mode` | Switches client connection back to *command + data streaming mode*. |
