@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>408</width>
-    <height>476</height>
+    <height>501</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,9 +51,49 @@
              <string>Subtract a recorded B-scan background from raw data.</string>
             </property>
             <property name="text">
-             <string>Enable Raw Background B-scan  Subtraction</string>
+             <string>Enable Raw Background B-scan Subtraction</string>
             </property>
            </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_bgCorrectionMode">
+            <item>
+             <widget class="QRadioButton" name="radioButton_bgSubtractionOnly">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Subtraction only</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton_bgSubtractionAndNormalization">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Subtraction and normalization</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_bgCorrectionMode">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBox_continuousBackground">

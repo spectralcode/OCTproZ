@@ -43,6 +43,10 @@ void AdvancedSettingsDialog::connectSignals(){
 	// Background Frame Subtraction signals
 	connect(ui->checkBox_bgFrameEnabled, &QCheckBox::toggled,
 			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	connect(ui->radioButton_bgSubtractionOnly, &QRadioButton::toggled,
+			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	connect(ui->radioButton_bgSubtractionAndNormalization, &QRadioButton::toggled,
+			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
 	connect(ui->spinBox_bscansToAverage, QOverload<int>::of(&QSpinBox::valueChanged),
 			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
 	connect(ui->pushButton_recordBackground, &QPushButton::clicked,
@@ -73,6 +77,10 @@ void AdvancedSettingsDialog::disconnectSignals(){
 
 	// Background Frame Subtraction signals
 	disconnect(ui->checkBox_bgFrameEnabled, &QCheckBox::toggled,
+			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	disconnect(ui->radioButton_bgSubtractionOnly, &QRadioButton::toggled,
+			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	disconnect(ui->radioButton_bgSubtractionAndNormalization, &QRadioButton::toggled,
 			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
 	disconnect(ui->spinBox_bscansToAverage, QOverload<int>::of(&QSpinBox::valueChanged),
 			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
@@ -127,6 +135,13 @@ void AdvancedSettingsDialog::loadSettings(){
 	// Background Frame Subtraction
 	ui->checkBox_bgFrameEnabled->setChecked(
 		settings.value(ADV_BG_FRAME_ENABLED, false).toBool());
+	int correctionMode = settings.value(ADV_BG_FRAME_CORRECTION_MODE,
+		OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_ONLY).toInt();
+	if (correctionMode == OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION) {
+		ui->radioButton_bgSubtractionAndNormalization->setChecked(true);
+	} else {
+		ui->radioButton_bgSubtractionOnly->setChecked(true);
+	}
 	ui->spinBox_bscansToAverage->setValue(
 		settings.value(ADV_BG_FRAME_BSCANS_TO_AVG, 10).toInt());
 	ui->checkBox_continuousBackground->setChecked(
@@ -144,6 +159,9 @@ void AdvancedSettingsDialog::loadSettings(){
 
 	// Background Frame parameters
 	params->backgroundFrameSubtraction = ui->checkBox_bgFrameEnabled->isChecked();
+	params->backgroundFrameCorrectionMode = ui->radioButton_bgSubtractionAndNormalization->isChecked()
+		? OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION
+		: OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_ONLY;
 	params->backgroundFrameBscansToAverage = ui->spinBox_bscansToAverage->value();
 	params->backgroundFrameFilePath = settings.value(ADV_BG_FRAME_FILE_PATH, "").toString();
 	params->continuousBackgroundUpdate = ui->checkBox_continuousBackground->isChecked();
@@ -159,6 +177,7 @@ void AdvancedSettingsDialog::loadSettings(){
 
 	// Update background frame status indicator
 	updateBackgroundFrameStatus();
+	updateBackgroundCorrectionModeControls();
 
 	// Enable/disable controls based on continuous mode
 	bool continuous = params->continuousBackgroundUpdate;
@@ -185,6 +204,10 @@ void AdvancedSettingsDialog::saveSettings() {
 
 	// Background Frame Subtraction
 	settings.setValue(ADV_BG_FRAME_ENABLED, ui->checkBox_bgFrameEnabled->isChecked());
+	settings.setValue(ADV_BG_FRAME_CORRECTION_MODE,
+		ui->radioButton_bgSubtractionAndNormalization->isChecked()
+			? OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION
+			: OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_ONLY);
 	settings.setValue(ADV_BG_FRAME_BSCANS_TO_AVG, ui->spinBox_bscansToAverage->value());
 	settings.setValue(ADV_BG_FRAME_CONTINUOUS, ui->checkBox_continuousBackground->isChecked());
 	settings.setValue(ADV_BG_FRAME_USE_EMA, ui->comboBox_avgMethod->currentIndex() == 0);
@@ -209,9 +232,13 @@ void AdvancedSettingsDialog::applyBackgroundFrameSettings(){
 
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
 	params->backgroundFrameSubtraction = ui->checkBox_bgFrameEnabled->isChecked();
+	params->backgroundFrameCorrectionMode = ui->radioButton_bgSubtractionAndNormalization->isChecked()
+		? OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION
+		: OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_ONLY;
 	params->backgroundFrameBscansToAverage = ui->spinBox_bscansToAverage->value();
 
 	updateBackgroundFrameStatus();
+	updateBackgroundCorrectionModeControls();
 	emit settingsChanged();
 }
 
@@ -344,6 +371,12 @@ void AdvancedSettingsDialog::updateBackgroundFrameStatus(){
 	}
 }
 
+void AdvancedSettingsDialog::updateBackgroundCorrectionModeControls(){
+	bool enabled = ui->checkBox_bgFrameEnabled->isChecked();
+	ui->radioButton_bgSubtractionOnly->setEnabled(enabled);
+	ui->radioButton_bgSubtractionAndNormalization->setEnabled(enabled);
+}
+
 void AdvancedSettingsDialog::applyContinuousBackgroundSettings(){
 	saveSettings();
 
@@ -375,6 +408,7 @@ void AdvancedSettingsDialog::applyContinuousBackgroundSettings(){
 	ui->label_bgStatusIndicator->setEnabled(!continuous);
 	ui->label_bgFileInUse->setEnabled(!continuous);
 	ui->lineEdit_bgFilePath->setEnabled(!continuous);
+	updateBackgroundCorrectionModeControls();
 
 	emit settingsChanged();
 }

@@ -81,6 +81,11 @@ public:
 		BIG_END
 	};
 
+	enum BACKGROUND_FRAME_CORRECTION_MODE {
+		BACKGROUND_FRAME_SUBTRACTION_ONLY,
+		BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION
+	};
+
 	struct RecordingParams {
 		QString timestamp;
 		QString fileName;
@@ -178,6 +183,7 @@ public:
 
 	// Background Frame Subtraction (Line-field OCT)
 	bool backgroundFrameSubtraction;
+	BACKGROUND_FRAME_CORRECTION_MODE backgroundFrameCorrectionMode;
 	bool backgroundFrameRecordingRequested;
 	bool backgroundFrameRecordingInProgress;
 	unsigned int backgroundFrameBscansToAverage;

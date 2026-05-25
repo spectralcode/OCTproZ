@@ -227,19 +227,57 @@ __global__ void rollingAverageBackgroundRemoval(cufftComplex* __restrict__ out,
 	}
 }
 
-// Background Frame Subtraction kernel for line-field OCT
-__global__ void backgroundFrameSubtraction(cufftComplex* __restrict__ output,
-                                           const cufftComplex* __restrict__ input,
-                                           const float* __restrict__ backgroundFrame,
-                                           const int samplesPerBscan,
-                                           const int samplesPerBuffer) {
+// Background Frame Subtraction kernels for line-field OCT
+__global__ void backgroundFrameSubtractionOnly(cufftComplex* __restrict__ output,
+                                               const cufftComplex* __restrict__ input,
+                                               const float* __restrict__ backgroundFrame,
+                                               const int samplesPerBscan,
+                                               const int samplesPerBuffer) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samplesPerBuffer) {
-		// Get position within B-scan (for background frame indexing)
 		int posInBscan = index % samplesPerBscan;
-		// Subtract background (background is same for all B-scans in buffer)
 		output[index].x = input[index].x - backgroundFrame[posInBscan];
 		output[index].y = 0;
+	}
+}
+
+__global__ void backgroundFrameSubtractionAndNormalization(cufftComplex* __restrict__ output,
+                                                           const cufftComplex* __restrict__ input,
+                                                           const float* __restrict__ backgroundFrame,
+                                                           const int samplesPerBscan,
+                                                           const int samplesPerBuffer,
+                                                           const float normalizationScale) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBuffer) {
+		int posInBscan = index % samplesPerBscan;
+		float inputValue = input[index].x;
+		float backgroundValue = backgroundFrame[posInBscan];
+		if (inputValue <= 1.0f || backgroundValue <= 1.0f) {
+			output[index].x = 0.0f;
+		} else {
+			output[index].x = normalizationScale * ((inputValue / backgroundValue) - 1.0f);
+		}
+		output[index].y = 0;
+	}
+}
+
+static float getBackgroundFrameNormalizationScale(unsigned int bitDepth) {
+	return powf(2.0f, static_cast<float>(bitDepth)) * 0.25f;
+}
+
+static void launchBackgroundFrameCorrection(cufftComplex* output,
+                                            const cufftComplex* input,
+                                            const float* backgroundFrame,
+                                            int samplesPerBscan,
+                                            int samplesPerBuffer,
+                                            cudaStream_t cudaStream) {
+	if (params->backgroundFrameCorrectionMode == OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION) {
+		float normalizationScale = getBackgroundFrameNormalizationScale(params->bitDepth);
+		backgroundFrameSubtractionAndNormalization<<<gridSize, blockSize, 0, cudaStream>>>(
+			output, input, backgroundFrame, samplesPerBscan, samplesPerBuffer, normalizationScale);
+	} else {
+		backgroundFrameSubtractionOnly<<<gridSize, blockSize, 0, cudaStream>>>(
+			output, input, backgroundFrame, samplesPerBscan, samplesPerBuffer);
 	}
 }
 
@@ -1850,8 +1888,8 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 			}
 		}
 
-		backgroundFrameSubtraction<<<gridSize, blockSize, 0, stream[currStream]>>>(
-			d_fftBuffer, d_fftBuffer, d_backgroundFrame, samplesPerBscan, samplesPerBuffer);
+		launchBackgroundFrameCorrection(
+			d_fftBuffer, d_fftBuffer, d_backgroundFrame, samplesPerBscan, samplesPerBuffer, stream[currStream]);
 	}
 	//static background frame (B-scan) subtraction
 	else if (params->backgroundFrameSubtraction && params->backgroundFrameValid) {
@@ -1859,8 +1897,8 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 			cuda_updateBackgroundFrame(params->backgroundFrame, samplesPerBscan, stream[currStream]);
 			params->backgroundFrameUpdated = false;
 		}
-		backgroundFrameSubtraction<<<gridSize, blockSize, 0, stream[currStream]>>>(
-			d_fftBuffer, d_fftBuffer, d_backgroundFrame, samplesPerBscan, samplesPerBuffer);
+		launchBackgroundFrameCorrection(
+			d_fftBuffer, d_fftBuffer, d_backgroundFrame, samplesPerBscan, samplesPerBuffer, stream[currStream]);
 	}
 
 	//rolling average background subtraction

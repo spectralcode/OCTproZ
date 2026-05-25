@@ -97,6 +97,7 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	ccRectWidth(0.5f),
 	ccKeepPositiveSideband(true),
 	backgroundFrameSubtraction(false),
+	backgroundFrameCorrectionMode(BACKGROUND_FRAME_SUBTRACTION_ONLY),
 	backgroundFrameRecordingRequested(false),
 	backgroundFrameRecordingInProgress(false),
 	backgroundFrameBscansToAverage(10),

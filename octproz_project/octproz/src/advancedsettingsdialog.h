@@ -21,6 +21,7 @@ class AdvancedSettingsDialog;
 #define ADV_BG_FRAME_FILE_PATH "advanced_bg_frame_file_path"
 #define ADV_BG_FRAME_CONTINUOUS "advanced_bg_frame_continuous"
 #define ADV_BG_FRAME_USE_EMA "advanced_bg_frame_use_ema"
+#define ADV_BG_FRAME_CORRECTION_MODE "advanced_bg_frame_correction_mode"
 
 class AdvancedSettingsDialog : public QDialog
 {
@@ -52,6 +53,7 @@ private:
 	void connectSignals();
 	void disconnectSignals();
 	void updateBackgroundFrameStatus();
+	void updateBackgroundCorrectionModeControls();
 };
 
 #endif // ADVANCEDSETTINGSDIALOG_H
