@@ -36,6 +36,29 @@
 	#include "GL/glew.h"
 #endif
 
+#if defined(USE_HIP) || defined(__HIP_PLATFORM_AMD__)
+
+//include gl headers before hip_gl_interop.h
+#ifdef __aarch64__
+	#include <QtGui/qopengl.h>
+#elif !defined(_WIN32)
+	#include <GL/gl.h>
+#endif
+
+//HIP Runtime, Interop (must be before cuda_to_hip.h to define types)
+#include <hip/hip_runtime.h>
+#include <hip/hip_complex.h>
+#include <hip/hip_gl_interop.h>
+#include <hip/hip_fp16.h>
+
+//HIP FFT
+#include <hipfft/hipfft.h>
+
+//CUDA-to-HIP compatibility header (provides CUDA->HIP macro translations)
+#include "cuda_to_hip.h"
+
+#else // CUDA path
+
 //CUDA FFT
 #include <cufft.h>
 #include <cufftXt.h>
@@ -53,6 +76,8 @@
 //Helper functions, CUDA utilities
 #include <helper_cuda.h>
 #include <cuda_fp16.h>
+
+#endif // USE_HIP
 
 //OCTproZ structs and classes
 #include "octalgorithmparameters.h"

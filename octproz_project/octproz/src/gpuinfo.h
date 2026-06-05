@@ -4,7 +4,15 @@
 #include <QObject>
 #include <QString>
 #include <QVector>
+#include "cuda_to_hip.h"
+
+#if defined(USE_HIP) || defined(__HIP_PLATFORM_AMD__)
+#include <hip/hip_runtime.h>
+// HIP device attribute type
+#define cudaDeviceAttr hipDeviceAttribute_t
+#else
 #include <cuda_runtime.h>
+#endif
 
 struct GpuDeviceInfo {
 	int deviceId;
