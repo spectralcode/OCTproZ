@@ -70,6 +70,8 @@ Socket Stream supports remote commands to control OCT processing, recording, pro
 | `remote_stop` | Stops OCT processing. |
 | `stream_raw` | Streams raw acquisition buffers instead of processed OCT data. |
 | `stream_processed` | Streams processed OCT data. |
+| `set_raw_only_mode:enable=<0\|1>` | Enables or disables raw only mode. |
+| `set_raw_only_params:samples=<N>:ascans=<N>:bscans=<N>:buffers=<N>:bitdepth=<N>` | Configures the raw only mode acquisition profile. |
 
 ### Recording
 
@@ -146,6 +148,27 @@ Examples:
 - `load_klin_curve:C:/Users/username/curves/klin_curve.csv`
 
 The CSV file used by `load_klin_curve` should use semicolons as delimiters and store the resampling value in the second column. The first line is skipped as a header, matching OCTproZ's sidebar import format.
+
+### Raw Only Mode
+
+Raw only mode streams raw acquisition buffers without GPU processing. It uses a separate acquisition profile, so normal acquisition parameters are not changed by raw only commands.
+
+Only acquisition systems that explicitly support raw only mode can use these commands. Unsupported systems reject the request.
+
+| Command | Description |
+|---------|-------------|
+| `set_raw_only_mode:enable=<0\|1>` | Enables or disables raw only mode. |
+| `set_raw_only_mode:enable=1:samples=<N>:ascans=<N>:bscans=<N>:buffers=<N>:bitdepth=<N>` | Updates raw only parameters and enables raw only mode in one command. |
+| `set_raw_only_params:samples=<N>:ascans=<N>:bscans=<N>:buffers=<N>:bitdepth=<N>` | Updates the stored raw only acquisition profile. All keys are optional, but at least one key must be provided. |
+
+When raw only mode is enabled, Socket Stream automatically switches to raw streaming. If acquisition is already running, OCTproZ switches modes at runtime without restarting acquisition or processing. Normal GPU processing resources stay initialized and the CUDA pipeline is bypassed while raw only mode is active.
+
+Examples:
+
+- `set_raw_only_params:samples=2048:ascans=512:bscans=1:buffers=1:bitdepth=12`
+- `set_raw_only_mode:enable=1`
+- `set_raw_only_mode:enable=1:samples=1024`
+- `set_raw_only_mode:enable=0`
 
 ### Line-Field OCT Commands
 

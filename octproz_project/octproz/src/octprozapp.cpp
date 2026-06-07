@@ -217,6 +217,7 @@ void OCTproZApp::slot_start() {
 
 	// (Re-)init resampling curve, dispersion curve, window curve, streaming
 	this->forceUpdateProcessingParams();
+	this->setProcessingRawOnlyMode(this->currSystem != nullptr && this->currSystem->isRawOnlyModeEnabled());
 
 	// set current system time as timestamp
 	this->appSettings->setCurrentTimeStamp();

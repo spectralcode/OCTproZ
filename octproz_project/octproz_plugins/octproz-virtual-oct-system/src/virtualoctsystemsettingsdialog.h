@@ -36,6 +36,11 @@ SOFTWARE.
 #define WAITTIME "wait_time"
 #define COPY_TO_RAM "copy_file_to_ram"
 #define SYNC_WITH_PROCESSING "sync_with_processing"
+#define RAW_ONLY_BITDEPTH "raw_only_bit_depth"
+#define RAW_ONLY_WIDTH "raw_only_width"
+#define RAW_ONLY_HEIGHT "raw_only_height"
+#define RAW_ONLY_DEPTH "raw_only_depth"
+#define RAW_ONLY_BUFFERS_PER_VOLUME "raw_only_buffers_per_volume"
 
 
 #include <qstandardpaths.h>

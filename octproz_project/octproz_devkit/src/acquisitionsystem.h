@@ -62,6 +62,12 @@ public:
 	 */
 	virtual void stopAcquisition() = 0;
 
+	virtual bool supportsRawOnlyMode() const { return false; }
+	virtual void setRawOnlyMode(bool enabled) { Q_UNUSED(enabled); }
+	virtual bool isRawOnlyModeEnabled() const { return false; }
+	virtual void setRawOnlyModeParams(const AcquisitionParams& params) { Q_UNUSED(params); }
+	virtual AcquisitionParams getRawOnlyModeParams() const { return this->params->params; }
+
 	AcquisitionBuffer* buffer; ///< Page aligned memory buffer for acquisition data
 	AcquisitionParameter* params; ///< Acquisition parameters: bit depth, samples per line, lines per frame (ascansPerBscan), frames per buffer (bscansPerBuffer), buffers per volume
 	QDialog* settingsDialog; ///< Dialog that is displayed to the user

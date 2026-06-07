@@ -143,6 +143,11 @@ private:
 	void handleClearBgFrameCommand(const QVariantMap &params);
 	void handleSetFullRangeCommand(const QVariantMap &params);
 	void handleSetCcCommand(const QVariantMap &params);
+	void handleSetRawOnlyModeCommand(const QVariantMap &params);
+	void handleSetRawOnlyParamsCommand(const QVariantMap &params);
+	bool parseRawOnlyParams(const QVariantMap &params, AcquisitionParams &rawOnlyParams);
+	bool parseBoolParam(const QVariantMap &params, const QString &key, bool &value);
+	void setProcessingRawOnlyMode(bool enabled);
 
 	// Core components
 	SettingsFileManager* appSettings;

@@ -38,6 +38,7 @@
 #include "gpu2hostnotifier.h"
 #include <QCoreApplication>
 #include <QElapsedTimer>
+#include <QAtomicInt>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 
@@ -64,6 +65,7 @@ private:
 	void initCudaOpenGlInterop();
 	bool waitForCudaOpenGlInteropReady(int interval, int timeout);
 	bool isCudaOpenGlInteropReady();
+	bool initializeGpuProcessing(AcquisitionBuffer* buffer);
 	void blockBuffersForAcquisitionSystem(AcquisitionSystem* system);
 	void unblockBuffersForAcquisitionSystem(AcquisitionSystem* system);
 
@@ -87,11 +89,13 @@ private:
 	bool floatStreamingEnabled;
 	size_t floatStreamingBufferSizeInBytes;
 	unsigned int currBufferNr;
+	QAtomicInt rawOnlyMode;
 
 
 public slots :
 	//todo: decide if prefix "slot_" should be used or not and change naming of slots accordingly
 	void slot_start(AcquisitionSystem* system);
+	void setRawOnlyMode(bool enabled);
 	void slot_enableRecording(OctAlgorithmParameters::RecordingParams recParams);
 	void slot_updateDisplayedBscanFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);
 	void slot_updateDisplayedEnFaceFrame(unsigned int frameNr, unsigned int displayFunctionFrames, int displayFunction);

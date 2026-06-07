@@ -51,20 +51,40 @@ public:
 	virtual void startAcquisition() override;
 	virtual void stopAcquisition() override;
 	virtual void settingsLoaded(QVariantMap settings) override;
+	virtual bool supportsRawOnlyMode() const override;
+	virtual void setRawOnlyMode(bool enabled) override;
+	virtual bool isRawOnlyModeEnabled() const override;
+	virtual void setRawOnlyModeParams(const AcquisitionParams& params) override;
+	virtual AcquisitionParams getRawOnlyModeParams() const override;
 
 private:
 	FILE* file;
 	VirtualOCTSystemSettingsDialog* systemDialog;
 	simulatorParams currParams;
+	simulatorParams normalParams;
+	AcquisitionParams rawOnlyParams;
+	AcquisitionBuffer* normalBuffer;
+	AcquisitionBuffer* rawOnlyBuffer;
 	AcquisitionBuffer* streamBuffer;
+	bool rawOnlyModeEnabled;
 	bool isCleanupPending ;
 
 	bool init();
 	void cleanup();
+	void releaseAllBuffers();
+	AcquisitionBuffer* activeAcquisitionBuffer() const;
+	bool allocateActiveBuffer(size_t bufferSize);
+	size_t currentBufferSizeInBytes() const;
+	bool preloadActiveBufferFromFile();
+	bool handleRawOnlyModeBuffer();
 	bool openFileToCopyToRam();
 	void acqcuisitionSimulation();
 	void acqcuisitionSimulationLargeFile();
 	void acquisitionSimulationWithMultiFileBuffers();
+	AcquisitionParams acquisitionParamsFromSimulatorParams(const simulatorParams& params) const;
+	simulatorParams simulatorParamsFromRawOnlyParams() const;
+	void updateCurrentAcquisitionParams();
+	void storeCurrentSettings();
 
 public slots:
 	void slot_updateParams(simulatorParams newParams);

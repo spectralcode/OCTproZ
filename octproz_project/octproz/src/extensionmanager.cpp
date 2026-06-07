@@ -83,7 +83,7 @@ void ExtensionManager::connectExtensionSignals(Extension* extension) {
 	}
 	connect(this->notifier, &Gpu2HostNotifier::newGpuDataAvailable, extension, &Extension::processedDataReceived, connType);
 
-	connect(this->signalProcessing, &Processing::rawData, extension, &Extension::rawDataReceived);
+	connect(this->signalProcessing, &Processing::rawData, extension, &Extension::rawDataReceived, connType);
 }
 
 void ExtensionManager::disconnectExtensionSignals(Extension* extension) {

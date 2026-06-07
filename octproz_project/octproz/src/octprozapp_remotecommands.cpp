@@ -29,6 +29,8 @@ void OCTproZApp::slot_handleAppCommand(const QString &command, const QVariantMap
 		{"clear_bg_frame", &OCTproZApp::handleClearBgFrameCommand},
 		{"set_full_range", &OCTproZApp::handleSetFullRangeCommand},
 		{"set_cc", &OCTproZApp::handleSetCcCommand},
+		{"set_raw_only_mode", &OCTproZApp::handleSetRawOnlyModeCommand},
+		{"set_raw_only_params", &OCTproZApp::handleSetRawOnlyParamsCommand},
 	};
 
 	const auto handler = handlers.constFind(command);
@@ -308,4 +310,120 @@ void OCTproZApp::handleSetCcCommand(const QVariantMap &params) {
 	if (!this->octParams->fullRangeMode) {
 		emit info(tr("Complex conjugate artifact removal only applies when full-range mode is active."));
 	}
+}
+
+bool OCTproZApp::parseBoolParam(const QVariantMap &params, const QString &key, bool &value) {
+	if (!params.contains(key)) {
+		return false;
+	}
+
+	QVariant variant = params.value(key);
+	QString text = variant.toString().trimmed().toLower();
+	if (text == "1" || text == "true") {
+		value = true;
+		return true;
+	}
+	if (text == "0" || text == "false") {
+		value = false;
+		return true;
+	}
+
+	emit error(tr("Invalid boolean value for ") + key + ": " + variant.toString());
+	return false;
+}
+
+bool OCTproZApp::parseRawOnlyParams(const QVariantMap &params, AcquisitionParams &rawOnlyParams) {
+	for (auto it = params.cbegin(); it != params.cend(); ++it) {
+		if (it.key() == "enable") {
+			continue;
+		}
+
+		bool ok;
+		unsigned int value = it.value().toUInt(&ok);
+		if (!ok || value == 0) {
+			emit error(tr("Invalid raw only parameter ") + it.key() + ": " + it.value().toString());
+			return false;
+		}
+
+		if (it.key() == "samples") {
+			rawOnlyParams.samplesPerLine = value;
+		} else if (it.key() == "ascans") {
+			rawOnlyParams.ascansPerBscan = value;
+		} else if (it.key() == "bscans") {
+			rawOnlyParams.bscansPerBuffer = value;
+		} else if (it.key() == "buffers") {
+			rawOnlyParams.buffersPerVolume = value;
+		} else if (it.key() == "bitdepth") {
+			rawOnlyParams.bitDepth = value;
+		} else {
+			emit error(tr("Unknown raw only parameter: ") + it.key());
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void OCTproZApp::setProcessingRawOnlyMode(bool enabled) {
+	this->signalProcessing->setRawOnlyMode(enabled);
+}
+
+void OCTproZApp::handleSetRawOnlyParamsCommand(const QVariantMap &params) {
+	if (this->currSystem == nullptr) {
+		emit error(tr("Cannot set raw only parameters. No acquisition system is selected."));
+		return;
+	}
+	if (!this->currSystem->supportsRawOnlyMode()) {
+		emit error(tr("Current acquisition system does not support raw only mode."));
+		return;
+	}
+
+	AcquisitionParams rawOnlyParams = this->currSystem->getRawOnlyModeParams();
+	if (!this->parseRawOnlyParams(params, rawOnlyParams)) {
+		return;
+	}
+
+	this->currSystem->setRawOnlyModeParams(rawOnlyParams);
+	this->setProcessingRawOnlyMode(this->currSystem->isRawOnlyModeEnabled());
+	emit info(tr("Raw only parameters updated"));
+}
+
+void OCTproZApp::handleSetRawOnlyModeCommand(const QVariantMap &params) {
+	if (this->currSystem == nullptr) {
+		emit error(tr("Cannot change raw only mode. No acquisition system is selected."));
+		return;
+	}
+	if (!this->currSystem->supportsRawOnlyMode()) {
+		emit error(tr("Current acquisition system does not support raw only mode."));
+		return;
+	}
+
+	bool enable;
+	if (!params.contains("enable")) {
+		emit error(tr("Missing raw only mode enable parameter."));
+		return;
+	}
+	if (!this->parseBoolParam(params, "enable", enable)) {
+		return;
+	}
+
+	AcquisitionParams rawOnlyParams = this->currSystem->getRawOnlyModeParams();
+	bool paramsChanged = false;
+	QVariantMap rawOnlyParamUpdates = params;
+	rawOnlyParamUpdates.remove("enable");
+	if (!rawOnlyParamUpdates.isEmpty()) {
+		if (!this->parseRawOnlyParams(rawOnlyParamUpdates, rawOnlyParams)) {
+			return;
+		}
+		paramsChanged = true;
+	}
+
+	if (paramsChanged) {
+		this->currSystem->setRawOnlyModeParams(rawOnlyParams);
+	}
+	this->currSystem->setRawOnlyMode(enable);
+	bool rawOnlyEnabled = this->currSystem->isRawOnlyModeEnabled();
+	this->setProcessingRawOnlyMode(rawOnlyEnabled);
+
+	emit info(QString(tr("Raw only mode %1")).arg(rawOnlyEnabled ? tr("enabled") : tr("disabled")));
 }

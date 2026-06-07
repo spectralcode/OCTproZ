@@ -54,6 +54,7 @@ Processing::Processing(){
 	this->streamingBufferSizeInBytes = 0;
 	this->floatStreamingEnabled = false;
 	this->floatStreamingBufferSizeInBytes = 0;
+	this->rawOnlyMode.store(0);
 
 	this->rawRecorder = new Recorder("raw");
 	this->rawRecorder->moveToThread(&recordingRawThread);
@@ -177,41 +178,74 @@ void Processing::unblockBuffersForAcquisitionSystem(AcquisitionSystem* system) {
 	}
 }
 
+bool Processing::initializeGpuProcessing(AcquisitionBuffer* buffer) {
+	emit info(tr("GPU processing initialization..."));
+
+	if (buffer == nullptr || buffer->bufferArray.size() < 2) {
+		emit error(tr("GPU processing needs two acquisition buffers."));
+		emit initializationFailed();
+		return false;
+	}
+
+	if (this->glInteropPossible) {
+		this->initCudaOpenGlInterop();
+	} else {
+		this->octParams->bscanViewEnabled = false;
+		this->octParams->enFaceViewEnabled = false;
+		this->octParams->volumeViewEnabled = false;
+	}
+
+	void* h_buffer1 = buffer->bufferArray[0];
+	void* h_buffer2 = buffer->bufferArray[1];
+	if(!initializeCuda(h_buffer1, h_buffer2, this->octParams)){
+		emit error(tr("GPU buffer initialization failed."));
+		emit initializationFailed();
+		return false;
+	}
+
+	//init streaming if streamToHost option was already checked on startup
+	if (this->octParams->streamToHost && !this->octParams->streamingParamsChanged) {
+		this->enableGpu2HostStreaming(this->octParams->streamToHost);
+	}
+
+	emit info(tr("GPU processing initialized."));
+	return true;
+}
+
 void Processing::slot_start(AcquisitionSystem* system){
 	if (system != nullptr) {
 		this->blockBuffersForAcquisitionSystem(system);
-		emit info(tr("GPU processing initialization..."));
-
-		if (this->glInteropPossible) {
-			this->initCudaOpenGlInterop();
-		} else {
-			this->octParams->bscanViewEnabled = false;
-			this->octParams->enFaceViewEnabled = false;
-			this->octParams->volumeViewEnabled = false;
-		}
 
 		AcquisitionBuffer* buffer = system->buffer;
-		void* h_buffer1 = buffer->bufferArray[0];
-		void* h_buffer2 = buffer->bufferArray[1];
-		unsigned int width = this->octParams->samplesPerLine;
-		unsigned int height = this->octParams->ascansPerBscan;
-		unsigned int depth = this->octParams->bscansPerBuffer;
-		unsigned int bitDepth = this->octParams->bitDepth;
-		unsigned int buffersPerVolume = this->octParams->buffersPerVolume;
+		unsigned int width = 0;
+		unsigned int height = 0;
+		unsigned int depth = 0;
+		unsigned int bitDepth = 0;
+		unsigned int buffersPerVolume = 0;
+		auto applyParams = [&](const AcquisitionParams& params) {
+			width = params.samplesPerLine;
+			height = params.ascansPerBscan;
+			depth = params.bscansPerBuffer;
+			bitDepth = params.bitDepth;
+			buffersPerVolume = params.buffersPerVolume;
+		};
+		applyParams(system->params->params);
+		bool gpuInitialized = false;
+		bool rawOnlyModeActive = this->rawOnlyMode.load() != 0;
+
+		if (!rawOnlyModeActive) {
+			gpuInitialized = this->initializeGpuProcessing(buffer);
+			if(!gpuInitialized){
+				this->unblockBuffersForAcquisitionSystem(system);
+				return;
+			}
+		} else {
+			applyParams(system->getRawOnlyModeParams());
+			emit info(tr("Raw only mode active. GPU processing initialization skipped."));
+		}
+
 		this->currBufferNr = buffersPerVolume-1;
-		bool gpuInitialized = initializeCuda(h_buffer1, h_buffer2, this->octParams);
-		if(!gpuInitialized){
-			emit error(tr("GPU buffer initialization failed."));
-			emit initializationFailed();
-			return;
-		}
-
-		//init streaming if streamToHost option was already checked on startup
-		if (this->octParams->streamToHost && !this->octParams->streamingParamsChanged) {
-			this->enableGpu2HostStreaming(this->octParams->streamToHost);
-		}
-
-		size_t bufferSizeInBytes = buffer->bytesPerBuffer;
+		size_t bufferSizeInBytes = buffer != nullptr ? buffer->bytesPerBuffer : 0;
 		emit updateInfoBox("0", "0", "0", "0", QString::number((qreal)bufferSizeInBytes / 1048576.0), "0");
 
 		//timer for volumes/second calculation
@@ -219,30 +253,65 @@ void Processing::slot_start(AcquisitionSystem* system){
 		timer.start();
 		unsigned int processedBuffers = 0;
 
-		emit info(tr("GPU processing initialized."));
 		emit initializationDone();
 		this->unblockBuffersForAcquisitionSystem(system);
+		bool previousRawOnlyModeActive = rawOnlyModeActive;
 
 		//acquisition and processing loop
 		while (system->acqusitionRunning) {
+			rawOnlyModeActive = this->rawOnlyMode.load() != 0;
+			buffer = system->buffer;
+
+			if (rawOnlyModeActive) {
+				applyParams(system->getRawOnlyModeParams());
+			} else if (previousRawOnlyModeActive && gpuInitialized) {
+				applyParams(system->params->params);
+			}
+
+			if (!rawOnlyModeActive && !gpuInitialized) {
+				this->blockBuffersForAcquisitionSystem(system);
+				buffer = system->buffer;
+				gpuInitialized = this->initializeGpuProcessing(buffer);
+				if(!gpuInitialized){
+					this->unblockBuffersForAcquisitionSystem(system);
+					return;
+				}
+
+				applyParams(system->params->params);
+				this->currBufferNr = buffersPerVolume-1;
+				bufferSizeInBytes = buffer->bytesPerBuffer;
+				emit updateInfoBox("0", "0", "0", "0", QString::number((qreal)bufferSizeInBytes / 1048576.0), "0");
+				this->unblockBuffersForAcquisitionSystem(system);
+			}
+			previousRawOnlyModeActive = rawOnlyModeActive;
+
+			if (buffer == nullptr || buffer->bufferArray.size() < 1) {
+				QCoreApplication::processEvents();
+				continue;
+			}
+
 			int bufferPos = buffer->currIndex;
 			if (bufferPos >= 0) {
-				if (buffer->bufferReadyArray[bufferPos]) {
+				if (bufferPos < buffer->bufferArray.size() && bufferPos < buffer->bufferReadyArray.size() && buffer->bufferReadyArray[bufferPos]) {
+					bufferSizeInBytes = buffer->bytesPerBuffer;
+
 					//emit rawData signal to record raw data if recorder is enabled
 					this->currBufferNr = (this->currBufferNr+1)%buffersPerVolume;
 					emit rawData(buffer->bufferArray[bufferPos], bitDepth, width, height, depth, buffersPerVolume, this->currBufferNr);
 					QCoreApplication::processEvents();
 
-					//apply stream-to-host changes before the CUDA pipeline can use them
-					if (this->octParams->streamingParamsChanged) {
-						this->enableGpu2HostStreaming(this->octParams->streamToHost);
-						this->octParams->streamingParamsChanged = false;
-					}
+					if (!rawOnlyModeActive && gpuInitialized) {
+						//apply stream-to-host changes before the CUDA pipeline can use them
+						if (this->octParams->streamingParamsChanged) {
+							this->enableGpu2HostStreaming(this->octParams->streamToHost);
+							this->octParams->streamingParamsChanged = false;
+						}
 
-					//make OpenGL context current and process raw data on GPU
-					this->context->makeCurrent(this->surface);
-					octCudaPipeline(buffer->bufferArray[bufferPos]); //todo: wrap cuda functions in extra class such that oct processing implementations with other gpu/multi threading frameworks (OpenCL, OpenMP, C++ AMP) can be used interchangeably
-					this->context->doneCurrent();
+						//make OpenGL context current and process raw data on GPU
+						this->context->makeCurrent(this->surface);
+						octCudaPipeline(buffer->bufferArray[bufferPos]); //todo: wrap cuda functions in extra class such that oct processing implementations with other gpu/multi threading frameworks (OpenCL, OpenMP, C++ AMP) can be used interchangeably
+						this->context->doneCurrent();
+					}
 
 					//set bufferReadyArray flag to false to indicate that acquisition system is allowed to reuse this buffer
 					buffer->bufferReadyArray[bufferPos] = false;
@@ -253,7 +322,7 @@ void Processing::slot_start(AcquisitionSystem* system){
 					qreal captureInfoTime = 5000;
 					if (elapsedTime >= captureInfoTime) {
 						this->buffersPerSecond  = (qreal)processedBuffers / (elapsedTime / 1000.0);
-						qreal volumesPerSecond = buffersPerSecond / static_cast<qreal>(this->octParams->buffersPerVolume);
+						qreal volumesPerSecond = buffersPerSecond / static_cast<qreal>(buffersPerVolume);
 						qreal bscansPerSecond = this->buffersPerSecond * (qreal)depth;
 						qreal ascansPerSecond = bscansPerSecond * (qreal)height;
 						qreal bufferSizeMB = (qreal)bufferSizeInBytes / 1048576.0; //1 Kilobyte is 1024 Bytes. 1 Megabyte is equal to 1024 Kilobytes or 1048576 Bytes
@@ -274,8 +343,14 @@ void Processing::slot_start(AcquisitionSystem* system){
 
 		this->releaseGpu2HostStreamingResources();
 		this->releaseFloatGpu2HostStreamingResources();
-		cleanupCuda();
+		if (gpuInitialized) {
+			cleanupCuda();
+		}
 	}
+}
+
+void Processing::setRawOnlyMode(bool enabled) {
+	this->rawOnlyMode.store(enabled ? 1 : 0);
 }
 
 void Processing::slot_enableRecording(OctAlgorithmParameters::RecordingParams recParams) {
