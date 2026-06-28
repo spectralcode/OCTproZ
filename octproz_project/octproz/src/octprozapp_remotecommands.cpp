@@ -31,6 +31,11 @@ void OCTproZApp::slot_handleAppCommand(const QString &command, const QVariantMap
 		{"set_cc", &OCTproZApp::handleSetCcCommand},
 		{"set_raw_only_mode", &OCTproZApp::handleSetRawOnlyModeCommand},
 		{"set_raw_only_params", &OCTproZApp::handleSetRawOnlyParamsCommand},
+		{"set_normal_acquisition_params", &OCTproZApp::handleSetNormalAcquisitionParamsCommand},
+		{"set_camera_control_file", &OCTproZApp::handleSetCameraControlFileCommand},
+		{"set_camera_control_file_usage", &OCTproZApp::handleSetCameraControlFileUsageCommand},
+		{"set_camera_params", &OCTproZApp::handleSetCameraParamsCommand},
+		{"set_camera_params_usage", &OCTproZApp::handleSetCameraParamsUsageCommand},
 	};
 
 	const auto handler = handlers.constFind(command);
@@ -426,4 +431,49 @@ void OCTproZApp::handleSetRawOnlyModeCommand(const QVariantMap &params) {
 	this->setProcessingRawOnlyMode(rawOnlyEnabled);
 
 	emit info(QString(tr("Raw only mode %1")).arg(rawOnlyEnabled ? tr("enabled") : tr("disabled")));
+}
+
+void OCTproZApp::handleSetNormalAcquisitionParamsCommand(const QVariantMap &params) {
+	if (this->currSystem == nullptr) {
+		emit error(tr("Cannot set normal acquisition parameters. No acquisition system is selected."));
+		return;
+	}
+
+	this->currSystem->receiveCommand("set_normal_acquisition_params", params);
+}
+
+void OCTproZApp::handleSetCameraControlFileCommand(const QVariantMap &params) {
+	if (this->currSystem == nullptr) {
+		emit error(tr("Cannot set camera control file. No acquisition system is selected."));
+		return;
+	}
+
+	this->currSystem->receiveCommand("set_camera_control_file", params);
+}
+
+void OCTproZApp::handleSetCameraControlFileUsageCommand(const QVariantMap &params) {
+	if (this->currSystem == nullptr) {
+		emit error(tr("Cannot set camera control file usage. No acquisition system is selected."));
+		return;
+	}
+
+	this->currSystem->receiveCommand("set_camera_control_file_usage", params);
+}
+
+void OCTproZApp::handleSetCameraParamsCommand(const QVariantMap &params) {
+	if (this->currSystem == nullptr) {
+		emit error(tr("Cannot set camera parameters. No acquisition system is selected."));
+		return;
+	}
+
+	this->currSystem->receiveCommand("set_camera_params", params);
+}
+
+void OCTproZApp::handleSetCameraParamsUsageCommand(const QVariantMap &params) {
+	if (this->currSystem == nullptr) {
+		emit error(tr("Cannot set camera parameters usage. No acquisition system is selected."));
+		return;
+	}
+
+	this->currSystem->receiveCommand("set_camera_params_usage", params);
 }

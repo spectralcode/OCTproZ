@@ -145,6 +145,11 @@ private:
 	void handleSetCcCommand(const QVariantMap &params);
 	void handleSetRawOnlyModeCommand(const QVariantMap &params);
 	void handleSetRawOnlyParamsCommand(const QVariantMap &params);
+	void handleSetNormalAcquisitionParamsCommand(const QVariantMap &params);
+	void handleSetCameraControlFileCommand(const QVariantMap &params);
+	void handleSetCameraControlFileUsageCommand(const QVariantMap &params);
+	void handleSetCameraParamsCommand(const QVariantMap &params);
+	void handleSetCameraParamsUsageCommand(const QVariantMap &params);
 	bool parseRawOnlyParams(const QVariantMap &params, AcquisitionParams &rawOnlyParams);
 	bool parseBoolParam(const QVariantMap &params, const QString &key, bool &value);
 	void setProcessingRawOnlyMode(bool enabled);
