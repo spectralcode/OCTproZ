@@ -92,6 +92,7 @@ float* d_backgroundFrame = NULL;
 float* d_backgroundFrameAccumulator = NULL;
 float* d_backgroundSpectralAverages = NULL;
 float* d_backgroundSmoothedFrame = NULL;
+float* d_liveSpectralAverages = NULL;
 
 // Continuous background - circular buffer mode
 static float* d_backgroundRingBuffer = nullptr;
@@ -332,6 +333,48 @@ __global__ void smoothBackgroundSpectra(float* __restrict__ smoothed,
 			sum += backgroundFrame[i];
 		}
 		smoothed[index] = sum / (float)(endIdx - startIdx + 1);
+	}
+}
+
+// Averages each A-scan's live spectrum to a single value (one average per A-scan, for all B-scans in the buffer)
+// One warp per A-scan: the 32 lanes read consecutive samples (coalesced) and combine their partial sums with warp shuffles
+__global__ void averageLiveSpectra(float* __restrict__ averages,
+                                   const cufftComplex* __restrict__ input,
+                                   const int samplesPerLine,
+                                   const int ascansPerBuffer) {
+	int ascanIndex = (threadIdx.x + blockIdx.x * blockDim.x) / 32;
+	int lane = threadIdx.x & 31;
+	if (ascanIndex < ascansPerBuffer) {
+		const cufftComplex* line = &input[ascanIndex * samplesPerLine];
+		float sum = 0.0f;
+		for (int s = lane; s < samplesPerLine; s += 32) {
+			sum += line[s].x;
+		}
+		//warp-level reduction of the 32 partial sums
+		for (int offset = 16; offset > 0; offset >>= 1) {
+			sum += __shfl_down_sync(0xffffffff, sum, offset);
+		}
+		if (lane == 0) {
+			averages[ascanIndex] = sum / (float)samplesPerLine;
+		}
+	}
+}
+
+// Post-FFT frame correction: divides each A-scan by the square root of its pre-subtraction spectral average (lateral flat-field)
+__global__ void normalizeAscansBySqrtSpectralAverages(cufftComplex* __restrict__ data,
+                                                      const float* __restrict__ averages,
+                                                      const float normalizationScale,
+                                                      const int samplesPerLine,
+                                                      const int samplesPerBuffer) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBuffer) {
+		int ascanIndex = index / samplesPerLine;
+		float rootAverage = sqrt(averages[ascanIndex]);
+		if (rootAverage > 1.0f) {
+			float factor = normalizationScale / rootAverage;
+			data[index].x *= factor;
+			data[index].y *= factor;
+		}
 	}
 }
 
@@ -1511,7 +1554,8 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 		&& allocateAndInitializeBuffer((void**)&d_backgroundFrame, sizeof(float) * samplesPerBscan)
 		&& allocateAndInitializeBuffer((void**)&d_backgroundFrameAccumulator, sizeof(float) * samplesPerBscan)
 		&& allocateAndInitializeBuffer((void**)&d_backgroundSpectralAverages, sizeof(float) * ascansPerBscan)
-		&& allocateAndInitializeBuffer((void**)&d_backgroundSmoothedFrame, sizeof(float) * samplesPerBscan);
+		&& allocateAndInitializeBuffer((void**)&d_backgroundSmoothedFrame, sizeof(float) * samplesPerBscan)
+		&& allocateAndInitializeBuffer((void**)&d_liveSpectralAverages, sizeof(float) * ascansPerBscan * bscansPerBuffer);
 	}
 
 	if(!success){
@@ -1655,6 +1699,7 @@ extern "C" void releaseBuffers() {
 		freeCudaMem((void**)&d_backgroundFrameAccumulator);
 		freeCudaMem((void**)&d_backgroundSpectralAverages);
 		freeCudaMem((void**)&d_backgroundSmoothedFrame);
+		freeCudaMem((void**)&d_liveSpectralAverages);
 		freeBackgroundRingBuffer();
 		freeCudaMem((void**)&d_processedBuffer);
 		freeCudaMem((void**)&d_sinusoidalScanTmpBuffer);
@@ -1925,6 +1970,16 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	cudaEventSynchronize(syncEvent);
 #endif
 
+	//live per-A-scan spectral averages for post-FFT frame correction (must be computed before background subtraction removes the DC content)
+	bool applyPostFftFrameCorrection = params->frameCorrectionNormalizeByAvgSpectra && d_liveSpectralAverages != NULL;
+	if (applyPostFftFrameCorrection) {
+		int ascansPerBuffer = ascansPerBscan * bscansPerBuffer;
+		int avgBlockSize = 256;
+		int avgGridSize = (ascansPerBuffer * 32 + avgBlockSize - 1) / avgBlockSize; //one warp (32 threads) per A-scan
+		averageLiveSpectra<<<avgGridSize, avgBlockSize, 0, stream[currStream]>>>(
+			d_liveSpectralAverages, d_fftBuffer, signalLength, ascansPerBuffer);
+	}
+
 	//background frame subtraction (line-field OCT)
 	int samplesPerBscan = signalLength * ascansPerBscan;
 	if (params->backgroundFrameRecordingRequested && !params->backgroundFrameRecordingInProgress) {
@@ -2145,6 +2200,13 @@ extern "C" void octCudaPipeline(void* h_inputSignal) {
 	//IFFT
 	cufftSetStream(d_plan, stream[currStream]);
 	checkCudaErrors(cufftExecC2C(d_plan, d_fftBuffer2, d_fftBuffer2, CUFFT_INVERSE));
+
+	//post-FFT frame correction (line-field OCT): divide each A-scan by the square root of its pre-subtraction spectral average
+	if (applyPostFftFrameCorrection) {
+		float frameCorrectionScale = getBackgroundFrameNormalizationScale(params->bitDepth);
+		normalizeAscansBySqrtSpectralAverages<<<gridSize, blockSize, 0, stream[currStream]>>>(
+			d_fftBuffer2, d_liveSpectralAverages, frameCorrectionScale, signalLength, samplesPerBuffer);
+	}
 
 	//Fixed-pattern noise removal
 	if(params->fixedPatternNoiseRemoval){

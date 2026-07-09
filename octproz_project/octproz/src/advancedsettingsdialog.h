@@ -26,6 +26,9 @@ class AdvancedSettingsDialog;
 #define ADV_BG_FRAME_SMOOTH_SPECTRA "advanced_bg_frame_smooth_spectra"
 #define ADV_BG_FRAME_SMOOTHING_WINDOW "advanced_bg_frame_smoothing_window"
 
+// Frame Correction settings keys
+#define ADV_FRAME_CORRECTION_NORMALIZE_AVG_SPECTRA "advanced_frame_correction_normalize_avg_spectra"
+
 class AdvancedSettingsDialog : public QDialog
 {
 	Q_OBJECT
@@ -49,6 +52,7 @@ private slots:
 	void loadBackgroundFrame();
 	void checkRecordingStatus();
 	void applyContinuousBackgroundSettings();
+	void applyFrameCorrectionSettings();
 
 private:
 	Ui::AdvancedSettingsDialog *ui;

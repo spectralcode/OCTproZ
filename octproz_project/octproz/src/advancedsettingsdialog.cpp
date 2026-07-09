@@ -65,6 +65,10 @@ void AdvancedSettingsDialog::connectSignals(){
 			this, &AdvancedSettingsDialog::applyContinuousBackgroundSettings);
 	connect(ui->comboBox_avgMethod, QOverload<int>::of(&QComboBox::currentIndexChanged),
 			this, &AdvancedSettingsDialog::applyContinuousBackgroundSettings);
+
+	// Frame Correction signals
+	connect(ui->checkBox_fcNormalizeByAvgSpectra, &QCheckBox::toggled,
+			this, &AdvancedSettingsDialog::applyFrameCorrectionSettings);
 }
 
 void AdvancedSettingsDialog::disconnectSignals(){
@@ -106,6 +110,10 @@ void AdvancedSettingsDialog::disconnectSignals(){
 			   this, &AdvancedSettingsDialog::applyContinuousBackgroundSettings);
 	disconnect(ui->comboBox_avgMethod, QOverload<int>::of(&QComboBox::currentIndexChanged),
 			   this, &AdvancedSettingsDialog::applyContinuousBackgroundSettings);
+
+	// Frame Correction signals
+	disconnect(ui->checkBox_fcNormalizeByAvgSpectra, &QCheckBox::toggled,
+			   this, &AdvancedSettingsDialog::applyFrameCorrectionSettings);
 }
 
 void AdvancedSettingsDialog::applyFullRangeModeSettings(bool enable){
@@ -167,6 +175,10 @@ void AdvancedSettingsDialog::loadSettings(){
 	ui->comboBox_avgMethod->setCurrentIndex(
 		settings.value(ADV_BG_FRAME_USE_EMA, true).toBool() ? 0 : 1);
 
+	// Frame Correction
+	ui->checkBox_fcNormalizeByAvgSpectra->setChecked(
+		settings.value(ADV_FRAME_CORRECTION_NORMALIZE_AVG_SPECTRA, false).toBool());
+
 	// Sync with OctAlgorithmParameters on load
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
 	params->fullRangeMode = ui->checkBox_fullRangeMode->isChecked();
@@ -187,6 +199,7 @@ void AdvancedSettingsDialog::loadSettings(){
 	params->backgroundFrameAverageSpectra = ui->checkBox_bgAverageSpectra->isChecked();
 	params->backgroundFrameSmoothSpectra = ui->checkBox_bgSmoothSpectra->isChecked();
 	params->backgroundFrameSmoothingWindowSize = ui->spinBox_bgSmoothingWindow->value();
+	params->frameCorrectionNormalizeByAvgSpectra = ui->checkBox_fcNormalizeByAvgSpectra->isChecked();
 
 	// Load background frame from file if path exists
 	if (!params->backgroundFrameFilePath.isEmpty()) {
@@ -235,6 +248,9 @@ void AdvancedSettingsDialog::saveSettings() {
 	settings.setValue(ADV_BG_FRAME_AVERAGE_SPECTRA, ui->checkBox_bgAverageSpectra->isChecked());
 	settings.setValue(ADV_BG_FRAME_SMOOTH_SPECTRA, ui->checkBox_bgSmoothSpectra->isChecked());
 	settings.setValue(ADV_BG_FRAME_SMOOTHING_WINDOW, ui->spinBox_bgSmoothingWindow->value());
+
+	// Frame Correction
+	settings.setValue(ADV_FRAME_CORRECTION_NORMALIZE_AVG_SPECTRA, ui->checkBox_fcNormalizeByAvgSpectra->isChecked());
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
 	settings.setValue(ADV_BG_FRAME_FILE_PATH, params->backgroundFrameFilePath);
 }
@@ -450,6 +466,15 @@ void AdvancedSettingsDialog::applyContinuousBackgroundSettings(){
 	ui->label_bgFileInUse->setEnabled(!continuous);
 	ui->lineEdit_bgFilePath->setEnabled(!continuous);
 	updateBackgroundCorrectionModeControls();
+
+	emit settingsChanged();
+}
+
+void AdvancedSettingsDialog::applyFrameCorrectionSettings(){
+	saveSettings();
+
+	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
+	params->frameCorrectionNormalizeByAvgSpectra = ui->checkBox_fcNormalizeByAvgSpectra->isChecked();
 
 	emit settingsChanged();
 }

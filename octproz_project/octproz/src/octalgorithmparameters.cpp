@@ -113,6 +113,7 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	backgroundFrameAverageSpectra(false),
 	backgroundFrameSmoothSpectra(false),
 	backgroundFrameSmoothingWindowSize(10),
+	frameCorrectionNormalizeByAvgSpectra(false),
 	frameNr(0),
 	frameNrEnFaceView(0),
 	functionFramesEnFaceView(0),

@@ -332,6 +332,40 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_frameCorrection">
+         <property name="title">
+          <string>Frame Correction</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_frameCorrection">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <property name="leftMargin">
+           <number>3</number>
+          </property>
+          <property name="topMargin">
+           <number>3</number>
+          </property>
+          <property name="rightMargin">
+           <number>3</number>
+          </property>
+          <property name="bottomMargin">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QCheckBox" name="checkBox_fcNormalizeByAvgSpectra">
+            <property name="toolTip">
+             <string>Divide each post-FFT A-scan by the square root of its spectral average. The average is computed from the live raw frame before background subtraction (lateral flat-field correction). No recorded background required. This is an alternative approach to frame normalization applied on raw data.</string>
+            </property>
+            <property name="text">
+             <string>Normalize by average spectra</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_lineFieldOCT">
          <property name="title">
           <string>Full-Range Imaging</string>

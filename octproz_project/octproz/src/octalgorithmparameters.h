@@ -199,6 +199,7 @@ public:
 	bool backgroundFrameAverageSpectra;        // Reduce background frame to one average per A-scan (spectral mean)
 	bool backgroundFrameSmoothSpectra;         // Smooth each background spectrum with a rolling average filter
 	unsigned int backgroundFrameSmoothingWindowSize; // Rolling average half-width in samples (total window = 2*value+1)
+	bool frameCorrectionNormalizeByAvgSpectra; // Post-FFT: divide each A-scan by sqrt of its live pre-subtraction spectral average
 
 	bool saveBackgroundFrameToFile(const QString& filePath);
 	bool loadBackgroundFrameFromFile(const QString& filePath);
