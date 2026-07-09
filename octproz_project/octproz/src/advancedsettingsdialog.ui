@@ -111,7 +111,7 @@
              <bool>false</bool>
             </property>
             <property name="toolTip">
-             <string>Smooth each A-scan's background spectrum with a rolling average filter. Correction then uses the smoothed background frame instead of the raw one. This can be helpful when imaging static samples.</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Smooth each A-scan's background spectrum with a rolling average filter. Correction then uses the smoothed background frame instead of the raw one.&lt;/p&gt;&lt;p&gt;This can be helpful when imaging static samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Smooth spectra</string>
@@ -136,7 +136,7 @@
                <bool>false</bool>
               </property>
               <property name="toolTip">
-               <string>Half-width of the rolling average window in samples (total window = 2*value+1).</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Half-width of the rolling average window in samples (total window = 2*value+1).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="minimum">
                <number>1</number>
@@ -342,7 +342,7 @@
           <item>
            <widget class="QCheckBox" name="checkBox_fcNormalizeByAvgSpectra">
             <property name="toolTip">
-             <string>Divide each post-FFT A-scan by the square root of its spectral average. The average is computed from the live raw frame before background subtraction (lateral flat-field correction). No recorded background required. This is an alternative approach to frame normalization applied on raw data.</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Divide each post-FFT A-scan by the square root of its spectral average. The average is computed from the live raw frame before background subtraction (lateral flat-field correction).&lt;/p&gt;&lt;p&gt;No recorded background required. This is an alternative approach to frame normalization applied on raw data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Normalize by average spectra</string>
