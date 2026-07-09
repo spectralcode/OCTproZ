@@ -250,19 +250,20 @@ __global__ void backgroundFrameSubtractionAndNormalization(cufftComplex* __restr
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	if (index < samplesPerBuffer) {
 		int posInBscan = index % samplesPerBscan;
-		float inputValue = input[index].x;
 		float backgroundValue = backgroundFrame[posInBscan];
-		if (inputValue <= 1.0f || backgroundValue <= 1.0f) {
-			output[index].x = 0.0f;
+		float inputValue = input[index].x - backgroundValue;
+		backgroundValue = sqrt(backgroundValue);
+		if (backgroundValue <= 1.0f) {
+			output[index].x = inputValue;
 		} else {
-			output[index].x = normalizationScale * ((inputValue / backgroundValue) - 1.0f);
+			output[index].x = normalizationScale * ((inputValue / backgroundValue));
 		}
 		output[index].y = 0;
 	}
 }
 
 static float getBackgroundFrameNormalizationScale(unsigned int bitDepth) {
-	return powf(2.0f, static_cast<float>(bitDepth)) * 0.25f;
+	return sqrt(powf(2.0f, static_cast<float>(bitDepth)));
 }
 
 static void launchBackgroundFrameCorrection(cufftComplex* output,
