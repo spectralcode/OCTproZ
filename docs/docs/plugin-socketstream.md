@@ -176,7 +176,7 @@ These commands update runtime parameters only. They do not update the Advanced S
 
 | Command | Description |
 |---------|-------------|
-| `set_bg_frame:enable=<0\|1>:bscans=<N>:mode=<subtraction\|normalize>` | Configures static raw background B-scan correction, the averaging count used when recording a new background frame, and the correction mode. |
+| `set_bg_frame:enable=<0\|1>:bscans=<N>:mode=<subtraction\|normalize>:smooth=<0\|1>:smooth_window=<N>` | Configures static raw background B-scan correction, the averaging count used when recording a new background frame, the correction mode, and background spectrum smoothing. |
 | `set_continuous_bg:enable=<0\|1>:ema=<0\|1>` | Configures continuous background estimation and selects the averaging method. |
 | `record_bg_frame` | Records a new static background frame from the current acquisition. |
 | `load_bg_frame:<file_path>` | Loads a previously saved background frame from a `.raw` file. |
@@ -184,13 +184,18 @@ These commands update runtime parameters only. They do not update the Advanced S
 | `clear_bg_frame` | Clears the stored background frame and disables background subtraction modes. |
 | `set_full_range:enable=<0\|1>` | Enables or disables full-range line-field processing output. |
 | `set_cc:enable=<0\|1>:center=<0-1>:width=<0-1>:keep_positive=<0\|1>` | Configures complex conjugate artifact removal. |
+| `set_frame_correction:normalize=<0\|1>` | Enables or disables post-FFT frame correction: each A-scan is divided by the square root of its spectral average, computed from the live raw frame before background subtraction (lateral flat-field, no recorded background required). |
 
 The optional `mode` key of `set_bg_frame` accepts `subtraction` for subtraction only, or `normalize` for subtraction with normalization. The aliases `subtract` and `normalization` are also accepted. If `mode` is omitted, the current correction mode is kept.
+
+The optional `smooth` key of `set_bg_frame` enables smoothing of each background spectrum with a rolling average filter before correction. `smooth_window` sets the filter half-width in samples (valid: 1-512, total window = 2*value+1).
 
 Examples:
 
 - `set_bg_frame:enable=1:bscans=10:mode=subtraction`
 - `set_bg_frame:enable=1:mode=normalize`
+- `set_bg_frame:enable=1:smooth=1:smooth_window=10`
+- `set_frame_correction:normalize=1`
 - `set_continuous_bg:enable=1:ema=1`
 - `set_continuous_bg:enable=0`
 - `record_bg_frame`

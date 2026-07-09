@@ -137,6 +137,7 @@ private:
 	void handleSetPreallocationCommand(const QVariantMap &params);
 	void handleSetBgFrameCommand(const QVariantMap &params);
 	void handleSetContinuousBgCommand(const QVariantMap &params);
+	void handleSetFrameCorrectionCommand(const QVariantMap &params);
 	void handleRecordBgFrameCommand(const QVariantMap &params);
 	void handleLoadBgFrameCommand(const QVariantMap &params);
 	void handleSaveBgFrameCommand(const QVariantMap &params);

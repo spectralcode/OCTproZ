@@ -27,6 +27,7 @@ void OCTproZApp::slot_handleAppCommand(const QString &command, const QVariantMap
 		{"load_bg_frame", &OCTproZApp::handleLoadBgFrameCommand},
 		{"save_bg_frame", &OCTproZApp::handleSaveBgFrameCommand},
 		{"clear_bg_frame", &OCTproZApp::handleClearBgFrameCommand},
+		{"set_frame_correction", &OCTproZApp::handleSetFrameCorrectionCommand},
 		{"set_full_range", &OCTproZApp::handleSetFullRangeCommand},
 		{"set_cc", &OCTproZApp::handleSetCcCommand},
 		{"set_raw_only_mode", &OCTproZApp::handleSetRawOnlyModeCommand},
@@ -152,6 +153,18 @@ void OCTproZApp::handleSetBgFrameCommand(const QVariantMap &params) {
 			return;
 		}
 	}
+	if (params.contains("smooth")) {
+		this->octParams->backgroundFrameSmoothSpectra = params.value("smooth").toBool();
+	}
+	if (params.contains("smooth_window")) {
+		bool ok;
+		unsigned int window = params.value("smooth_window").toUInt(&ok);
+		if (!ok || window < 1 || window > 512) {
+			emit error(tr("Invalid background smoothing window (valid: 1-512): ") + params.value("smooth_window").toString());
+			return;
+		}
+		this->octParams->backgroundFrameSmoothingWindowSize = window;
+	}
 
 	emit info(tr("Background frame settings updated"));
 }
@@ -180,6 +193,14 @@ void OCTproZApp::handleSetContinuousBgCommand(const QVariantMap &params) {
 	}
 
 	emit info(tr("Continuous background settings updated"));
+}
+
+void OCTproZApp::handleSetFrameCorrectionCommand(const QVariantMap &params) {
+	if (params.contains("normalize")) {
+		this->octParams->frameCorrectionNormalizeByAvgSpectra = params.value("normalize").toBool();
+	}
+
+	emit info(tr("Frame correction settings updated"));
 }
 
 void OCTproZApp::handleRecordBgFrameCommand(const QVariantMap &params) {
