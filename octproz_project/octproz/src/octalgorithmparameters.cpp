@@ -110,7 +110,6 @@ OctAlgorithmParameters::OctAlgorithmParameters()
 	backgroundFrameFilePath(QString()),
 	continuousBackgroundUpdate(false),
 	continuousBackgroundUseEMA(true),
-	backgroundFrameAverageSpectra(false),
 	backgroundFrameSmoothSpectra(false),
 	backgroundFrameSmoothingWindowSize(10),
 	frameCorrectionNormalizeByAvgSpectra(false),

@@ -22,7 +22,6 @@ class AdvancedSettingsDialog;
 #define ADV_BG_FRAME_CONTINUOUS "advanced_bg_frame_continuous"
 #define ADV_BG_FRAME_USE_EMA "advanced_bg_frame_use_ema"
 #define ADV_BG_FRAME_CORRECTION_MODE "advanced_bg_frame_correction_mode"
-#define ADV_BG_FRAME_AVERAGE_SPECTRA "advanced_bg_frame_average_spectra"
 #define ADV_BG_FRAME_SMOOTH_SPECTRA "advanced_bg_frame_smooth_spectra"
 #define ADV_BG_FRAME_SMOOTHING_WINDOW "advanced_bg_frame_smoothing_window"
 

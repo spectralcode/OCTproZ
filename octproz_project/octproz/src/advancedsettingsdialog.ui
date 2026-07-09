@@ -106,19 +106,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_bgAverageSpectra">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="toolTip">
-             <string>Average each A-scan's background spectrum to a single value per lateral position. Correction then uses this per-A-scan average instead of the full background frame. This can be helpful when imaging static samples.</string>
-            </property>
-            <property name="text">
-             <string>Average spectra</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QCheckBox" name="checkBox_bgSmoothSpectra">
             <property name="enabled">
              <bool>false</bool>
