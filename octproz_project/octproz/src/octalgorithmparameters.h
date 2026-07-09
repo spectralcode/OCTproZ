@@ -196,6 +196,9 @@ public:
 	QString backgroundFrameFilePath;
 	bool continuousBackgroundUpdate;           // Enable continuous background mode
 	bool continuousBackgroundUseEMA;           // true=EMA, false=Circular Buffer
+	bool backgroundFrameAverageSpectra;        // Reduce background frame to one average per A-scan (spectral mean)
+	bool backgroundFrameSmoothSpectra;         // Smooth each background spectrum with a rolling average filter
+	unsigned int backgroundFrameSmoothingWindowSize; // Rolling average half-width in samples (total window = 2*value+1)
 
 	bool saveBackgroundFrameToFile(const QString& filePath);
 	bool loadBackgroundFrameFromFile(const QString& filePath);

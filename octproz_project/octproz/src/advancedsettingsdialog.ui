@@ -106,6 +106,78 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="checkBox_bgAverageSpectra">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Average each A-scan's background spectrum to a single value per lateral position. Correction then uses this per-A-scan average instead of the full background frame. This can be helpful when imaging static samples.</string>
+            </property>
+            <property name="text">
+             <string>Average spectra</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBox_bgSmoothSpectra">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Smooth each A-scan's background spectrum with a rolling average filter. Correction then uses the smoothed background frame instead of the raw one. This can be helpful when imaging static samples.</string>
+            </property>
+            <property name="text">
+             <string>Smooth spectra</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_bgSmoothing">
+            <item>
+             <widget class="QLabel" name="label_bgSmoothingWindow">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Smoothing Window:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="spinBox_bgSmoothingWindow">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>Half-width of the rolling average window in samples (total window = 2*value+1).</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>512</number>
+              </property>
+              <property name="value">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_bgSmoothing">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_avgMethod">
             <item>
              <widget class="QLabel" name="label_avgMethod">

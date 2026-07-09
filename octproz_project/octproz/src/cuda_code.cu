@@ -90,6 +90,8 @@ float* d_postProcBackgroundLine = NULL;
 // Background Frame Subtraction (Line-field OCT)
 float* d_backgroundFrame = NULL;
 float* d_backgroundFrameAccumulator = NULL;
+float* d_backgroundSpectralAverages = NULL;
+float* d_backgroundSmoothedFrame = NULL;
 
 // Continuous background - circular buffer mode
 static float* d_backgroundRingBuffer = nullptr;
@@ -262,6 +264,77 @@ __global__ void backgroundFrameSubtractionAndNormalization(cufftComplex* __restr
 	}
 }
 
+// Averages each A-scan's background spectrum to a single value (one average per lateral position)
+__global__ void averageBackgroundSpectra(float* __restrict__ averages,
+                                         const float* __restrict__ backgroundFrame,
+                                         const int samplesPerLine,
+                                         const int ascansPerBscan) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < ascansPerBscan) {
+		float sum = 0.0f;
+		for (int s = 0; s < samplesPerLine; s++) {
+			sum += backgroundFrame[index * samplesPerLine + s];
+		}
+		averages[index] = sum / (float)samplesPerLine;
+	}
+}
+
+__global__ void backgroundSpectralAverageSubtractionOnly(cufftComplex* __restrict__ output,
+                                                         const cufftComplex* __restrict__ input,
+                                                         const float* __restrict__ averages,
+                                                         const int samplesPerLine,
+                                                         const int samplesPerBscan,
+                                                         const int samplesPerBuffer) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBuffer) {
+		int ascanIndex = (index % samplesPerBscan) / samplesPerLine;
+		output[index].x = input[index].x - averages[ascanIndex];
+		output[index].y = 0;
+	}
+}
+
+__global__ void backgroundSpectralAverageSubtractionAndNormalization(cufftComplex* __restrict__ output,
+                                                                     const cufftComplex* __restrict__ input,
+                                                                     const float* __restrict__ averages,
+                                                                     const int samplesPerLine,
+                                                                     const int samplesPerBscan,
+                                                                     const int samplesPerBuffer,
+                                                                     const float normalizationScale) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBuffer) {
+		int ascanIndex = (index % samplesPerBscan) / samplesPerLine;
+		float backgroundValue = averages[ascanIndex];
+		float inputValue = input[index].x - backgroundValue;
+		backgroundValue = sqrt(backgroundValue);
+		if (backgroundValue <= 1.0f) {
+			output[index].x = inputValue;
+		} else {
+			output[index].x = normalizationScale * ((inputValue / backgroundValue));
+		}
+		output[index].y = 0;
+	}
+}
+
+// Smooths each A-scan's background spectrum with a rolling average filter (window = 2*windowRadius+1, clamped at spectrum edges)
+__global__ void smoothBackgroundSpectra(float* __restrict__ smoothed,
+                                        const float* __restrict__ backgroundFrame,
+                                        const int windowRadius,
+                                        const int samplesPerLine,
+                                        const int samplesPerBscan) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	if (index < samplesPerBscan) {
+		int sampleIndex = index % samplesPerLine;
+		int firstIndexOfLine = index - sampleIndex;
+		int startIdx = max(firstIndexOfLine, index - windowRadius);
+		int endIdx = min(firstIndexOfLine + samplesPerLine - 1, index + windowRadius);
+		float sum = 0.0f;
+		for (int i = startIdx; i <= endIdx; i++) {
+			sum += backgroundFrame[i];
+		}
+		smoothed[index] = sum / (float)(endIdx - startIdx + 1);
+	}
+}
+
 static float getBackgroundFrameNormalizationScale(unsigned int bitDepth) {
 	return sqrt(powf(2.0f, static_cast<float>(bitDepth)));
 }
@@ -272,7 +345,36 @@ static void launchBackgroundFrameCorrection(cufftComplex* output,
                                             int samplesPerBscan,
                                             int samplesPerBuffer,
                                             cudaStream_t cudaStream) {
-	if (params->backgroundFrameCorrectionMode == OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION) {
+	bool normalize = params->backgroundFrameCorrectionMode == OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION;
+	if (params->backgroundFrameAverageSpectra && d_backgroundSpectralAverages != NULL) {
+		//reduce background frame to one average per A-scan; same stream guarantees this reflects any background update launched earlier for this buffer
+		int avgBlockSize = 256;
+		int avgGridSize = (ascansPerBscan + avgBlockSize - 1) / avgBlockSize;
+		averageBackgroundSpectra<<<avgGridSize, avgBlockSize, 0, cudaStream>>>(
+			d_backgroundSpectralAverages, backgroundFrame, signalLength, ascansPerBscan);
+		if (normalize) {
+			float normalizationScale = getBackgroundFrameNormalizationScale(params->bitDepth);
+			backgroundSpectralAverageSubtractionAndNormalization<<<gridSize, blockSize, 0, cudaStream>>>(
+				output, input, d_backgroundSpectralAverages, signalLength, samplesPerBscan, samplesPerBuffer, normalizationScale);
+		} else {
+			backgroundSpectralAverageSubtractionOnly<<<gridSize, blockSize, 0, cudaStream>>>(
+				output, input, d_backgroundSpectralAverages, signalLength, samplesPerBscan, samplesPerBuffer);
+		}
+	} else if (params->backgroundFrameSmoothSpectra && d_backgroundSmoothedFrame != NULL) {
+		//smooth each background spectrum; the regular full-frame kernels are then used with the smoothed frame
+		int smoothBlockSize = 256;
+		int smoothGridSize = (samplesPerBscan + smoothBlockSize - 1) / smoothBlockSize;
+		smoothBackgroundSpectra<<<smoothGridSize, smoothBlockSize, 0, cudaStream>>>(
+			d_backgroundSmoothedFrame, backgroundFrame, (int)params->backgroundFrameSmoothingWindowSize, signalLength, samplesPerBscan);
+		if (normalize) {
+			float normalizationScale = getBackgroundFrameNormalizationScale(params->bitDepth);
+			backgroundFrameSubtractionAndNormalization<<<gridSize, blockSize, 0, cudaStream>>>(
+				output, input, d_backgroundSmoothedFrame, samplesPerBscan, samplesPerBuffer, normalizationScale);
+		} else {
+			backgroundFrameSubtractionOnly<<<gridSize, blockSize, 0, cudaStream>>>(
+				output, input, d_backgroundSmoothedFrame, samplesPerBscan, samplesPerBuffer);
+		}
+	} else if (normalize) {
 		float normalizationScale = getBackgroundFrameNormalizationScale(params->bitDepth);
 		backgroundFrameSubtractionAndNormalization<<<gridSize, blockSize, 0, cudaStream>>>(
 			output, input, backgroundFrame, samplesPerBscan, samplesPerBuffer, normalizationScale);
@@ -1407,7 +1509,9 @@ extern "C" bool initializeCuda(void* h_buffer1, void* h_buffer2, OctAlgorithmPar
 		&& allocateAndInitializeBuffer((void**)&d_meanALine, sizeof(cufftComplex) * signalLength)
 		&& allocateAndInitializeBuffer((void**)&d_postProcBackgroundLine, sizeof(float) * signalLength / outputTruncationDivisor)
 		&& allocateAndInitializeBuffer((void**)&d_backgroundFrame, sizeof(float) * samplesPerBscan)
-		&& allocateAndInitializeBuffer((void**)&d_backgroundFrameAccumulator, sizeof(float) * samplesPerBscan);
+		&& allocateAndInitializeBuffer((void**)&d_backgroundFrameAccumulator, sizeof(float) * samplesPerBscan)
+		&& allocateAndInitializeBuffer((void**)&d_backgroundSpectralAverages, sizeof(float) * ascansPerBscan)
+		&& allocateAndInitializeBuffer((void**)&d_backgroundSmoothedFrame, sizeof(float) * samplesPerBscan);
 	}
 
 	if(!success){
@@ -1549,6 +1653,8 @@ extern "C" void releaseBuffers() {
 		freeCudaMem((void**)&d_postProcBackgroundLine);
 		freeCudaMem((void**)&d_backgroundFrame);
 		freeCudaMem((void**)&d_backgroundFrameAccumulator);
+		freeCudaMem((void**)&d_backgroundSpectralAverages);
+		freeCudaMem((void**)&d_backgroundSmoothedFrame);
 		freeBackgroundRingBuffer();
 		freeCudaMem((void**)&d_processedBuffer);
 		freeCudaMem((void**)&d_sinusoidalScanTmpBuffer);

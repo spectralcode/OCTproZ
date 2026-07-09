@@ -49,6 +49,12 @@ void AdvancedSettingsDialog::connectSignals(){
 			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
 	connect(ui->spinBox_bscansToAverage, QOverload<int>::of(&QSpinBox::valueChanged),
 			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	connect(ui->checkBox_bgAverageSpectra, &QCheckBox::toggled,
+			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	connect(ui->checkBox_bgSmoothSpectra, &QCheckBox::toggled,
+			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	connect(ui->spinBox_bgSmoothingWindow, QOverload<int>::of(&QSpinBox::valueChanged),
+			this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
 	connect(ui->pushButton_recordBackground, &QPushButton::clicked,
 			this, &AdvancedSettingsDialog::recordBackgroundFrame);
 	connect(ui->pushButton_saveBackground, &QPushButton::clicked,
@@ -83,6 +89,12 @@ void AdvancedSettingsDialog::disconnectSignals(){
 	disconnect(ui->radioButton_bgSubtractionAndNormalization, &QRadioButton::toggled,
 			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
 	disconnect(ui->spinBox_bscansToAverage, QOverload<int>::of(&QSpinBox::valueChanged),
+			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	disconnect(ui->checkBox_bgAverageSpectra, &QCheckBox::toggled,
+			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	disconnect(ui->checkBox_bgSmoothSpectra, &QCheckBox::toggled,
+			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
+	disconnect(ui->spinBox_bgSmoothingWindow, QOverload<int>::of(&QSpinBox::valueChanged),
 			   this, &AdvancedSettingsDialog::applyBackgroundFrameSettings);
 	disconnect(ui->pushButton_recordBackground, &QPushButton::clicked,
 			   this, &AdvancedSettingsDialog::recordBackgroundFrame);
@@ -146,6 +158,12 @@ void AdvancedSettingsDialog::loadSettings(){
 		settings.value(ADV_BG_FRAME_BSCANS_TO_AVG, 10).toInt());
 	ui->checkBox_continuousBackground->setChecked(
 		settings.value(ADV_BG_FRAME_CONTINUOUS, false).toBool());
+	ui->checkBox_bgAverageSpectra->setChecked(
+		settings.value(ADV_BG_FRAME_AVERAGE_SPECTRA, false).toBool());
+	ui->checkBox_bgSmoothSpectra->setChecked(
+		settings.value(ADV_BG_FRAME_SMOOTH_SPECTRA, false).toBool());
+	ui->spinBox_bgSmoothingWindow->setValue(
+		settings.value(ADV_BG_FRAME_SMOOTHING_WINDOW, 10).toInt());
 	ui->comboBox_avgMethod->setCurrentIndex(
 		settings.value(ADV_BG_FRAME_USE_EMA, true).toBool() ? 0 : 1);
 
@@ -166,6 +184,9 @@ void AdvancedSettingsDialog::loadSettings(){
 	params->backgroundFrameFilePath = settings.value(ADV_BG_FRAME_FILE_PATH, "").toString();
 	params->continuousBackgroundUpdate = ui->checkBox_continuousBackground->isChecked();
 	params->continuousBackgroundUseEMA = (ui->comboBox_avgMethod->currentIndex() == 0);
+	params->backgroundFrameAverageSpectra = ui->checkBox_bgAverageSpectra->isChecked();
+	params->backgroundFrameSmoothSpectra = ui->checkBox_bgSmoothSpectra->isChecked();
+	params->backgroundFrameSmoothingWindowSize = ui->spinBox_bgSmoothingWindow->value();
 
 	// Load background frame from file if path exists
 	if (!params->backgroundFrameFilePath.isEmpty()) {
@@ -211,6 +232,9 @@ void AdvancedSettingsDialog::saveSettings() {
 	settings.setValue(ADV_BG_FRAME_BSCANS_TO_AVG, ui->spinBox_bscansToAverage->value());
 	settings.setValue(ADV_BG_FRAME_CONTINUOUS, ui->checkBox_continuousBackground->isChecked());
 	settings.setValue(ADV_BG_FRAME_USE_EMA, ui->comboBox_avgMethod->currentIndex() == 0);
+	settings.setValue(ADV_BG_FRAME_AVERAGE_SPECTRA, ui->checkBox_bgAverageSpectra->isChecked());
+	settings.setValue(ADV_BG_FRAME_SMOOTH_SPECTRA, ui->checkBox_bgSmoothSpectra->isChecked());
+	settings.setValue(ADV_BG_FRAME_SMOOTHING_WINDOW, ui->spinBox_bgSmoothingWindow->value());
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
 	settings.setValue(ADV_BG_FRAME_FILE_PATH, params->backgroundFrameFilePath);
 }
@@ -228,6 +252,15 @@ void AdvancedSettingsDialog::applyCCSettings(){
 }
 
 void AdvancedSettingsDialog::applyBackgroundFrameSettings(){
+	// "Average spectra" and "Smooth spectra" are mutually exclusive
+	if (ui->checkBox_bgAverageSpectra->isChecked() && ui->checkBox_bgSmoothSpectra->isChecked()) {
+		QCheckBox* toUncheck = (sender() == ui->checkBox_bgSmoothSpectra)
+			? ui->checkBox_bgAverageSpectra
+			: ui->checkBox_bgSmoothSpectra;
+		QSignalBlocker blocker(toUncheck);
+		toUncheck->setChecked(false);
+	}
+
 	saveSettings();
 
 	OctAlgorithmParameters* params = OctAlgorithmParameters::getInstance();
@@ -236,6 +269,9 @@ void AdvancedSettingsDialog::applyBackgroundFrameSettings(){
 		? OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_AND_NORMALIZATION
 		: OctAlgorithmParameters::BACKGROUND_FRAME_SUBTRACTION_ONLY;
 	params->backgroundFrameBscansToAverage = ui->spinBox_bscansToAverage->value();
+	params->backgroundFrameAverageSpectra = ui->checkBox_bgAverageSpectra->isChecked();
+	params->backgroundFrameSmoothSpectra = ui->checkBox_bgSmoothSpectra->isChecked();
+	params->backgroundFrameSmoothingWindowSize = ui->spinBox_bgSmoothingWindow->value();
 
 	updateBackgroundFrameStatus();
 	updateBackgroundCorrectionModeControls();
@@ -375,6 +411,11 @@ void AdvancedSettingsDialog::updateBackgroundCorrectionModeControls(){
 	bool enabled = ui->checkBox_bgFrameEnabled->isChecked();
 	ui->radioButton_bgSubtractionOnly->setEnabled(enabled);
 	ui->radioButton_bgSubtractionAndNormalization->setEnabled(enabled);
+	ui->checkBox_bgAverageSpectra->setEnabled(enabled);
+	ui->checkBox_bgSmoothSpectra->setEnabled(enabled);
+	bool smoothingEnabled = enabled && ui->checkBox_bgSmoothSpectra->isChecked();
+	ui->label_bgSmoothingWindow->setEnabled(smoothingEnabled);
+	ui->spinBox_bgSmoothingWindow->setEnabled(smoothingEnabled);
 }
 
 void AdvancedSettingsDialog::applyContinuousBackgroundSettings(){
