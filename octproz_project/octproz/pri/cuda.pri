@@ -47,12 +47,22 @@ CUDA_ARCH += sm_75 \
 -gencode=arch=compute_120,code=sm_120 \
 -gencode=arch=compute_120,code=compute_120
 
-#if the host architecture is aarch64, assume Jetson Nano and override CUDA_ARCH accordingly
+#if the host architecture is aarch64, assume a Jetson board and select CUDA_ARCH from the board model reported by the device tree
 message(host architecture is: $$QMAKE_HOST.arch)
 contains(QMAKE_HOST.arch, aarch64){
-	CUDA_ARCH = sm_53 \
-	-gencode=arch=compute_53,code=sm_53 \
-	-gencode=arch=compute_53,code=compute_53
+	JETSON_MODEL = $$cat(/proc/device-tree/model, blob)
+	contains(JETSON_MODEL, .*Orin.*){
+		#Jetson Orin (Nano, NX, AGX)
+		CUDA_ARCH = sm_87 \
+		-gencode=arch=compute_87,code=sm_87 \
+		-gencode=arch=compute_87,code=compute_87
+	} else {
+		#Jetson Nano (also the fallback for unknown board models)
+		CUDA_ARCH = sm_53 \
+		-gencode=arch=compute_53,code=sm_53 \
+		-gencode=arch=compute_53,code=compute_53
+	}
+	message(Jetson board model is: $$JETSON_MODEL)
 }
 
 
@@ -62,11 +72,18 @@ include(../../config.pri)
 CUDA_DEFINES_FLAGS = $$join(CUDA_RELEVANT_DEFINES, '-D', '-D', '')
 
 #nvcc compiler options
+#Qt 5.15.11 declares mixed enum operators with a static_assert (Q_DECLARE_MIXED_ENUM_OPERATOR in qflags.h) that the nvcc front end
+#(cudafe++) mis-rewrites in C++11/C++14 mode -> "static assertion failed: (std::is_same<decltype(std::declval<TextElideMode>() | ...".
+#Compiling as C++17 avoids this. Older Qt versions keep C++11 so that older CUDA toolkits (e.g. CUDA 10.2 on Jetson Nano) still work.
+NVCC_STD = c++11
+greaterThan(QT_MAJOR_VERSION, 5): NVCC_STD = c++17
+equals(QT_MAJOR_VERSION, 5):equals(QT_MINOR_VERSION, 15):greaterThan(QT_PATCH_VERSION, 10): NVCC_STD = c++17
 unix{
-	NVCC_OPTIONS = --use_fast_math -std=c++11 --compiler-options -fPIC
+	NVCC_OPTIONS = --use_fast_math -std=$$NVCC_STD --compiler-options -fPIC
 }
 win32{
 	NVCC_OPTIONS = --use_fast_math -diag-suppress 1723,1394 #diag-suppress is used to ignore Qt-related warnings coming from Qt's header files
+	equals(NVCC_STD, c++17): NVCC_OPTIONS += -std=c++17
 }
 
 #cuda include paths
