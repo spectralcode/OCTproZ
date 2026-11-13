@@ -143,8 +143,14 @@ unix{
 #include build configuration macros
 include(../config.pri)
 
-#include cuda configuration
-include(pri/cuda.pri)
+#include cuda or hip configuration based on USE_HIP config
+USE_HIP {
+    message(Building with HIP for AMD GPUs)
+    include(pri/hip.pri)
+} else {
+    message(Building with CUDA for NVIDIA GPUs)
+    include(pri/cuda.pri)
+}
 
 #include pri file to copy documentation to build folder
 include(pri/docs.pri)

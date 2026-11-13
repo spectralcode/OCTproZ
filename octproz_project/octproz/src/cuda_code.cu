@@ -1332,7 +1332,7 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 	        }
 
 	        dim3 texture_dim(height, width, depth); //todo: use consistent naming of width, height, depth, x, y, z, ...
-	        updateDisplayedVolume<< <gridSize/2, blockSize, 0, stream>>>(surfaceWrite, d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
+	        updateDisplayedVolume<<<gridSize/2, blockSize, 0, stream>>>(surfaceWrite, d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
 	        cudaDestroySurfaceObject(surfaceWrite);
 #else
 		//bind voxel array to a writable cuda surface
@@ -1344,7 +1344,7 @@ extern "C" inline void updateVolumeDisplayBuffer(const float* d_currBuffer, cons
 
 		//write to cuda surface
 		dim3 texture_dim(height, width, depth); //todo: use consistent naming of width, height, depth, x, y, z, ...
-		updateDisplayedVolume<< <gridSize/2, blockSize, 0, stream>>>(d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
+		updateDisplayedVolume<<<gridSize/2, blockSize, 0, stream>>>(d_currBuffer, samplesPerBuffer/2, currentBufferNr, bscansPerBuffer, texture_dim);
 #endif
     }
 

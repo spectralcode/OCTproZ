@@ -31,8 +31,16 @@
 
 #include <QObject>
 #include "octalgorithmparameters.h"
+#include "cuda_to_hip.h"
+
+#if defined(USE_HIP) || defined(__HIP_PLATFORM_AMD__)
+#include <hip/hip_runtime_api.h>
+// HIP uses __host__ for callback functions
+#define CUDART_CB
+#else
 #include "cuda_runtime_api.h"
 #include "helper_cuda.h"
+#endif
 
 
 

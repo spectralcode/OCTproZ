@@ -49,7 +49,16 @@
 #include <QCoreApplication>
 #include <QOffscreenSurface>
 
-// CUDA Runtime, Interop  includes
+// CUDA-to-HIP compatibility header
+#include "cuda_to_hip.h"
+
+#if defined(USE_HIP) || defined(__HIP_PLATFORM_AMD__)
+// HIP Runtime, Interop includes
+#include <hip/hip_runtime.h>
+#include <hip/hip_gl_interop.h>
+#include <hip/hip_vector_types.h>
+#else
+// CUDA Runtime, Interop includes
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 #include <cuda_profiler_api.h>
@@ -61,6 +70,7 @@
 #include <helper_cuda.h>
 #include <helper_functions.h>
 #include <helper_timer.h>
+#endif
 
 // Qt gui includes
 #include <QSpinBox>
